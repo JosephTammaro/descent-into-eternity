@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descent into Eternity v4.0</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     TITLE
+══════════════════════════════════════════════════════════ -->
+<div id="screen-title" class="screen active">
+  <div class="title-stars" id="titleStars"></div>
+  <div class="title-deco">— ✦ — ✦ — ✦ — ✦ — ✦ — ✦ — ✦ —</div>
+  <div class="title-logo">
+    <h1>DESCENT<br>INTO ETERNITY</h1>
+    <div class="sub">A TACTICAL DUNGEON CRAWLER</div>
+  </div>
+  <div class="title-deco">— ✦ — ✦ — ✦ — ✦ — ✦ — ✦ — ✦ —</div>
+  <div style="margin-top:24px;">
+    <div class="title-btns">
+      <button class="title-btn" onclick="beginDescent()" id="beginBtn">&#x2694; &nbsp; BEGIN DESCENT</button>
+      <button class="title-btn" style="font-size:8px;padding:10px 48px;" onclick="openHelp()">? &nbsp; HOW TO PLAY</button>
+    </div>
+  </div>
+  <div class="title-ver">v4.0 &#x2014; WORK IN PROGRESS</div>
+  <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--dim);text-align:center;margin-top:10px;line-height:2;letter-spacing:1px;opacity:0.6;">
+    CREATED BY JOSEPH TAMMARO<br>
+    <span style="color:#8ab4d4;">SOUNDTRACK BY ANTHONY ROWELL</span>
+  </div>
+  <div class="title-audio-panel">
+    <div class="title-audio-row">
+      <span class="audio-vol-label">🎵 MUSIC</span>
+      <input class="audio-slider" type="range" min="0" max="100" value="25" id="titleMusicSlider" oninput="onMusicVol(this.value)">
+      <span class="audio-vol-num" id="titleMusicVolNum">25</span>
+      <button class="audio-mute-btn" id="titleMuteMusicBtn" onclick="toggleMuteMusic()">MUTE</button>
+    </div>
+    <div class="title-audio-row">
+      <span class="audio-vol-label">💥 SFX</span>
+      <input class="audio-slider" type="range" min="0" max="100" value="25" id="titleSfxSlider" oninput="onSfxVol(this.value)">
+      <span class="audio-vol-num" id="titleSfxVolNum">25</span>
+      <button class="audio-mute-btn" id="titleMuteSfxBtn" onclick="toggleMuteSfx()">MUTE</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLASS SELECT -->
+<div id="screen-class" class="screen">
+  <div class="cs-header">
+    <button onclick="if(window._classFromTown){window._classFromTown=false;showScreen('town');if(typeof _startTown==='function')setTimeout(_startTown,80);}else{showScreen('saveSlots');renderTitleSaveSlots();}" style="position:absolute;top:18px;left:18px;font-family:'Press Start 2P',monospace;font-size:7px;background:transparent;border:1px solid var(--border);color:var(--dim);padding:7px 12px;cursor:pointer;letter-spacing:1px;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">◀ BACK</button>
+    <h2>CHOOSE YOUR CLASS</h2>
+    <p>This choice is permanent. Your destiny begins here.</p>
+  </div>
+  <div class="class-grid" id="classGrid"></div>
+</div>
+
+<!-- ELDERFEN TOWN HUB -->
+<div id="screen-town" class="screen">
+  <button id="townPauseBtn" onclick="togglePause()" style="position:fixed;top:14px;right:14px;z-index:500;font-family:'Press Start 2P',monospace;font-size:8px;background:transparent;border:2px solid var(--border);color:var(--dim);padding:8px 14px;cursor:pointer;letter-spacing:1px;transition:all 0.1s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">⏸ PAUSE</button>
+  <canvas id="townCanvas" width="800" height="600"></canvas>
+
+  <!-- NPC / building dialog overlay -->
+  <div id="townDialogOverlay" class="town-dialog-overlay">
+    <div class="town-dialog-box">
+      <div class="town-dialog-titlebar">
+        <span id="townDialogTitle" class="town-dialog-title"></span>
+        <button class="town-dialog-close" onclick="townCloseDialog()">✕ CLOSE</button>
+      </div>
+      <div id="townDialogContent" class="town-dialog-content"></div>
+    </div>
+  </div>
+
+  <!-- Flash message -->
+  <div id="townFlash" class="town-flash"></div>
+
+  <!-- NPC speech bubble (wanderers & interior NPCs) -->
+  <div id="npcSpeechOverlay" class="npc-speech-overlay">
+    <div class="npc-speech-box">
+      <div class="npc-speech-name" id="npcSpeechName"></div>
+      <div class="npc-speech-text" id="npcSpeechText"></div>
+      <button class="npc-speech-close" onclick="closeNpcDialog()">✕</button>
+    </div>
+  </div>
+
+  <!-- Prepare for Descent overlay -->
+  <div id="prepareOverlay" class="prepare-overlay">
+    <div class="prepare-box">
+      <div class="prepare-titlebar">
+        <span class="prepare-title">⚔ PREPARE FOR DESCENT</span>
+        <button class="prepare-close" onclick="closePrepareScreen()">✕ CANCEL</button>
+      </div>
+      <div class="prepare-zone-label" id="prepareZoneLabel"></div>
+      <div class="prepare-panels">
+        <div class="prepare-panel">
+          <div class="prepare-panel-title">STASH <span id="prepareStashCount" class="prepare-count"></span></div>
+          <div id="prepareStashGrid" class="prepare-grid"></div>
+        </div>
+        <div class="prepare-arrows">
+          <div class="prepare-arrow-hint">← drag to loadout</div>
+          <div class="prepare-arrow-hint">drag to stash →</div>
+        </div>
+        <div class="prepare-panel">
+          <div class="prepare-panel-title">STARTING LOADOUT <span id="prepareLoadoutCount" class="prepare-count"></span></div>
+          <div id="prepareLoadoutGrid" class="prepare-grid"></div>
+        </div>
+      </div>
+      <div class="prepare-footer">
+        <button class="prepare-change-class-btn" onclick="changeClassFromPrepare()">↺ CHANGE CLASS</button>
+        <div class="prepare-footer-tip">Click items to move between stash and loadout. Starter weapon is locked in.</div>
+        <button class="prepare-descend-btn" onclick="doDescend()">⚔ DESCEND</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE SLOT SCREEN -->
+<div id="screen-saveSlots" class="screen">
+  <div class="slot-screen-header">
+    <button class="slot-back-btn" onclick="showScreen('title')">◀ BACK</button>
+    <div class="slot-screen-title">⚔ SELECT YOUR RUN</div>
+  </div>
+  <div id="saveSlotsContainer" class="save-slots-grid"></div>
+</div>
+
+<!-- SLOT DETAIL SCREEN -->
+<div id="screen-slotDetail" class="screen">
+  <div class="slot-screen-header">
+    <button class="slot-back-btn" onclick="showScreen('saveSlots');renderTitleSaveSlots();">◀ BACK</button>
+    <div class="slot-screen-title" id="slotDetailTitle">ADVENTURER</div>
+    <div style="width:80px;"></div>
+  </div>
+  <div class="slot-detail-body">
+    <!-- Action buttons -->
+    <div class="slot-detail-actions" id="slotDetailActions"></div>
+    <!-- Tabs -->
+    <div class="slot-detail-tabs">
+      <div class="sdt-tab active" onclick="slotDetailTab('overview',this)">📜 OVERVIEW</div>
+      <div class="sdt-tab" onclick="slotDetailTab('graces',this)">✨ GRACES</div>
+      <div class="sdt-tab" onclick="slotDetailTab('achievements',this)">🏆 ACHIEVEMENTS</div>
+    </div>
+    <div class="slot-detail-content" id="slotDetailContent"></div>
+  </div>
+</div>
+
+<!-- ADVENTURER NAME PROMPT -->
+<div class="overlay" id="namePromptOverlay">
+  <div class="obox px-border-gold" style="max-width:380px;text-align:center;">
+    <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--gold);margin-bottom:16px;">NAME YOUR ADVENTURER</div>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:18px;">This name will represent your legacy across all runs on this slot.</p>
+    <input id="adventurerNameInput" type="text" maxlength="20" placeholder="Enter name..." style="width:100%;background:#111;border:2px solid var(--gold-dim);color:var(--parchment);font-family:'Press Start 2P',monospace;font-size:10px;padding:10px 12px;box-sizing:border-box;margin-bottom:16px;outline:none;" onkeydown="if(event.key==='Enter')confirmAdventurerName()">
+    <div class="obox-btns">
+      <button class="btn btn-gold" onclick="confirmAdventurerName()">⚔ BEGIN</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="obox px-border-gold">
+    <h3>ARE YOU CERTAIN?</h3>
+    <p id="confirmMsg">You have chosen the Fighter.<br>This path cannot be changed.</p>
+    <div class="obox-btns">
+      <button class="btn btn-gold" onclick="doConfirmClass()">⚔ COMMIT</button>
+      <button class="btn btn-red" onclick="closeOverlay('confirmOverlay')">✗ RECONSIDER</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC CONFIRM OVERLAY -->
+<div class="overlay" id="genericConfirmOverlay">
+  <div class="obox px-border-gold">
+    <h3 id="genericConfirmTitle">ARE YOU SURE?</h3>
+    <p id="genericConfirmMsg"></p>
+    <div class="obox-btns">
+      <button class="btn btn-gold" id="genericConfirmYesBtn" onclick="genericConfirmYes()">✓ CONFIRM</button>
+      <button class="btn btn-red" onclick="closeOverlay('genericConfirmOverlay')">✗ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- STORY INTRO -->
+<div id="screen-story" class="screen">
+  <div class="story-vignette"></div>
+  <div class="story-content">
+    <div class="story-zone-tag" id="storyZoneTag">ZONE I</div>
+    <div class="story-title" id="storyTitle">The Whispering Woods</div>
+    <div class="story-body" id="storyBody"></div>
+    <div id="storyHealBadge" style="display:none;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--green2);background:#001a00;border:2px solid var(--green);padding:8px 16px;margin-bottom:18px;box-shadow:3px 3px 0 #000;">✦ FULLY RESTORED — HP, Resources &amp; Conditions cleared</div>
+    <button class="story-enter" onclick="enterZone()">ENTER THE DARKNESS ▶</button>
+  </div>
+</div>
+
+<!-- SUBCLASS SCREEN (also used for Ultimate/Capstone reveals) -->
+<div id="screen-subclass" class="screen">
+  <div class="sc-box">
+    <div class="sc-eyebrow" id="scEyebrow">LEVEL 3 — YOUR PATH IS CHOSEN</div>
+    <div class="sc-headline" id="scHeadline">A NEW POWER<br>AWAKENS</div>
+    <div class="sc-subname" id="scSubname">Champion</div>
+    <div class="sc-desc" id="scDesc">Description here.</div>
+    <div class="sc-perks" id="scPerks"></div>
+    <button class="btn btn-red" id="scConfirmBtn" style="font-size:9px;padding:12px 28px;" onclick="confirmSubclass()">EMBRACE YOUR DESTINY</button>
+  </div>
+</div>
+
+<!-- MAIN GAME -->
+<div id="screen-game" class="screen">
+  <!-- TOP BAR -->
+  <div class="game-topbar">
+    <div class="hero-tag">
+      <div id="heroMiniSprite"></div>
+      <div class="hero-info">
+        <div class="hero-name" id="heroName">HERO</div>
+        <div><span class="hero-lvl" id="heroLvl">LVL 1</span> <span class="hero-sub" id="heroSub"></span></div>
+      </div>
+    </div>
+    <div class="topbar-bars">
+      <div class="bar-wrap"><div class="bar-label">HP</div><div class="bar-track"><div class="bar-fill bar-hp" id="barHp" style="width:100%"></div><div class="bar-text" id="txtHp">10/10</div></div></div>
+      <div class="bar-wrap"><div class="bar-label" id="resLbl">RES</div><div class="bar-track"><div class="bar-fill bar-res" id="barRes" style="width:0%"></div><div class="bar-text" id="txtRes">0/0</div></div></div>
+      <div class="bar-wrap"><div class="bar-label">XP</div><div class="bar-track"><div class="bar-fill bar-xp" id="barXp" style="width:0%"></div><div class="bar-text" id="txtXp">0/50</div></div></div>
+    </div>
+    <div class="topbar-gold">🪙 <span id="goldVal">0</span></div>
+    <div class="topbar-btns">
+      <button class="topbar-btn" onclick="togglePause()" id="pauseBtn">⏸ PAUSE</button>
+      <button class="topbar-btn" onclick="showMap()">🗺 MAP</button>
+      <button class="topbar-btn" onclick="openHelp()">? HELP</button>
+      <div class="audio-panel-wrap" id="audioPanelWrap">
+        <button class="topbar-btn" id="audioToggleBtn" onclick="toggleAudioPanel()" title="Sound Settings">🔊</button>
+        <div class="audio-panel" id="audioPanel">
+          <div class="audio-panel-title">⚙ AUDIO SETTINGS</div>
+          <div class="audio-vol-row">
+            <span class="audio-vol-label">MUSIC</span>
+            <input class="audio-slider" type="range" min="0" max="100" value="25" id="musicSlider" oninput="onMusicVol(this.value)">
+            <span class="audio-vol-num" id="musicVolNum">25</span>
+          </div>
+          <div class="audio-vol-row">
+            <span class="audio-vol-label">SFX</span>
+            <input class="audio-slider" type="range" min="0" max="100" value="25" id="sfxSlider" oninput="onSfxVol(this.value)">
+            <span class="audio-vol-num" id="sfxVolNum">25</span>
+          </div>
+          <div class="audio-mute-row">
+            <button class="audio-mute-btn" id="muteMusicBtn" onclick="toggleMuteMusic()">🎵 MUSIC</button>
+            <button class="audio-mute-btn" id="muteSfxBtn" onclick="toggleMuteSfx()">💥 SFX</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARACTER SHEET DRAWER -->
+  <div class="char-drawer-backdrop" id="charDrawerBackdrop" onclick="toggleCharDrawer()"></div>
+  <div class="char-drawer" id="charDrawer">
+    <div class="char-drawer-header">
+      <span>📜 CHARACTER SHEET</span>
+      <button class="char-drawer-close" onclick="toggleCharDrawer()">✕</button>
+    </div>
+    <div class="char-drawer-body" id="csiBody"></div>
+  </div>
+
+  <div class="game-body">
+    <!-- CENTER — takes full width now, no left panel -->
+    <div class="panel-center">
+
+      <!-- ZONE BAR -->
+      <div class="zone-topbar">
+        <div class="zone-name-label" id="zoneNameLabel">Whispering Woods</div>
+        <div class="zone-track"><div class="zone-fill" id="zoneFill" style="width:0%"></div></div>
+        <div class="zone-kills-txt" id="zoneKillsTxt">0/10</div>
+        <div class="lives-display" id="livesDisplay"></div>
+        <div id="objectiveStatus" style="font-size:12px;color:var(--gold2);display:none;"></div>
+        <div class="boss-alert" id="bossAlert" style="display:none">⚠ BOSS!</div>
+      </div>
+
+      <!-- STATUS STRIP — active buffs & debuffs -->
+      <div class="status-strip" id="statusStrip"></div>
+
+      <!-- GRACE STRIP — equipped graces -->
+      <div class="grace-strip" id="graceStrip" style="display:none;"></div>
+
+      <!-- BATTLE STAGE -->
+      <div class="battle-stage" id="battleStage">
+        <div id="bgSky" class="bg-layer bg-woods-sky"></div>
+        <div id="bgTrees" class="bg-layer bg-trees"></div>
+        <div id="bgGround" class="bg-layer bg-ground-woods"></div>
+
+        <!-- Player -->
+        <div class="fighter-wrap" id="playerWrap">
+          <div class="fighter-sprite-area" style="position:relative;">
+            <div class="companion-wrap" id="companionWrap"><div id="companionSprite"></div></div>
+            <div class="spirit-weapon-wrap" id="spiritWeaponWrap"><div id="spiritWeaponSprite"></div></div>
+            <div id="playerSprite" class="idle-anim"></div>
+          </div>
+          <div id="humanHpBarWrap" class="fighter-hp-bar"><div class="fighter-hp-fill" id="playerHpFill" style="width:100%;background:var(--green2)"></div></div>
+          <div id="bearHpBarWrap" style="display:none;">
+            <div id="bearHpTrack" style="position:relative;width:90px;height:22px;background:#1a0800;border:3px solid #cd853f;box-shadow:0 0 12px #cd853f;overflow:hidden;margin-bottom:2px;">
+              <div id="bearHpFill" style="height:100%;width:100%;background:linear-gradient(90deg,#5a2e00,#cd853f);transition:width 0.25s;"></div>
+              <div id="bearHpText" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:6px;color:#fff;text-shadow:1px 1px 0 #000;pointer-events:none;">🐻 -- / --</div>
+            </div>
+          </div>
+          <div class="fighter-name-tag" id="playerNameTag">HERO</div>
+        </div>
+
+        <!-- Enemy area -->
+        <div id="enemyArea" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;z-index:2;">
+          <div id="enemyWrap" class="fighter-wrap">
+            <div class="fighter-sprite-area">
+              <div id="enemySprite" class="idle-anim"></div>
+            </div>
+            <div class="fighter-hp-bar"><div class="fighter-hp-fill" id="enemyHpFill" style="width:100%;background:var(--green2)"></div></div>
+            <div id="enemyHpText" style="font-family:'Press Start 2P',monospace;font-size:5px;color:var(--dim);text-align:center;margin-top:2px;"></div>
+            <div class="fighter-name-tag" id="enemyNameTag">ENEMY</div>
+          </div>
+          <div id="multiEnemyRow" style="display:none;flex-direction:row;gap:12px;align-items:flex-end;justify-content:center;"></div>
+        </div>
+
+        <!-- Reaction prompt -->
+        <div id="reactPrompt" style="display:none;" class="react-prompt">
+          <div class="react-prompt-title" id="reactPromptTitle">⚡ INCOMING ATTACK — REACT?</div>
+          <div class="react-prompt-btns" id="reactPromptBtns"></div>
+          <div class="react-timer-bar"><div class="react-timer-fill" id="reactTimerFill" style="width:100%"></div></div>
+        </div>
+      </div>
+
+      <!-- ACTION BAR -->
+      <div class="action-bar">
+        <!-- Row 1: turn state + AE pips + utility buttons -->
+        <div class="ab-strip">
+          <div class="turn-state your-turn" id="turnState">⚔ YOUR TURN</div>
+          <div class="ae-row" id="aeRow">
+            <div class="ae-pip avail" id="pip-action">ACT</div>
+            <div class="ae-pip avail" id="pip-bonus">BON</div>
+            <div class="ae-pip avail" id="pip-reaction">REA</div>
+          </div>
+          <div class="ab-util-btns">
+            <button class="ab-util-btn" onclick="toggleCharDrawer()" title="Character Sheet"><span class="ab-util-icon">📜</span><span class="ab-util-lbl">SHEET</span></button>
+            <button class="ab-util-btn potion-btn" id="quickPotionBtn" onclick="quickUsePotion()" title="Use Healing Potion"><span class="ab-util-icon">🧪</span><span class="ab-util-lbl">POTION</span></button>
+            <button class="ab-util-btn campfire-btn" id="quickCampBtn" onclick="quickCampfire()" title="Rest at campfire"><span class="ab-util-icon">🔥</span><span id="campProgress" class="ab-util-lbl" style="display:block;color:var(--dim);"></span><span class="ab-util-lbl" id="campBtnLabel">CAMP</span></button>
+          </div>
+        </div>
+        <!-- Row 2: skill groups + end turn -->
+        <div class="ab-skills-row">
+          <div class="ab-skill-group">
+            <div class="ab-group-label">⚔ ACTION</div>
+            <div class="ab-group-btns" id="actionSkills"></div>
+          </div>
+          <div class="ab-group-divider"></div>
+          <div class="ab-skill-group">
+            <div class="ab-group-label">✦ BONUS</div>
+            <div class="ab-group-btns" id="bonusSkills"></div>
+          </div>
+          <div class="ab-group-divider"></div>
+          <div class="ab-skill-group">
+            <div class="ab-group-label">⚡ REACT <span id="reactWhenLabel" style="color:var(--dim);font-size:8px;">(enemy turn)</span></div>
+            <div class="ab-group-btns" id="reactionSkills"></div>
+          </div>
+          <div class="ab-end-turn-wrap">
+            <button class="end-turn-btn" id="exitWildShapeBtn" onclick="exitWildShape()" style="display:none;background:linear-gradient(135deg,#1a2e0a,#2a5a1a);border-color:#5a8a2a;font-size:6px;padding:6px 8px;margin-bottom:4px;">🌿 EXIT SHAPE</button>
+            <button class="end-turn-btn" id="endTurnBtn" onclick="playerEndTurn()">END TURN ▶</button>
+            <button class="end-turn-btn" id="nextEnemyBtn" onclick="G&&G._inBranch?spawnBranchEnemy():spawnEnemy()" style="display:none;background:linear-gradient(135deg,#1a3a1a,#2a5a2a);border-color:#2d6b3a;">⚔ NEXT ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BATTLE LOG -->
+      <div class="battle-log-wrap">
+        <div class="battle-log" id="battleLog"></div>
+      </div>
+
+      <!-- Hidden spell slot section (referenced by JS) -->
+      <div id="spellSlotSection" style="display:none">
+        <div id="spellSlotDisplay"></div>
+      </div>
+      <!-- Hidden prof/talent/condition refs (used by char sheet drawer) -->
+      <div style="display:none">
+        <div id="profVal">+2</div>
+        <div id="condList"></div>
+        <div id="talentListMain"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT — narrower, 5-col inventory -->
+    <div class="panel-right">
+      <div class="panel-title">EQUIPPED</div>
+      <div class="equip-slots" id="equipSlots"></div>
+      <div class="panel-title">INVENTORY</div>
+      <div class="inv-grid" id="invGrid"></div>
+      <div class="panel-title">STATUS</div>
+      <div id="statusPanel"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NON-HARDCORE DEATH OVERLAY (shows briefly then goes to camp) -->
+<div id="deathOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0);align-items:center;justify-content:center;flex-direction:column;pointer-events:all;">
+  <div id="deathOverlayInner" style="text-align:center;opacity:0;transform:scale(0.7);">
+    <div style="font-size:64px;filter:drop-shadow(0 0 20px #ff2200);animation:death-skull-pulse 1.5s ease-in-out infinite;">💀</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:#cc0000;text-shadow:0 0 20px #ff0000,4px 4px 0 #000;letter-spacing:4px;margin:12px 0 8px;">YOU DIED</div>
+    <div id="deathOverlaySub" style="font-family:'Press Start 2P',monospace;font-size:9px;color:#884444;letter-spacing:2px;">RETREATING TO CAMPFIRE...</div>
+  </div>
+</div>
+
+<!-- SALVAGE OVERLAY — pick 1 item to carry out of the dungeon -->
+<div id="salvageOverlay" class="salvage-overlay">
+  <div class="salvage-box">
+    <div class="salvage-titlebar">
+      <span class="salvage-title">⚔ SALVAGE ONE ITEM</span>
+    </div>
+    <div class="salvage-subtitle">Choose one item (rare or below) to carry back to Elderfen — it will be added to your stash.</div>
+    <div id="salvageGrid" class="salvage-grid"></div>
+    <div class="salvage-footer">
+      <div id="salvageSelectedName" class="salvage-selected-name"></div>
+      <button id="salvageConfirmBtn" class="salvage-confirm-btn" onclick="confirmSalvage()" disabled>✓ TAKE IT</button>
+      <button class="salvage-skip-btn" onclick="skipSalvage()">✕ TAKE NOTHING</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEATH SCREEN -->
+<div id="screen-death" class="screen">
+  <div class="death-bg"></div>
+  <div class="death-scanlines"></div>
+  <div class="death-content">
+    <div class="death-skull">💀</div>
+    <div class="death-title">YOU DIED</div>
+    <div class="death-sub" id="deathSub">WARRIOR — ZONE 1 — LEVEL 1</div>
+    <div class="death-epitaph" id="deathEpitaph"></div>
+    <div class="death-stats-box">
+      <div class="death-stats-title">— FINAL RECORD —</div>
+      <div id="deathStats"></div>
+    </div>
+    <div class="death-btn-row">
+      <button class="death-btn death-btn-retry" onclick="deathReturnToTown()">⚔ RETURN TO ELDERFEN</button>
+      <button class="death-btn death-btn-title" onclick="showScreen('saveSlots')">☰ MAIN MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- CAMPFIRE -->
+<div id="screen-campfire" class="screen">
+  <div class="cf-header">
+    <div class="cf-fire-sprite-wrap">
+      <div class="cf-glow-ring"></div>
+      <div id="cfFireSprite" class="cf-fire-sprite"></div>
+    </div>
+    <div class="cf-title">CAMPFIRE REST</div>
+    <div class="cf-sub" id="cfSubtitle">You rest your weary bones...</div>
+    <div class="cf-lives" id="cfLives"></div>
+  </div>
+  <div class="cf-tabs" id="cfTabs">
+    <div class="cf-tab active" onclick="cfSwitchTab('rest',this)">😴 REST</div>
+    <div class="cf-tab" onclick="cfSwitchTab('event',this)">🎲 EVENT</div>
+    <div class="cf-tab" onclick="cfSwitchTab('inventory',this)">🎒 INV</div>
+    <div class="cf-tab" onclick="cfSwitchTab('craft',this)">⚒ CRAFT</div>
+    <div class="cf-tab" onclick="cfSwitchTab('shop',this)">🛒 SHOP</div>
+    <div class="cf-tab" onclick="cfSwitchTab('codex',this)">📖 CODEX</div>
+  </div>
+  <div class="cf-content"><div class="cf-content-inner" id="cfContent"></div></div>
+  <div class="cf-continue-wrap">
+    <button class="btn btn-gold" style="font-size:9px;padding:12px 32px;" onclick="continueJourney()">CONTINUE JOURNEY ▶</button>
+  </div>
+</div>
+
+<!-- WORLD MAP -->
+<div id="screen-map" class="screen">
+  <div class="map-title">⚔ WORLD MAP — DESCENT INTO ETERNITY</div>
+  <div class="world-map-area" id="worldMapArea">
+    <svg class="map-svg" id="mapSvg"></svg>
+  </div>
+  <button class="btn btn-gold" id="mapCloseBtn" style="margin-top:16px;" onclick="closeMap()">✗ CLOSE MAP</button>
+</div>
+
+<!-- CHAR SHEET -->
+<div id="screen-charsheet" class="screen">
+  <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--gold);text-shadow:2px 2px 0 #000;">CHARACTER SHEET</div>
+  <div class="cs-grid" id="csGrid"></div>
+  <button class="btn" style="margin-top:14px;" onclick="closeCharSheet()">✗ CLOSE</button>
+</div>
+
+<!-- TALENT OVERLAY -->
+<div id="talent-overlay">
+  <div class="talent-box">
+    <div class="tb-title">TALENT POINT</div>
+    <div class="tb-sub" id="tbSub">Choose a passive upgrade:</div>
+    <div class="talent-cards" id="talentCards"></div>
+  </div>
+</div>
+
+<!-- ITEM MODAL -->
+<div id="item-overlay">
+  <div class="item-box">
+    <div class="ib-title" id="ibTitle">ITEM</div>
+    <div class="ib-body" id="ibBody"></div>
+    <div class="ib-btns" id="ibBtns"></div>
+  </div>
+</div>
+
+<!-- HELP OVERLAY -->
+<div id="help-overlay">
+  <div class="help-box">
+    <div class="help-title">⚔ HOW TO PLAY — DESCENT INTO ETERNITY</div>
+
+    <!-- Tab nav -->
+    <div class="help-tabs">
+      <button class="help-tab active" onclick="switchHelpTab('combat',this)">⚔ COMBAT</button>
+      <button class="help-tab" onclick="switchHelpTab('classes',this)">🧙 CLASSES</button>
+      <button class="help-tab" onclick="switchHelpTab('progression',this)">📈 PROGRESS</button>
+      <button class="help-tab" onclick="switchHelpTab('town',this)">🏘 TOWN</button>
+      <button class="help-tab" onclick="switchHelpTab('gear',this)">🎒 GEAR</button>
+      <button class="help-tab" onclick="switchHelpTab('tips',this)">💡 TIPS</button>
+    </div>
+
+    <!-- COMBAT TAB -->
+    <div class="help-pane active" id="help-pane-combat">
+      <div class="help-section">
+        <h3>⚔ THE BASICS</h3>
+        <p>You are an adventurer descending into ancient evil. Each fight is <span class="help-hl">turn-based</span> — you act first, then the enemy responds. Survive long enough to slay the zone boss, then push deeper.</p>
+      </div>
+      <div class="help-section">
+        <h3>YOUR ACTION ECONOMY</h3>
+        <ul>
+          <li><span class="help-hl">Action</span> — Your main move. Big damage, powerful spells, or key abilities. You get 1 per turn.</li>
+          <li><span class="help-hl">Bonus Action</span> — A quick secondary move. Heals, buffs, or fast strikes. Also 1 per turn.</li>
+          <li><span class="help-hl">Reaction</span> — Triggered on the enemy's turn. Counters, shields, or instant effects. Use it wisely — it resets next round.</li>
+          <li>Skills are shown in the <span class="help-hl">LEFT PANEL</span>. Each is labelled [A], [B], or [R] for Action, Bonus, or Reaction.</li>
+          <li>When finished, click <span class="help-hl">END TURN</span>. You don't have to use every action — saving a Reaction can swing a fight.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>SKILL COSTS & COOLDOWNS</h3>
+        <ul>
+          <li>Skills cost your <span class="help-hl">class resource</span> (Momentum, Spell Slots, Combo Points, etc.) shown at the top of the skill panel.</li>
+          <li>A skill with a number on it is on <span class="help-hl">cooldown</span> — that's how many turns remain before you can use it again.</li>
+          <li>Grayed-out skills mean you lack the resource, the action type was used, or it's on cooldown.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>COMBAT STATES & CONDITIONS</h3>
+        <ul>
+          <li><span class="help-hl">Advantage</span> — Roll twice, take the higher result. Rogues and many skills grant this.</li>
+          <li><span class="help-hl">Vulnerable</span> — Target takes increased damage from all sources.</li>
+          <li><span class="help-hl">Burning / Poisoned / Bleeding</span> — Damage-over-time effects that tick each round.</li>
+          <li><span class="help-hl">Stunned</span> — The afflicted creature loses their turn.</li>
+          <li><span class="help-hl">Shield</span> — Absorbs incoming damage before HP is reduced.</li>
+          <li><span class="help-hl">Rage</span> (Barbarian) — Reduces incoming damage and boosts melee hits while active.</li>
+          <li>Status icons appear beneath HP bars. Hover or read the combat log for details.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>CRITICAL HITS</h3>
+        <ul>
+          <li>A <span class="help-hl">natural 20</span> (or expanded crit range with Champion/Evoker) deals double dice damage.</li>
+          <li>Some skills trigger special effects on crits — Surge Strike grants a free Bonus Action, Paladins should always Smite on a crit.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>ZONE PROGRESSION</h3>
+        <ul>
+          <li>The <span class="help-hl">kill progress bar</span> at the top fills as you defeat enemies.</li>
+          <li>Once full, the <span class="help-hl">BOSS spawns</span>. Bosses are tougher, have special abilities, and drop better loot.</li>
+          <li>Defeat the boss to unlock the next zone and travel to Elderfen for supplies.</li>
+          <li>After the boss you can visit the <span class="help-hl">Campfire</span> — rest, craft, shop, or face a random event before moving on.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CLASSES TAB -->
+    <div class="help-pane" id="help-pane-classes">
+      <div class="help-section">
+        <h3>THE 8 CLASSES</h3>
+        <p>Each class plays differently. Your class determines your <span class="help-hl">primary resource</span>, skill set, stat scaling, and subclass at Level 3.</p>
+      </div>
+      <div class="help-class-grid">
+        <div class="help-class-card">
+          <div class="help-class-icon">⚔️</div>
+          <div class="help-class-name">FIGHTER</div>
+          <div class="help-class-res">Resource: Momentum</div>
+          <div class="help-class-sub">Subclass: Champion — expands crit range, gains Survivor passive</div>
+          <div class="help-class-tip">Surge Strike is your finisher. Use Second Wind between fights to conserve potions.</div>
+        </div>
+        <div class="help-class-card">
+          <div class="help-class-icon">🔮</div>
+          <div class="help-class-name">WIZARD</div>
+          <div class="help-class-res">Resource: Spell Slots</div>
+          <div class="help-class-sub">Subclass: Evoker — Evocation spells deal maximum damage</div>
+          <div class="help-class-tip">Spell slots are finite until you rest. Never waste a Level 3 slot. Cantrips are free.</div>
+        </div>
+        <div class="help-class-card">
+          <div class="help-class-icon">🗡️</div>
+          <div class="help-class-name">ROGUE</div>
+          <div class="help-class-res">Resource: Combo Points</div>
+          <div class="help-class-sub">Subclass: Thief — Fast Hands lets you use objects as Bonus Actions</div>
+          <div class="help-class-tip">Build Combo Points with basic attacks, spend on Sneak Attack. Always fight with Advantage.</div>
+        </div>
+        <div class="help-class-card">
+          <div class="help-class-icon">🛡️</div>
+          <div class="help-class-name">PALADIN</div>
+          <div class="help-class-res">Resource: Holy Power</div>
+          <div class="help-class-sub">Subclass: Oath of Devotion — aura buffs and divine boons</div>
+          <div class="help-class-tip">Divine Smite on crits — always. Lay on Hands is your emergency button.</div>
+        </div>
+        <div class="help-class-card">
+          <div class="help-class-icon">🏹</div>
+          <div class="help-class-name">RANGER</div>
+          <div class="help-class-res">Resource: Focus</div>
+          <div class="help-class-sub">Subclass: Beast Master — summon a loyal animal companion</div>
+          <div class="help-class-tip">Apply Hunter's Mark first — it multiplies your output every single turn.</div>
+        </div>
+        <div class="help-class-card">
+          <div class="help-class-icon">💢</div>
+          <div class="help-class-name">BARBARIAN</div>
+          <div class="help-class-res">Resource: Rage</div>
+          <div class="help-class-sub">Subclass: Berserker — frenzied attacks and frightening presence</div>
+          <div class="help-class-tip">Always Rage before the first hit. Rage reduces damage taken and fuels your best abilities.</div>
+        </div>
+        <div class="help-class-card">
+          <div class="help-class-icon">✝️</div>
+          <div class="help-class-name">CLERIC</div>
+          <div class="help-class-res">Resource: Devotion</div>
+          <div class="help-class-sub">Subclass: Life Domain — empowered healing and radiant strikes</div>
+          <div class="help-class-tip">Channel Divinity often beats spending spell slots. Sacred Flame is your free offensive cantrip.</div>
+        </div>
+        <div class="help-class-card">
+          <div class="help-class-icon">🌿</div>
+          <div class="help-class-name">DRUID</div>
+          <div class="help-class-res">Resource: Nature's Charge</div>
+          <div class="help-class-sub">Subclass: Circle of the Moon — powerful Wild Shape forms</div>
+          <div class="help-class-tip">Wild Shape gives you a second HP bar. Pop it the moment your real HP drops low.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESSION TAB -->
+    <div class="help-pane" id="help-pane-progression">
+      <div class="help-section">
+        <h3>LEVELING UP</h3>
+        <ul>
+          <li>Earn <span class="help-hl">XP</span> by killing enemies. Your level is shown in the top bar.</li>
+          <li>Each level grants more <span class="help-hl">Max HP, ATK, and DEF</span>.</li>
+          <li>At <span class="help-hl">Level 3</span> you choose your <span class="help-hl">Subclass</span> — this permanently specialises your playstyle.</li>
+          <li>Every <span class="help-hl">3 levels</span> you pick a <span class="help-hl">Talent</span> — a passive that changes how your class works. Choose carefully; Talents are permanent.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>SKILL TREES</h3>
+        <ul>
+          <li>Some skills unlock or upgrade as you level up — check your skill panel for new greyed-in abilities after each level.</li>
+          <li>Subclass skills appear at Level 3 alongside your regular kit.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>CAMPFIRE (BETWEEN BOSSES)</h3>
+        <ul>
+          <li>After each boss you stop at a <span class="help-hl">Campfire</span> before the next zone.</li>
+          <li><span class="help-hl">REST</span> — Fully restores HP and refills all class resources (spell slots, charges, etc.).</li>
+          <li><span class="help-hl">CRAFT</span> — Use materials dropped by enemies to brew potions and consumables.</li>
+          <li><span class="help-hl">SHOP</span> — Buy equipment from a travelling merchant. Better items as you progress.</li>
+          <li><span class="help-hl">EVENT</span> — A random encounter. Multiple choices, real consequences. Read before clicking.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>SAVING YOUR GAME</h3>
+        <ul>
+          <li>The game <span class="help-hl">auto-saves</span> after every fight and boss kill.</li>
+          <li>You can also manually save from the <span class="help-hl">Pause menu</span>.</li>
+          <li>Multiple save slots are available from the title screen — use them for different classes or difficulty experiments.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TOWN TAB -->
+    <div class="help-pane" id="help-pane-town">
+      <div class="help-section">
+        <h3>ELDERFEN — YOUR BASE</h3>
+        <p>Between dungeon runs you can visit <span class="help-hl">Elderfen</span>, the town hub. Walk around, talk to NPCs, and use each location for different services.</p>
+      </div>
+      <div class="help-section">
+        <h3>LOCATIONS</h3>
+        <ul>
+          <li><span class="help-hl">🍺 The Tavern — Rook</span> — Ex-soldier permanently at the bar. Buy him a drink (5g) to hear a zone rumor. Rumors give you intel on upcoming enemies.</li>
+          <li><span class="help-hl">⛪ The Temple — Seraphine</span> — Shrine keeper. Receive a free class-specific Blessing once per visit. Pray for a full HP restore at no cost if you're injured.</li>
+          <li><span class="help-hl">⚒ The Forge — Aldric</span> — Blacksmith. Sharpen your weapon (+2 ATK, 15g) once per visit. Sell unwanted materials here for gold.</li>
+          <li><span class="help-hl">📚 Malachar's Study — Malachar the Grey</span> — Scholar and mystic. Donate gold (100g per tier) to unlock access to Rare and then Legendary items in the shop.</li>
+          <li><span class="help-hl">📋 Notice Board</span> — Zone threat reports, scout rumors, and class-specific tactical tips. Check it before leaving town.</li>
+          <li><span class="help-hl">🛒 Mirela's Shop</span> — Buy weapons, armor, rings, and potions. Higher shop tiers (unlocked via Malachar) stock better gear.</li>
+          <li><span class="help-hl">📦 The Stash</span> — Personal storage across runs. Park items here that you don't need now but might want later.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>TOWN TIPS</h3>
+        <ul>
+          <li>Town services like the Temple blessing and Forge sharpening reset each time you return.</li>
+          <li>Donating to Malachar is permanent — invest early to unlock better loot tiers for the rest of the run.</li>
+          <li>Talk to every NPC — their dialogue changes based on your class and how deep into the dungeon you are.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- GEAR TAB -->
+    <div class="help-pane" id="help-pane-gear">
+      <div class="help-section">
+        <h3>EQUIPMENT SLOTS</h3>
+        <ul>
+          <li>You have slots for <span class="help-hl">Weapon, Offhand, Armor, Helmet, Boots, Ring 1, Ring 2, and Amulet</span>.</li>
+          <li>Your equipped items are shown in the <span class="help-hl">RIGHT PANEL</span> during combat.</li>
+          <li>Click an inventory item to see its stats, then click <span class="help-hl">EQUIP</span> to wear it. Old item goes back to inventory.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>ITEM RARITIES</h3>
+        <ul>
+          <li><span class="help-hl" style="color:#aaa;">Common</span> — Basic stats. Useful early on.</li>
+          <li><span class="help-hl" style="color:#4fc3f7;">Uncommon</span> — Better stats, sometimes a minor bonus.</li>
+          <li><span class="help-hl" style="color:#81c784;">Rare</span> — Strong stats with a notable special effect.</li>
+          <li><span class="help-hl" style="color:#ce93d8;">Legendary</span> — Powerful unique effects that change how skills work. Build around these.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>SET BONUSES</h3>
+        <ul>
+          <li>Certain items belong to <span class="help-hl">Sets</span>. Equip 2 or more pieces of the same set to activate bonus effects.</li>
+          <li>Set bonus descriptions are shown in the item tooltip. Full sets (4 pieces) grant the strongest bonuses.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>POTIONS & CONSUMABLES</h3>
+        <ul>
+          <li>Potions appear in inventory. <span class="help-hl">Click to use</span> during or outside combat.</li>
+          <li>Health Potions restore HP. Other potions grant temporary buffs like ATK boost, shields, or condition cures.</li>
+          <li>You can craft more potions at the Campfire using materials enemies drop.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>PERMANENT UPGRADES</h3>
+        <ul>
+          <li>In the right panel, scroll down to find <span class="help-hl">Upgrade</span> options — spend gold to permanently increase your ATK, DEF, Max HP, or other stats.</li>
+          <li>These persist across zones and are separate from equipment.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TIPS TAB -->
+    <div class="help-pane" id="help-pane-tips">
+      <div class="help-section">
+        <h3>💡 GENERAL TIPS</h3>
+        <ul>
+          <li>Don't hoard potions. If you're below 50% HP going into a boss, drink now — dead heroes carry nothing.</li>
+          <li>Read skill descriptions carefully. Many have hidden synergies (e.g. Paladin crits + Smite = massive burst).</li>
+          <li>The <span class="help-hl">Pause menu</span> is available any time mid-combat. Use it to read the combat log or plan your next move.</li>
+          <li>Enemy HP bars show damage thresholds — if an enemy is nearly dead, it's worth burning a cooldown to finish them before they act.</li>
+          <li>Check the <span class="help-hl">Notice Board</span> in Elderfen before every run — it posts zone-specific tips for your class.</li>
+          <li>Save gold for Malachar's Study donations early. Better shop tiers compound across the whole run.</li>
+          <li>Reactions are a free turn in your opponent's action phase — always try to have one available when the enemy has big swings remaining.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>⚠ CLASS-SPECIFIC TIPS</h3>
+        <ul>
+          <li><span class="help-hl">Fighter</span> — Don't burn Relentless early. Save it for emergencies.</li>
+          <li><span class="help-hl">Wizard</span> — Spell slot economy is everything. Use cantrips as filler, save high slots for bosses.</li>
+          <li><span class="help-hl">Rogue</span> — Always fight with Advantage. Sneak Attack ends fights early when applied correctly.</li>
+          <li><span class="help-hl">Paladin</span> — Smite on crits, always. Stack Holy Power for big burst windows.</li>
+          <li><span class="help-hl">Ranger</span> — Hunter's Mark is your engine. Apply it turn 1, every fight, no exceptions.</li>
+          <li><span class="help-hl">Barbarian</span> — Rage before the first hit lands. Rage is your defense as much as your offense.</li>
+          <li><span class="help-hl">Cleric</span> — Channel Divinity often beats spending Devotion charges. Sacred Flame is your free damage.</li>
+          <li><span class="help-hl">Druid</span> — Wild Shape is a second life bar. Activate it the moment real HP drops low, not at zero.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>🐛 FOUND A BUG?</h3>
+        <p>Open the <span class="help-hl">Bug Log</span> from the main menu or title screen to report issues. The dev reads every entry.</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn btn-gold" onclick="closeHelp()">GOT IT — LET'S GO ⚔</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchHelpTab(id, btn) {
+  document.querySelectorAll('.help-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.help-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('help-pane-' + id).classList.add('active');
+  btn.classList.add('active');
+  // Scroll back to top of box
+  const box = btn.closest('.help-box');
+  if (box) box.scrollTop = 0;
+}
+</script>
+
+<!-- PAUSE OVERLAY -->
+<div id="pause-overlay">
+  <div class="pause-box">
+    <div class="pause-title">⏸ PAUSED</div>
+    <div class="pause-btns">
+      <button class="btn btn-gold" onclick="togglePause()">▶ RESUME</button>
+      <button class="btn" onclick="openHelp()">? HOW TO PLAY</button>
+      <button class="btn btn-red" onclick="quitToTitle()">✗ QUIT TO TITLE</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUG LOG OVERLAY -->
+<div id="buglog-overlay">
+  <div class="buglog-box">
+    <div class="buglog-titlebar">
+      <div class="buglog-titlebar-left">
+        <span class="buglog-dot red"></span>
+        <span class="buglog-dot yellow"></span>
+        <span class="buglog-dot green"></span>
+        <span class="buglog-title">🐛 DEV BUG LOG — DESCENT INTO ETERNITY</span>
+      </div>
+      <button class="buglog-close" onclick="closeBugLog()">✕ CLOSE</button>
+    </div>
+    <div class="buglog-toolbar">
+      <button class="buglog-filter active" id="filter-all" onclick="setBugFilter('all')">ALL</button>
+      <button class="buglog-filter" id="filter-fixed" onclick="setBugFilter('fixed')">✓ FIXED</button>
+      <button class="buglog-filter" id="filter-error" onclick="setBugFilter('error')">✗ ERROR</button>
+      <button class="buglog-filter" id="filter-warn" onclick="setBugFilter('warn')">⚠ WARN</button>
+      <button class="buglog-filter" id="filter-info" onclick="setBugFilter('info')">ℹ INFO</button>
+      <span class="buglog-count" id="buglog-count">0 entries</span>
+    </div>
+    <div class="buglog-body" id="buglog-body">
+      <div class="buglog-empty" id="buglog-empty">No entries yet. Bugs will appear here automatically.</div>
+    </div>
+    <div class="buglog-input-row">
+      <span class="buglog-prompt">&gt;</span>
+      <input class="buglog-input" id="buglog-input" placeholder="Add a note... (press Enter)" maxlength="200"
+        onkeydown="if(event.key==='Enter')submitBugNote()">
+      <button class="buglog-submit" onclick="submitBugNote()">LOG IT</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL UP OVERLAY -->
+<div id="levelup-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;align-items:center;justify-content:center;flex-direction:column;display:none;">
+  <div id="levelup-box" style="
+    background:var(--panel);border:4px solid var(--gold-dim);box-shadow:0 0 60px rgba(200,168,75,.35),8px 8px 0 #000;
+    padding:36px 48px;text-align:center;max-width:480px;width:90%;
+    animation:levelup-in .4s ease-out;
+  ">
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--dim);letter-spacing:3px;margin-bottom:14px;">✦ LEVEL UP ✦</div>
+    <div id="lu-number" style="font-family:'Press Start 2P',monospace;font-size:48px;color:var(--gold);text-shadow:0 0 60px rgba(200,168,75,.8),4px 4px 0 #000;margin-bottom:20px;animation:lu-pop .5s ease-out;">1</div>
+    <div id="lu-gains" style="margin-bottom:24px;"></div>
+    <div id="lu-flavor" style="font-size:18px;color:var(--parchment);font-style:italic;margin-bottom:16px;"></div>
+    <div id="lu-skills" style="margin-bottom:24px;"></div>
+    <button class="btn btn-gold" style="font-size:9px;padding:12px 32px;animation:pulse-gold 1.5s infinite;" onclick="closeLevelUp()">CONTINUE ▶</button>
+  </div>
+</div>
+
+
+<!-- BOSS VICTORY OVERLAY -->
+<div id="bossVictoryOverlay">
+  <div class="bvo-slash"></div>
+  <div class="bvo-defeated">DEFEATED</div>
+  <div class="bvo-name" id="bvoName"></div>
+  <div class="bvo-title" id="bvoTitle"></div>
+  <div class="bvo-slash2"></div>
+  <button class="bvo-continue" id="bvoContinue" onclick="closeBossVictory()">CONTINUE ▶</button>
+</div>
+
+<!-- GRACE DROP OVERLAY -->
+<div id="graceDropOverlay" style="position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;">
+  <div id="graceDropContent" style="text-align:center;padding:40px;max-width:480px;width:90%;border:3px solid var(--gold-dim);background:var(--panel);box-shadow:0 0 60px rgba(200,168,75,0.2),8px 8px 0 #000;"></div>
+</div>
+
+<!-- GRACE MANAGEMENT SCREEN -->
+<div id="screen-graces" class="screen">
+  <div class="slot-screen-header">
+    <button class="slot-back-btn" onclick="showScreen('slotDetail');slotDetailTab('overview',document.querySelectorAll('.sdt-tab')[0]);">◀ BACK</button>
+    <div class="slot-screen-title">✨ GRACES</div>
+  </div>
+  <div id="graceScreenContent" style="overflow-y:auto;max-height:calc(100vh - 80px);padding:0 24px 24px;"></div>
+</div>
+
+<!-- BOSS PHASE 2 ENRAGE OVERLAY -->
+<div id="phase2Overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0);align-items:center;justify-content:center;pointer-events:none;flex-direction:column;">
+  <div id="phase2Inner" style="text-align:center;opacity:0;transform:scale(0.7);">
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#ff4400;letter-spacing:4px;margin-bottom:8px;">— PHASE II —</div>
+    <div id="phase2BossName" style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ff2200;text-shadow:0 0 20px #ff0000,2px 2px 0 #000;letter-spacing:2px;"></div>
+    <div id="phase2PhaseName" style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ff8800;margin-top:10px;letter-spacing:1px;"></div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENT TOAST -->
+<div id="achToast">
+  <span id="achToastIcon">🏆</span>
+  <div class="ach-toast-text">
+    <div class="ach-toast-label">ACHIEVEMENT UNLOCKED</div>
+    <div id="achToastTitle"></div>
+    <div id="achToastDesc"></div>
+  </div>
+</div>
+
+<!-- GAME INTRO CUTSCENE -->
+<div id="screen-intro" style="display:none;">
+  <div class="intro-content">
+    <div class="intro-title" id="introTitle"></div>
+    <div id="introLines"></div>
+    <button class="intro-skip" onclick="skipIntro()">SKIP ▶▶</button>
+  </div>
+</div>
+
+<!-- LORE REVEAL MODAL -->
+<div id="loreReveal">
+  <div class="lore-box">
+    <span class="lore-icon" id="loreIcon"></span>
+    <div class="lore-title" id="loreTitle"></div>
+    <div class="lore-lines" id="loreLines"></div>
+    <button class="lore-continue" id="loreContinue" onclick="closeLoreReveal()">CONTINUE INTO THE DARKNESS ▶</button>
+  </div>
+</div>
+
+<!-- ITEM HOVER TOOLTIP -->
+<div id="invTooltip" class="inv-tooltip"></div>
+
+<!-- COMBAT EQUIP TOAST -->
+<div id="combatEquipToast">⚔ CANNOT EQUIP IN COMBAT</div>
+
+<!-- SHOP BUY EQUIP PROMPT -->
+<div id="shopBuyPrompt" class="shop-buy-prompt">
+  <div class="shop-buy-box">
+    <div class="shop-buy-icon" id="sbpIcon"></div>
+    <div class="shop-buy-name" id="sbpName"></div>
+    <div class="shop-buy-rar" id="sbpRar"></div>
+    <div class="shop-buy-stats" id="sbpStats"></div>
+    <div style="font-size:13px;color:var(--dim);margin-bottom:14px;">Equip it now or save for later?</div>
+    <div class="shop-buy-btns">
+      <button class="shop-buy-btn sbb-equip" onclick="shopBuyEquip()">⚔ EQUIP NOW</button>
+      <button class="shop-buy-btn sbb-bag" onclick="shopBuyKeep()">🎒 INTO BAG</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BRANCH REWARD OVERLAY
+══════════════════════════════════════════════════════════ -->
+<div id="branchRewardOverlay" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div class="br-box">
+    <div class="br-title" id="branchRewardTitle">SIDE QUEST COMPLETE!</div>
+    <div class="br-divider"></div>
+    <div id="branchRewardBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BUG REPORTER
+══════════════════════════════════════════════════════════ -->
+
+<!-- Floating trigger button -->
+<button id="bugReportBtn" onclick="openBugReporter()" title="Report a bug">🐛</button>
+
+<!-- Report panel -->
+<div id="bugReportPanel" style="display:none;">
+  <div class="bug-panel-box">
+    <div class="bug-panel-header">
+      <span>🐛 REPORT A BUG</span>
+      <button class="bug-close-btn" onclick="closeBugReporter()">✕</button>
+    </div>
+
+    <div class="bug-context-bar" id="bugContextLabel">Loading state...</div>
+
+    <div class="bug-section-label">CATEGORY</div>
+    <div class="bug-cat-row">
+      <button class="bug-cat-btn active" data-cat="Combat"      onclick="selectBugCategory(this)">⚔ Combat</button>
+      <button class="bug-cat-btn"        data-cat="Skills"      onclick="selectBugCategory(this)">✨ Skills</button>
+      <button class="bug-cat-btn"        data-cat="UI"          onclick="selectBugCategory(this)">🖥 UI</button>
+      <button class="bug-cat-btn"        data-cat="Progression" onclick="selectBugCategory(this)">📈 Progress</button>
+      <button class="bug-cat-btn"        data-cat="Other"       onclick="selectBugCategory(this)">❓ Other</button>
+    </div>
+
+    <div class="bug-section-label">WHAT WENT WRONG?</div>
+    <textarea id="bugDesc" class="bug-textarea" placeholder="Describe what happened and what you expected instead..."></textarea>
+
+    <div class="bug-note">Your current game state will be saved automatically with this report.</div>
+
+    <button class="bug-submit-btn" onclick="submitBugReport()">📋 SUBMIT REPORT</button>
+    <div id="bugSubmitMsg" class="bug-submit-msg" style="display:none;">✅ Report saved! Thanks!</div>
+
+    <div class="bug-divider"></div>
+    <div class="bug-reports-row">
+      <span id="bugReportCount" class="bug-report-count">0 reports saved</span>
+      <button class="bug-copy-btn" id="bugCopyBtn" onclick="copyBugReports()">📋 COPY ALL REPORTS</button>
+      <button class="bug-copy-btn" style="background:#3a0a0a;border-color:#aa2222;color:#ff8888;margin-left:6px;" onclick="clearBugReportsUI()">🗑 CLEAR</button>
+    </div>
+    <div id="bugClearMsg" class="bug-submit-msg" style="display:none;color:#ff8888;">🗑 All reports cleared.</div>
+    <div id="bugCopyMsg" class="bug-submit-msg" style="display:none;">✅ Copied! Paste it to Claude.</div>
+  </div>
+</div>
+
+  <!-- JS modules loaded in dependency order -->
+  <script src="town.js"></script>
+  <script src="audio.js"></script>
+  <script src="data.js"></script>
+  <script src="save.js"></script>
+  <script src="main.js"></script>
+  <script src="animations.js"></script>
+  <script src="sprites.js"></script>
+  <script src="combat.js"></script>
+  <script src="ui.js"></script>
+  <script src="bugreport.js"></script>
+<!-- SCREEN FADE OVERLAY -->
+<div id="fadeOverlay" style="display:none;position:fixed;inset:0;background:#000;z-index:99999;pointer-events:none;opacity:0;"></div>
+</body>
+</html>
