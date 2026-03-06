@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Running the Game
 
-No build step. Open `index.html` directly in a browser. All JS files are loaded via `<script>` tags in dependency order — if you add a new file, add a `<script>` tag to `index.html` in the right position.
+No build step. Open `index.html` directly in a browser, or serve via:
+
+```
+python -m http.server 8080
+```
+
+A `.claude/launch.json` is configured for `preview_start`. All JS files are loaded via `<script>` tags in dependency order — if you add a new file, add a `<script>` tag to `index.html` in the right position.
 
 There are no tests, no linter, no package.json.
 
@@ -40,7 +46,7 @@ main/                 — game flow and rendering
   state.js            — G (global state), newState(), roll(), md(), profFor(), xpFor(), applyPermanentUpgrades()
   title.js            — canvas title screen animation, beginDescent()
   map.js              — zone map background, renderClassSelect(), selectClass()
-  intro.js            — intro/victory/lore/credits sequences, play timer
+  intro.js            — intro/victory/lore/credits sequences, play timer, showKitJournal(), _getHeroName()
   hud.js              — renderAll() and all HUD rendering functions
   zones.js            — enterZone(), setPlayerTurn(), spawnEnemy(), enemy area rendering
   branch.js           — optional branch dungeon system
@@ -164,14 +170,15 @@ addOffensiveStat(G, value); // adds to magBonus for casters, atk for martials
 - Canvas-based 2D world with full NPC wander AI, proximity interaction, camera, particles, ambient effects
 - **5 town decay states** driven by `_townState(bossesBeaten)` — NPCs disappear as hero descends deeper
 - **Building services**: Tavern (Rook/rumors), Temple (Seraphine/blessings), Forge (Aldric/sharpen+sell), Malachar's Study (shop tier upgrades), Proving Grounds (permanent upgrades), Inn, Market, Mirela's shop, Stash, Grace Vault, Notice Board, Graveyard
-- **Zone VI–VII building dialog gap**: Rook, Seraphine, Malachar, Aldric only have dialogue up to zone state 2–3. Specific lines for late-game surfacings (zones 6–7) are not yet written.
-- **Farewell cutscene** (pre-Zone VIII): `FAREWELL_LINES` in `town/cutscenes.js`, triggers at `G.zoneIdx >= 7 && !G._farewellShown`
-- **Victory sequence** (post-final boss): Black screen → town in `_victoryMode` → `VICTORY_CROWD` crowd scene with all 14 NPCs speaking → credits. `VICTORY_CROWD` defined in `town/services.js`.
+- **Building dialog**: Rook, Seraphine, Malachar, Aldric each have a 6-entry dialog array — index 3 = Zone V-specific, index 4 = Zone VI-specific, index 5 = Zone VII+. Zone-aware index computed from `_townState()` in their dialog handlers.
+- **Farewell sequence** (pre-Zone VIII): In-town cinematic — 6 NPCs (`FAREWELL_GATHER`) walk to the Gate, player-advanced beats (`FAREWELL_BEATS`). Controlled by `_farewellInTownActive` flag. Entry point: `startFarewellInTown()` in `town/cutscenes.js`. Triggers at `G.zoneIdx >= 7 && !G._farewellShown`.
+- **Victory sequence** (post-final boss): Black screen → town in `_victoryMode` → `VICTORY_CROWD` crowd scene with NPCs speaking → Kit's journal page (`showKitJournal()`) → credits. `VICTORY_CROWD` defined in `town/services.js`.
 
 ### Narrative
-- **GAME_INTRO** and **LORE_REVEALS[8]** in `data/lore.js` — one lore beat per boss death
+- **GAME_INTRO** and **LORE_REVEALS[8]** in `data/lore.js` — one lore beat per boss death. Zone VIII reveal uses `'{{HERO_NAME}}'` as a placeholder line — `showLoreReveal()` replaces it with the hero's true name ("Auren") via `_getHeroName()`, which also sets `G.heroName`.
 - Zone story text in each zone definition (`story.title` / `story.text`)
 - Kit/Rue/Elspeth/Brother Edwyn NPC arcs across all 5 town states
+- **Kit's journal** (`showKitJournal()` in `main/intro.js`): parchment overlay shown after victory fade-to-black, before credits. References `G.heroName` set during the Zone VIII lore reveal.
 
 ## Adding Content
 
