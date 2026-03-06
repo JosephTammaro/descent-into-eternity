@@ -4171,6 +4171,39 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   color:#e8dfc0;
 }
 
+/* ── In-town farewell narrator ─────────────────────────── */
+#farewellNarrator{
+  position:fixed;
+  bottom:16%; left:50%; transform:translateX(-50%);
+  max-width:580px; width:90%;
+  background:rgba(4,3,2,0.88);
+  border:1px solid rgba(200,168,75,0.28);
+  padding:22px 30px 16px;
+  text-align:center;
+  z-index:300; cursor:pointer;
+  transition:opacity 0.15s;
+  opacity:0; pointer-events:none;
+}
+#farewellNarrator.active{
+  opacity:1; pointer-events:auto;
+}
+#farewellNarrText{
+  font-family:'VT323',monospace;
+  font-size:26px; line-height:1.55;
+  color:rgba(220,210,190,0.92);
+  margin:0 0 14px;
+}
+.farewell-narrator-continue{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px; letter-spacing:2px;
+  color:rgba(200,168,75,0.6);
+  animation:farewellBlink 1.4s ease-in-out infinite;
+}
+@keyframes farewellBlink{
+  0%,100%{opacity:0.3;}
+  50%{opacity:1;}
+}
+
 /* ══════════════════════════════════════════════════════════
    VICTORY SCENE — Transition text overlay
    ══════════════════════════════════════════════════════════ */

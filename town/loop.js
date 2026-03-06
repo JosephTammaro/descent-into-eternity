@@ -25,7 +25,7 @@ function _stepWanderers(zi){
     const dx=w.wanderTarget.x-w.wx, dy=w.wanderTarget.y-w.wy;
     const dist=Math.hypot(dx,dy);
     if(dist>2){
-      const spd=0.2;
+      const spd=w._speed||0.2;
       const nx=w.wx+dx/dist*spd, ny=w.wy+dy/dist*spd;
       if(!_extBlocked(nx,w.wy)) w.wx=nx;
       if(!_extBlocked(w.wx,ny)) w.wy=ny;
@@ -82,8 +82,9 @@ function _townTick(){
   const W=_logW(), H=_logH();
 
   // ── Input ──
-  // Block movement while intro or farewell overlays are active
-  const _farewellActive = document.getElementById('farewellScreen')?.style.display === 'flex';
+  // Block movement while intro, farewell, or victory are active
+  const _farewellActive = _farewellInTownActive
+                        || document.getElementById('farewellScreen')?.style.display === 'flex';
   let dx=0,dy=0;
   if(!_introCamActive && !_farewellActive && !_victoryActive){
     if(_keys['ArrowLeft'] ||_keys['a']||_keys['A']){dx=-1;_pl.facing=3;}
@@ -115,7 +116,7 @@ function _townTick(){
   }
 
   _nearInteractable=_findNearInteractable();
-  if(!_victoryActive && _dialogSrcX!==null && Math.hypot(_pl.wx-_dialogSrcX, _pl.wy-_dialogSrcY) > TILE*3){
+  if(!_victoryActive && !_farewellInTownActive && _dialogSrcX!==null && Math.hypot(_pl.wx-_dialogSrcX, _pl.wy-_dialogSrcY) > TILE*3){
     closeNpcDialog();
   }
   if(_victoryActive) _victoryStep();
@@ -195,9 +196,17 @@ function _townTick(){
 function _kd(e){
   _keys[e.key]=true;
   // Block interactions while intro, farewell, or victory overlays are active
-  const _overlayActive = _introCamActive || _victoryActive ||
+  const _overlayActive = _introCamActive || _victoryActive || _farewellInTownActive ||
                          document.getElementById('farewellScreen')?.style.display === 'flex';
-  if(_overlayActive) return;
+  if(_overlayActive){
+    // Allow advancing the in-town farewell with Space / Enter / arrow
+    if(_farewellInTownActive && !e.repeat &&
+       (e.key===' '||e.key==='Enter'||e.key==='ArrowRight'||e.key==='ArrowDown')){
+      e.preventDefault();
+      _farewellAdvance();
+    }
+    return;
+  }
   // e.repeat=true when key held down — only interact on the very first press
   if(!e.repeat && (e.key==='e'||e.key==='E')){
     if(_nearInteractable){

@@ -11,7 +11,7 @@ function _handleGate(){
     G._farewellShown = true;
     // Phase B: Track farewell for unlocks before state gets wiped
     if(typeof updateUnlockStats==='function') updateUnlockStats('farewell');
-    showFarewellCutscene(()=>{ stopTownEngine(); townEnterDungeon(); });
+    startFarewellInTown(()=>{ stopTownEngine(); townEnterDungeon(); });
   } else {
     openPrepareScreen();
   }
@@ -410,6 +410,148 @@ function closeFarewellCutscene() {
   const el = document.getElementById('farewellScreen');
   if (el) el.style.display = 'none';
   if (_farewellDone) { const fn = _farewellDone; _farewellDone = null; fn(); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  IN-TOWN FAREWELL SEQUENCE
+//  Replaces the text-overlay farewell with a live town scene.
+//  NPCs gather at the Gate, hero turns north, narrator text
+//  and speech bubbles play in sequence. Player advances each
+//  beat with Space / Enter / click.
+// ══════════════════════════════════════════════════════════
+
+var _farewellInTownActive = false;
+var _farewellGathering    = false;
+var _farewellBeatIdx      = 0;
+var _farewellOnDone       = null;
+var _farewellGatherTimer  = null;
+
+// Gate is at col ~29, row ~4. Crowd gathers rows 7-11.
+// IDs match the render system's hairCols/accessory lookup keys.
+const FAREWELL_GATHER = [
+  { id:'rook',       label:'Rook',              color:'#c8a020', icon:'🍺', tx:26, ty:8,  facing:1 },
+  { id:'priest',     label:'Father Oswin',      color:'#d0d0e0', icon:'✝',  tx:24, ty:9,  facing:1 },
+  { id:'seraphine',  label:'Seraphine',         color:'#a0c4ff', icon:'⛪', tx:33, ty:8,  facing:3 },
+  { id:'apprentice', label:"Aldric's Apprentice",color:'#c06830',icon:'⚒', tx:35, ty:9,  facing:3 },
+  { id:'child1',     label:'Kit',               color:'#c0d090', icon:'🧒', tx:31, ty:10, facing:0 },
+  { id:'oldwoman',   label:'Elspeth',           color:'#c0a080', icon:'👵', tx:29, ty:11, facing:0 },
+];
+
+const FAREWELL_BEATS = [
+  { type:'narrator', text:`They came to the Gate at dawn. You did not ask them to. They simply all ended up there — Rook, Elspeth, Seraphine, Aldric's apprentice, Father Oswin. And Kit.` },
+  { type:'narrator', text:`Nobody spoke at first. The Gate hummed very quietly, the way it always does before the dark takes hold.` },
+  { type:'bubble', id:'rook',       label:'Rook',               text:`"I kept a stool empty for thirty years. Didn't know why. I know now. You've got a seat whenever you come back. It'll be there."` },
+  { type:'bubble', id:'priest',     label:'Father Oswin',       text:`"I wrote a prayer for endings. Good ones. I'll say it when you return. Go with everything you have."` },
+  { type:'bubble', id:'seraphine',  label:'Seraphine',          text:`"The Shrine's fire has been burning without oil since you arrived. This morning it burned gold. I take that as a good sign."` },
+  { type:'bubble', id:'apprentice', label:"Aldric's Apprentice",text:`"Aldric told me to sharpen it one last time. I did. This morning. Before dawn."` },
+  { type:'bubble', id:'child1',     label:'Kit',                text:`"I left the last page of my journal blank. For the ending. Whatever you say when you come back out — that's what goes in it. Don't make me leave it blank."` },
+  { type:'narrator', text:`Elspeth took your hand. She held it for a moment — not frail, not trembling. Steady, the way a person is steady when they have decided something completely.` },
+  { type:'bubble', id:'oldwoman',   label:'Elspeth',            text:`"You have come back every time. I do not know what you are doing down there. I do not need to know."` },
+  { type:'bubble', id:'oldwoman',   label:'Elspeth',            text:`"But whatever it is — finish it."` },
+  { type:'narrator', text:`Behind you, six people who do not know your real name stand in the cold morning light, holding it for you until you return.`, isFinal:true },
+];
+
+function _buildFarewellWanderers(){
+  return FAREWELL_GATHER.map(npc => {
+    // Start at row 13 — guaranteed southern edge of the clear zone around
+    // the Gate (cols 23-35, rows 5-13). Pure north walk to target, no
+    // diagonal movement so no building collision possible.
+    const startX = npc.tx * TILE + TILE/2 + (Math.random()-0.5)*4;
+    const startY = 13 * TILE + Math.random()*TILE*0.8;
+    return {
+      id: npc.id, label: npc.label, color: npc.color, icon: npc.icon,
+      wx: startX, wy: startY,
+      wanderTarget: { x: npc.tx*TILE + TILE/2, y: npc.ty*TILE + TILE/2 },
+      wanderTimer: 9999, talking: false, talkTimer: 0, activeLine: 0,
+      facing: 2, stationary: false, lines: [],
+      _speed: 1.2,
+    };
+  });
+}
+
+function startFarewellInTown(onDone){
+  _farewellInTownActive = true;
+  _farewellGathering    = true;
+  _farewellBeatIdx      = 0;
+  _farewellOnDone       = onDone;
+
+  // Hero turns to face the crowd (north = toward gate)
+  _pl.facing = 0;
+
+  // Replace wanderers with farewell crowd
+  _wanderers = _buildFarewellWanderers();
+
+  // Repurpose the NPC speech close button as a "continue" button
+  const closeBtn = document.querySelector('.npc-speech-close');
+  if(closeBtn){
+    closeBtn._farewellOrig = closeBtn.getAttribute('onclick');
+    closeBtn.setAttribute('onclick', '_farewellAdvance()');
+    closeBtn.textContent = '▼';
+  }
+
+  closeNpcDialog();
+
+  // Gather phase — NPCs walk into position, then begin beats
+  _farewellGatherTimer = setTimeout(()=>{
+    _farewellGathering = false;
+    // Lock them in place facing the right direction
+    _wanderers.forEach((w, i) => {
+      w.stationary = true;
+      w.facing = FAREWELL_GATHER[i].facing;
+    });
+    _farewellShowBeat();
+  }, 4000);
+}
+
+function _farewellShowBeat(){
+  if(_farewellBeatIdx >= FAREWELL_BEATS.length){ _farewellEnd(); return; }
+  const beat = FAREWELL_BEATS[_farewellBeatIdx];
+  if(beat.type === 'narrator'){
+    closeNpcDialog();
+    const el  = document.getElementById('farewellNarrator');
+    const txt = document.getElementById('farewellNarrText');
+    if(el && txt){ txt.textContent = beat.text; el.classList.add('active'); }
+  } else {
+    _farewellHideNarrator();
+    const w = _wanderers.find(w => w.id === beat.id);
+    _showDialog(beat.label, beat.text, w ? w.wx : _pl.wx, w ? w.wy : _pl.wy);
+    // Disable auto-dismiss — player controls pacing
+    if(_npcDialogTimer){ clearTimeout(_npcDialogTimer); _npcDialogTimer = null; }
+  }
+}
+
+function _farewellAdvance(){
+  if(!_farewellInTownActive || _farewellGathering) return;
+  const beat = FAREWELL_BEATS[_farewellBeatIdx];
+  _farewellBeatIdx++;
+  _farewellHideNarrator();
+  closeNpcDialog();
+  if(beat && beat.isFinal){ _farewellEnd(); return; }
+  _farewellShowBeat();
+}
+
+function _farewellHideNarrator(){
+  const el = document.getElementById('farewellNarrator');
+  if(el) el.classList.remove('active');
+}
+
+function _farewellEnd(){
+  if(_farewellGatherTimer){ clearTimeout(_farewellGatherTimer); _farewellGatherTimer = null; }
+  _farewellInTownActive = false;
+  _farewellGathering    = false;
+  _farewellHideNarrator();
+  closeNpcDialog();
+  // Restore close button
+  const closeBtn = document.querySelector('.npc-speech-close');
+  if(closeBtn){
+    if(closeBtn._farewellOrig !== undefined) closeBtn.setAttribute('onclick', closeBtn._farewellOrig);
+    closeBtn.textContent = '✕';
+  }
+  // Brief pause — let the scene breathe before the dungeon screen fires
+  if(_farewellOnDone){
+    const fn = _farewellOnDone; _farewellOnDone = null;
+    setTimeout(fn, 1200);
+  }
 }
 
 // ── Wanderer talk ─────────────────────────────────────────
