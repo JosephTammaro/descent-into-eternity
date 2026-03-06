@@ -131,6 +131,7 @@ const LORE_REVEALS = [
       "The Unnamed opens its eyes. The first time in three hundred years.",
       "It looks at you with the specific expression of someone who stopped being certain the wait was real.",
       "It says your name. The true one. The one you buried so deep that not even death could find it.",
+      "{{HERO_NAME}}",
       "You remember it.",
       "You remember everything — the war, the vote, the door you made from your own name, the choice to forget.",
       "The town. The people who stayed without knowing why.",

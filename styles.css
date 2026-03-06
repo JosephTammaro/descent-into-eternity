@@ -4228,6 +4228,60 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .vs-trans-text.show{ opacity:1; transform:translateY(0); }
 
 /* ══════════════════════════════════════════════════════════
+   LORE REVEAL — HERO NAME LINE
+   ══════════════════════════════════════════════════════════ */
+.lore-line-name{
+  font-family:'Press Start 2P',monospace;
+  font-size:20px;
+  color:var(--gold);
+  text-align:center;
+  letter-spacing:4px;
+  margin:14px 0;
+  text-shadow:0 0 24px rgba(200,168,75,0.55);
+}
+
+/* ══════════════════════════════════════════════════════════
+   KIT'S JOURNAL
+   ══════════════════════════════════════════════════════════ */
+#kitJournal{
+  position:fixed;inset:0;background:#04020a;
+  display:none;align-items:center;justify-content:center;
+  z-index:960;
+}
+#kitJournal.open{ display:flex; }
+.journal-page{
+  background:#f2e8d0;
+  color:#1a1208;
+  padding:40px 48px;
+  max-width:520px;width:90%;
+  border:1px solid #c8a870;
+  box-shadow:4px 4px 0 #000, 0 0 60px rgba(0,0,0,0.6);
+  transform:rotate(-0.8deg);
+  cursor:pointer;
+}
+.journal-header{
+  font-family:'Press Start 2P',monospace;
+  font-size:9px;
+  color:#6b5030;
+  margin-bottom:20px;
+  letter-spacing:1px;
+}
+.journal-body{
+  font-size:16px;
+  line-height:1.9;
+  font-style:italic;
+  white-space:pre-line;
+}
+.journal-continue{
+  margin-top:24px;
+  font-family:'Press Start 2P',monospace;
+  font-size:9px;
+  color:#6b5030;
+  text-align:right;
+  animation:farewellBlink 1.2s infinite;
+}
+
+/* ══════════════════════════════════════════════════════════
    CREDITS SCREEN
    ══════════════════════════════════════════════════════════ */
 .credits-overlay{

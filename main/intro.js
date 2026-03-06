@@ -93,6 +93,38 @@ function closeBossVictory() {
   autoSave();
 }
 
+const _HERO_TRUE_NAME = 'Auren';
+function _getHeroName(){
+  if(G) G.heroName = _HERO_TRUE_NAME;
+  return _HERO_TRUE_NAME;
+}
+
+function showKitJournal(onDone){
+  const name = (G && G.heroName) || _getHeroName();
+  document.getElementById('kitJournalText').textContent =
+    'They came back today.\n\nWe were all at the Gate. All six of us who stayed.\n' +
+    'The darkness stopped. Just stopped. I don\'t know how else to say it.\n\n' +
+    'They stood there for a while, looking at us like they had just remembered something important.\n\n' +
+    'The inscription on the Gate is clear now.\nBrother Edwyn read it aloud.\n\n' +
+    'Their name is ' + name + '.\n\n' +
+    'I wrote their number in the front of this journal.\n' +
+    '1 person went in. 1 person came back.\n\n' +
+    'This is the last entry.\n\n— Kit';
+  const el = document.getElementById('kitJournal');
+  el.classList.add('open');
+  function _advance(){
+    el.classList.remove('open');
+    el.removeEventListener('click', _advance);
+    document.removeEventListener('keydown', _kd);
+    setTimeout(onDone, 400);
+  }
+  function _kd(e){
+    if(['Space','Enter','ArrowRight','ArrowDown'].includes(e.code)) _advance();
+  }
+  el.addEventListener('click', _advance);
+  document.addEventListener('keydown', _kd);
+}
+
 function showLoreReveal(zoneIdx, onDone){
   const reveal = LORE_REVEALS[zoneIdx];
   if(!reveal){ if(onDone)onDone(); return; }
@@ -104,9 +136,10 @@ function showLoreReveal(zoneIdx, onDone){
   const linesEl = document.getElementById('loreLines');
   linesEl.innerHTML = '';
   reveal.lines.forEach((line, i) => {
+    const isName = line === '{{HERO_NAME}}';
     const d = document.createElement('div');
-    d.className = 'lore-line';
-    d.textContent = line;
+    d.className = 'lore-line' + (isName ? ' lore-line-name' : '');
+    d.textContent = isName ? _getHeroName() : line;
     d.id = 'lore-line-' + i;
     linesEl.appendChild(d);
   });

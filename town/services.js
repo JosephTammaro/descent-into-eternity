@@ -884,12 +884,14 @@ function _endVictoryWalk(){
       if(_tRAF) cancelAnimationFrame(_tRAF);
       fade.style.display = 'none';
       if(G) G._victoryMode = false;
-      if(typeof showCreditsScreen === 'function') showCreditsScreen();
+      if(typeof showKitJournal === 'function') showKitJournal(showCreditsScreen);
+      else showCreditsScreen();
     }, 3000));
   } else {
     _tRunning = false;
     if(G) G._victoryMode = false;
-    if(typeof showCreditsScreen === 'function') showCreditsScreen();
+    if(typeof showKitJournal === 'function') showKitJournal(showCreditsScreen);
+    else showCreditsScreen();
   }
 }
 
@@ -901,5 +903,6 @@ function finishVictoryMode(){
   const closeBtn = document.querySelector('.npc-speech-close');
   if(closeBtn) closeBtn.style.display = '';
   if(G) G._victoryMode = false;
-  if(typeof showCreditsScreen === 'function') showCreditsScreen();
+  if(typeof showKitJournal === 'function') showKitJournal(showCreditsScreen);
+  else showCreditsScreen();
 }
