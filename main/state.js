@@ -105,7 +105,7 @@ function newState(classId){
     _dmgThisFight: 0,          // Barbarian: damage dealt in current fight (reset per fight)
     _droppedBelow25: false,    // Cleric: set true if HP ever < 25% maxHP
     _primalAvatarTripleKill: false, // Druid: set true if 3 kills during one avatar
-    _spellSlotsUsedThisFight: false, // Wizard: track if slot spells used (for cantrip-only check)
+    _usedSpellSlotThisFight: false, // Wizard: track if slot spells used (for cantrip-only check)
   };
 }
 

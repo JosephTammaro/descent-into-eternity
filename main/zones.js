@@ -95,45 +95,6 @@ function setPlayerTurn(isPlayer){
   }
 }
 
-function exitWildShape(){
-  if(!G||G.classId!=='druid'||!G.wildShapeActive)return;
-  const wasElemental=G._elementalForm;
-  G.wildShapeHp=0;
-  G.wildShapeActive=false;
-  G._elementalForm=false;
-  G._elementalImmune=false;
-  delete G.skillCooldowns['wild_shape'];
-  // Restore human stats
-  if(G._humanStats){
-    G.stats.str=G._humanStats.str;
-    G.stats.con=G._humanStats.con;
-    G.atk=G._humanStats.atk;
-    G.def=G._humanStats.def;
-    G._humanStats=null;
-  }
-  swapBearBars(false);
-  // Restore druid sprite
-  const pSpr=document.getElementById('playerSprite');
-  if(pSpr){
-    if(window.hasImageSprite && window.hasImageSprite(G.classId)){
-      window.renderImageSprite(G.classId, 'idle', 0, pSpr, 260);
-    } else if(CLASS_SPRITES[G.classId]){
-      renderSprite(CLASS_SPRITES[G.classId],10,pSpr);
-    }
-  }
-  startPlayerAnim();
-  if(pSpr)pSpr.style.filter='';
-  const exitBtn=document.getElementById('exitWildShapeBtn');
-  if(exitBtn)exitBtn.style.display='none';
-  log(wasElemental?'🔥 You release Elemental Form — druid restored.':'🌿 You drop Wild Shape — stats restored.','s');
-  // Wild Surge: deal 1d6 nature damage on exit too
-  if(G._wildSurge&&G.currentEnemy&&G.currentEnemy.hp>0){
-    const wsd=roll(6);
-    if(typeof dealToEnemy==='function'){dealToEnemy(wsd,false,'Wild Surge 🌿 exit burst');}
-    if(typeof log==='function')log('🌿 Wild Surge: +'+wsd+' nature damage on exit!','c');
-  }
-  renderAll();
-}
 
 // ══════════════════════════════════════════════════════════
 //  BRANCH ZONES

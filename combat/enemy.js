@@ -430,6 +430,12 @@ function exitWildShape(reason){
   } else {
     log('🌿 Wild Shape fades — druid form restored.','s');
   }
+  // Wild Surge: deal 1d6 nature damage on exit
+  if(G._wildSurge&&G.currentEnemy&&G.currentEnemy.hp>0){
+    const wsd=roll(6);
+    dealToEnemy(wsd,false,'Wild Surge 🌿 exit burst');
+    log('🌿 Wild Surge: +'+wsd+' nature damage on exit!','c');
+  }
 }
 
 function doEnemyAttack(e){
