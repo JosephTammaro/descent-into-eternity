@@ -4031,10 +4031,15 @@ function townOpenDialog(id){
   // Auto-hide loadout HUD so it doesn't overlap the dialog
   const lhud=document.getElementById('townLoadoutHUD');
   if(lhud) lhud.classList.add('loadout-hidden');
+  // Hide pause button when Mirela's fullscreen shop is open
+  const pb=document.getElementById('townPauseBtn');
+  if(pb) pb.style.display = id==='mirela_shop' ? 'none' : '';
 }
 function townCloseDialog(){ _activeDlg=null; const _ov=document.getElementById('townDialogOverlay'); if(_ov){_ov.classList.remove('open');_ov.classList.remove('mirela-open');}
   const lhud=document.getElementById('townLoadoutHUD');
   if(lhud) lhud.classList.remove('loadout-hidden');
+  const pb=document.getElementById('townPauseBtn');
+  if(pb) pb.style.display='';
 }
 
 // ── NPC Service Data ──────────────────────────────────────
