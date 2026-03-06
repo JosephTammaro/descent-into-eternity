@@ -606,6 +606,11 @@ function _townBossCount(){
   if(typeof G==='undefined'||!G||!G.bossDefeated) return 0;
   return G.bossDefeated.filter(Boolean).length;
 }
+function _getDeathCount(){
+  if(typeof activeSaveSlot==='undefined'||!activeSaveSlot||typeof loadSlotData!=='function') return 0;
+  const d=loadSlotData(activeSaveSlot);
+  return (d&&d.unlocks&&d.unlocks.stats&&d.unlocks.stats.totalDeaths)||0;
+}
 
 function _townState(bossesBeaten) {
   if (bossesBeaten <= 0) return 0;
@@ -626,17 +631,30 @@ function _buildWanderers(bossesBeaten) {
       lines: z===0 ? ["I've lived here sixty years. The trees never used to whisper back.","My mother used to say the Gate was a door to somewhere important. Not somewhere bad. Just somewhere that mattered.","You have careful eyes. Old eyes, almost. Come back when you're done."]
            : z===1 ? ["I'm not leaving. I outlasted the last darkness. I'll outlast this one.","Three of my neighbors packed up in the night. I understand. I just can't do it.","Come back. That's all I ask of anyone now. Just come back."]
            : z===2 ? ["Half the street is gone now. I'm not. I don't know how to explain that except that I'm not.","Something in this town holds me here the way a name holds a face. I stopped fighting it.","Every time you come back up, I feel like something underground exhales."]
-           : z===3 ? ["There are five of us left who sleep here every night. That's enough. Five is enough.","I've been dreaming about a door. It's the same door every night. Last night I saw light behind it.","Come back. You always come back. I'm counting on the pattern holding."]
-           : ["I'll be at the Gate in the morning. However early you leave — I'll be there.","Sixty years in this town. I know what it was waiting for now.","Finish it. Whatever it takes. Finish it."]
+           : z===3 ? (G&&G.zoneIdx>=6
+               ? ["Six zones. You've gone six deep. I feel it up here — something in the air is different.","The dream came again. Same door. This time there was light behind it. I woke up before I saw what it opened into.","Come back. The pattern has held every time. I need it to hold once more."]
+               : ["There are five of us left who sleep here every night. That's enough. Five is enough.","I've been dreaming about a door. It's the same door every night. Last night I saw light behind it.","Come back. You always come back. I'm counting on the pattern holding."])
+           : (G&&G.zoneIdx>=7
+               ? ["Seven. You've come back from seven. Whatever is at the bottom — it knows you now too.","Sixty years in this town. I know what it was waiting for. I know who.","Go. Finish it. I'll be at the Gate when you come back. Not if. When."]
+               : ["I'll be at the Gate in the morning. However early you leave — I'll be there.","Sixty years in this town. I know what it was waiting for now.","Finish it. Whatever it takes. Finish it."])
     },
 
-    // ── Kit — full arc across all 5 states ──
+    // ── Kit — full arc across all 5 states, death-count-aware ──
     { id:'child1', label:'Kit', color:'#c0d090', icon:'🧒', wx:22,wy:8, wanderArea:{x1:16,y1:4,x2:28,y2:12},
-      lines: z===0 ? ["I dared Rue to touch the Gate. She did it! I didn't. Don't tell anyone.","My mum says adventurers are brave. My dad says they're stupid. I think both things can be true.","Can you actually beat the whole dungeon? Nobody's ever beaten the whole dungeon."]
-           : z===1 ? ["Rue's family left in the middle of the night. She didn't even say goodbye.","I'm not scared. I'm not. ...It's just very quiet now.","I've been watching the Gate. Not on a dare. Just watching. I count everyone who goes in. I give them a number."]
-           : z===2 ? ["I'm keeping a journal. Every person who goes in gets a number and a description. So there's a record.","Rue's number was never written down because she left before going in. I left a blank page for her anyway.","You're number one in my journal. I write something new every time you come back."]
-           : z===3 ? ["Most people in the journal didn't come back. I keep the book anyway. Someone should know their names.","My mum wanted me to leave with her. I said I'd come when it was done. She cried. I think she understood.","I don't know what you're doing down there. I know you keep coming back. That's the part I'm writing about."]
-           : ["I've been at the Gate every morning since you left for the last one. Watching. Waiting.","The journal's almost full. I left the last page blank. For the ending.","When you come back — and you will — I want to write what you say. Whatever you say. That's the last entry."]
+      getLines: ()=>{
+        const base = z===0 ? ["I dared Rue to touch the Gate. She did it! I didn't. Don't tell anyone.","My mum says adventurers are brave. My dad says they're stupid. I think both things can be true.","Can you actually beat the whole dungeon? Nobody's ever beaten the whole dungeon."]
+             : z===1 ? ["Rue's family left in the middle of the night. She didn't even say goodbye.","I'm not scared. I'm not. ...It's just very quiet now.","I've been watching the Gate. Not on a dare. Just watching. I count everyone who goes in. I give them a number."]
+             : z===2 ? ["I'm keeping a journal. Every person who goes in gets a number and a description. So there's a record.","Rue's number was never written down because she left before going in. I left a blank page for her anyway.","You're number one in my journal. I write something new every time you come back."]
+             : z===3 ? ["Most people in the journal didn't come back. I keep the book anyway. Someone should know their names.","My mum wanted me to leave with her. I said I'd come when it was done. She cried. I think she understood.","I don't know what you're doing down there. I know you keep coming back. That's the part I'm writing about."]
+             : ["I've been at the Gate every morning since you left for the last one. Watching. Waiting.","The journal's almost full. I left the last page blank. For the ending.","When you come back — and you will — I want to write what you say. Whatever you say. That's the last entry."];
+        const deaths=_getDeathCount();
+        if(deaths===0) return base;
+        const deathLine = deaths===1 ? "I wrote an ending for page one. Then you came back. I crossed it out."
+          : deaths<=3 ? `Page ${deaths+1} now. The first ${deaths} had endings. This one doesn't yet.`
+          : deaths<=7 ? `I stopped writing endings before you come back. Feels presumptuous. You're on page ${deaths+1}.`
+          : `I lost count for a while. Then I kept counting anyway. You're at ${deaths}. I stopped being surprised around five.`;
+        return [deathLine,...base];
+      }
     },
 
     // ── Rue — present states 0-1 only, gone after that ──
@@ -3452,9 +3470,9 @@ function _talkToWanderer(w){
   // Show dialog
   const zi=_townState(_townBossCount());
   const zLines=NPC_LINES[zi]||NPC_LINES[0];
-  let lines=w.lines||[];
+  let lines=typeof w.getLines==='function' ? w.getLines() : (w.lines||[]);
   // Resolve string keys to actual lines
-  if(typeof lines[0]==='string' && lines[0].startsWith('z_')){
+  if(lines.length && typeof lines[0]==='string' && lines[0].startsWith('z_')){
     const key=lines[0]; lines=(zLines[key]||['...']).slice();
   }
   if(!lines.length) lines=['...'];
@@ -4060,6 +4078,17 @@ const ROOK_ZONES=[
   ["It's just us now. The ones who couldn't leave.","I've kept that stool empty for thirty years. Don't know why. Feels important.","Whatever you're doing down there — it's working. Or it's making things worse. Either way, keep going."],
   ["I dreamed about you last night. You were standing at the Gate. You looked... old.","I don't know what's at the bottom. But I know you're meant to find it.","Come back, yeah? I'll keep the stool."]
 ];
+// One line per boss — shown when that boss is the highest one defeated this save
+const ROOK_BOSS_KILL_LINES=[
+  "Thornwarden's down, then. Good. Those roots were getting philosophical.",
+  "Grakthar. Didn't think anyone could still reach him. Apparently I was wrong.",
+  "Vexara's brand — I can still see the shape of it on you. You wore it. You didn't break.",
+  "Nethrix. The Devourer. Don't know what that means exactly. I know it sounds bad and you're still walking.",
+  "Zareth. You read the charge coming, held your nerve, hit back. That's the whole fight, isn't it.",
+  "Valdris the Unbroken. Broken now. I'll drink to that.",
+  "Auranthos the Blind God. I don't know what a blind god sees at the end. You do now.",
+  "The Hollow Empress. Whatever she was holding down there — whatever she'd swallowed — it's done."
+];
 const ROOK_CLASS={fighter:"Fighter, yeah? Good. Someone who can take a hit.",wizard:"Wizard. Try not to blow up the tavern. Last one did.",rogue:"Rogue, eh. I'm counting my coinpurse when you leave.",paladin:"Paladin. You people never buy the cheap rounds.",ranger:"Ranger! Those wolves aren't pets, by the way.",barbarian:"Sit anywhere — just not that stool. It's still not quite right.",cleric:"Cleric. Heal me while you're at it? My knee's been a nightmare.",druid:"Don't turn into anything in here. Bear in the beer cellar. Long story."};
 const SERA_ZONES=[
   "The woods remember old blood. Let the Shrine cleanse what clings to you.",
@@ -4085,11 +4114,50 @@ const MALACHAR_ZONES=[
   "One line left to translate. When you come back — I will read it to you."
 ];
 const MALACHAR_CLASS={fighter:"Ah, a warrior. Direct. Good.",wizard:"A fellow practitioner! Your posture suggests Evocation.",rogue:"The most interesting documents were stolen by rogues. I'm simply noting.",paladin:"Complicated feelings about holy orders. You personally seem fine.",ranger:"Rangers are underestimated. The natural world has more tactical info than any library.",barbarian:"I once argued berserkers were the original philosophers. I stand by it.",cleric:"Which deity? Don't tell me — let me guess from your sigil.",druid:"Druids always make me feel I've wronged a plant."};
+// Per-legendary-item reactions — keyed by item ID
+const MALACHAR_LEGENDARY_LINES={
+  glacialCrown:     "The Glacial Crown of Valdris. Three manuscripts said it was lost to the ice. Evidently the ice disagreed.",
+  godslayerBlade:   "That blade... the Godslayer. I've read every account of it. They all end badly for everyone except the blade.",
+  voidcrownOfMalvaris:"Malvaris's Voidcrown. She wore it for two hundred years. The fact that you have it means she doesn't. I have many questions.",
+  shardOfEternity:  "The Shard of Eternity. I wrote my thesis on why it couldn't exist. I'm prepared to revise my conclusions.",
+  wraithbane:       "Wraithbane. It was forged to kill something specific. I'd very much like to know if it succeeded.",
+  tombwardenSeal:   "The Tombwarden's Seal. Ancient. Pre-dates the dungeon, if my dating is right. It shouldn't be in circulation.",
+  seraphimWings:    "Seraphim's Mantle. The manuscripts say it was worn by the last of the Celestials. It was supposedly unmakeable.",
+};
+const MALACHAR_LEGENDARY_DEFAULT="That item — I don't recognise it from any catalogue I own. That's either very bad or very interesting.";
 
-function _dlgTavern(){const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),ROOK_ZONES.length-1);const lines=ROOK_ZONES[zi]||[];const rHtml=lines.map((l,i)=>`<div class="td-line${i===0?' active':''}" onclick="this.closest('.td-lines').querySelectorAll('.td-line').forEach(x=>x.classList.remove('active'));this.classList.add('active')">${i===0?'🗣':'💬'} ${l}</div>`).join('');const drink=TOWN.tavernDrinkUsed?`<div class="td-used">🍺 You've had your drink.</div>`:`<button class="td-btn" onclick="townBuyDrink()">🍺 Buy Rook a drink (5g) — hear a rumor</button>`;return `<div class="td-portrait">🍺</div><div class="td-name">Rook <span class="td-sub">Ex-soldier. Permanently at the bar.</span></div><div class="td-greeting">"${ROOK_CLASS[cid]||'Welcome.'}"</div><div class="td-lines">${rHtml}</div><div style="margin-top:10px">${drink}</div>`;}
-function _dlgTemple(){const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),SERA_ZONES.length-1);const bl=SHRINE_BLESSINGS[cid];const bHtml=TOWN.blessingUsed?`<div class="td-used">✝ Blessing granted.</div>`:bl?`<div class="td-blessing-card"><div class="td-blessing-icon">${bl.icon}</div><div><div class="td-blessing-name">${bl.name}</div><div class="td-blessing-desc">${bl.desc}</div></div></div><button class="td-btn td-btn-holy" onclick="townReceiveBlessing()">✝ Receive Blessing</button>`:'';const healHtml=G&&G.hp<G.maxHp?`<button class="td-btn" style="margin-top:8px" onclick="townFullHeal()">💖 Pray for healing (full HP)</button>`:`<div class="td-used" style="margin-top:8px">💖 You are at full health.</div>`;return `<div class="td-portrait">⛪</div><div class="td-name">Seraphine <span class="td-sub">Shrine Keeper</span></div><div class="td-greeting">"${SERA_CLASS[cid]||'Welcome.'}"</div><div class="td-zoneline">"${SERA_ZONES[zi]}"</div>${bHtml}${healHtml}`;}
+function _dlgTavern(){
+  const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),ROOK_ZONES.length-1);
+  const baseLines=ROOK_ZONES[zi]||[];
+  // Inject a boss-specific line for the highest boss killed this save
+  const lastBoss=G&&G.bossDefeated?G.bossDefeated.reduce((hi,v,i)=>v?i:hi,-1):-1;
+  const bossLine=lastBoss>=0?ROOK_BOSS_KILL_LINES[lastBoss]:null;
+  const lines=bossLine?[bossLine,...baseLines]:baseLines;
+  const rHtml=lines.map((l,i)=>`<div class="td-line${i===0?' active':''}" onclick="this.closest('.td-lines').querySelectorAll('.td-line').forEach(x=>x.classList.remove('active'));this.classList.add('active')">${i===0?'🗣':'💬'} ${l}</div>`).join('');
+  const drink=TOWN.tavernDrinkUsed?`<div class="td-used">🍺 You've had your drink.</div>`:`<button class="td-btn" onclick="townBuyDrink()">🍺 Buy Rook a drink (5g) — hear a rumor</button>`;
+  return `<div class="td-portrait">🍺</div><div class="td-name">Rook <span class="td-sub">Ex-soldier. Permanently at the bar.</span></div><div class="td-greeting">"${ROOK_CLASS[cid]||'Welcome.'}"</div><div class="td-lines">${rHtml}</div><div style="margin-top:10px">${drink}</div>`;
+}
+function _dlgTemple(){
+  const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),SERA_ZONES.length-1);
+  const bl=SHRINE_BLESSINGS[cid];
+  const bHtml=TOWN.blessingUsed?`<div class="td-used">✝ Blessing granted.</div>`:bl?`<div class="td-blessing-card"><div class="td-blessing-icon">${bl.icon}</div><div><div class="td-blessing-name">${bl.name}</div><div class="td-blessing-desc">${bl.desc}</div></div></div><button class="td-btn td-btn-holy" onclick="townReceiveBlessing()">✝ Receive Blessing</button>`:'';
+  const healHtml=G&&G.hp<G.maxHp?`<button class="td-btn" style="margin-top:8px" onclick="townFullHeal()">💖 Pray for healing (full HP)</button>`:`<div class="td-used" style="margin-top:8px">💖 You are at full health.</div>`;
+  // Shrine fire glow shifts as zones deepen: cool white → amber → gold → deep red → radiant gold
+  const shrineGlow=['rgba(200,215,255,0.7)','rgba(255,210,120,0.7)','rgba(255,150,50,0.75)','rgba(200,60,20,0.8)','rgba(200,168,75,1)'][zi];
+  return `<div class="td-portrait" style="filter:drop-shadow(0 0 10px ${shrineGlow}) drop-shadow(0 0 4px ${shrineGlow})">⛪</div><div class="td-name">Seraphine <span class="td-sub">Shrine Keeper</span></div><div class="td-greeting">"${SERA_CLASS[cid]||'Welcome.'}"</div><div class="td-zoneline">"${SERA_ZONES[zi]}"</div>${bHtml}${healHtml}`;
+}
 function _dlgForge(){const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),ALDRIC_ZONES.length-1);const hasMats=G&&G.inventory&&G.inventory.some(i=>i&&i.type==='material');const sell=hasMats?`<button class="td-btn" onclick="townSellMaterials()">💰 Sell all materials</button>`:`<div class="td-used">No materials to sell.</div>`;const offLabel=typeof getOffensiveStatLabel==='function'&&G?getOffensiveStatLabel(G):'ATK';const sharpen=TOWN.forgeVisited?`<div class="td-used">⚒ Already sharpened.</div>`:`<button class="td-btn" onclick="townSharpenWeapon()">⚒ Sharpen weapon — +2 ${offLabel} (15g)</button>`;return `<div class="td-portrait">⚒</div><div class="td-name">Aldric <span class="td-sub">Blacksmith</span></div><div class="td-greeting">"${ALDRIC_CLASS[cid]||'Need something forged?'}"</div><div class="td-zoneline">"${ALDRIC_ZONES[zi]}"</div><div style="margin-top:12px">${sharpen}<div style="margin-top:8px">${sell}</div></div>`;}
-function _dlgMalachar(){const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),MALACHAR_ZONES.length-1);const donations=(typeof getWizardDonations==='function')?getWizardDonations():0;const tier=(typeof getShopTier==='function')?getShopTier():1;const tiers=['Standard','Rare','Legendary'];const donate=tier<3?`<button class="td-btn" onclick="townDonateMalachar(100)">📚 Donate 100g for research access</button>`:`<div class="td-used">📚 Full catalogue unlocked.</div>`;return `<div class="td-portrait">📚</div><div class="td-name">Malachar the Grey <span class="td-sub">Scholar</span></div><div class="td-greeting">"${MALACHAR_CLASS[cid]||'Ah.'}"</div><div class="td-zoneline">"${MALACHAR_ZONES[zi]}"</div><div class="td-donate-info">Donated: <span style="color:var(--gold)">${donations}g</span> · Tier: <span style="color:var(--gold)">${tiers[tier-1]||'Standard'}</span></div><div style="margin-top:10px">${donate}</div>`;}
+function _dlgMalachar(){
+  const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),MALACHAR_ZONES.length-1);
+  const donations=(typeof getWizardDonations==='function')?getWizardDonations():0;
+  const tier=(typeof getShopTier==='function')?getShopTier():1;
+  const tiers=['Standard','Rare','Legendary'];
+  const donate=tier<3?`<button class="td-btn" onclick="townDonateMalachar(100)">📚 Donate 100g for research access</button>`:`<div class="td-used">📚 Full catalogue unlocked.</div>`;
+  // Legendary item acknowledgment
+  const legItem=G&&G.equipped?Object.values(G.equipped).find(it=>it&&it.rarity==='legendary'):null;
+  const legHtml=legItem?`<div class="td-zoneline" style="color:#b07830;margin-top:6px">"${MALACHAR_LEGENDARY_LINES[legItem.id]||MALACHAR_LEGENDARY_DEFAULT}"</div>`:'';
+  return `<div class="td-portrait">📚</div><div class="td-name">Malachar the Grey <span class="td-sub">Scholar</span></div><div class="td-greeting">"${MALACHAR_CLASS[cid]||'Ah.'}"</div><div class="td-zoneline">"${MALACHAR_ZONES[zi]}"</div>${legHtml}<div class="td-donate-info">Donated: <span style="color:var(--gold)">${donations}g</span> · Tier: <span style="color:var(--gold)">${tiers[tier-1]||'Standard'}</span></div><div style="margin-top:10px">${donate}</div>`;
+}
 function _dlgNotice(){const zi=G?G.zoneIdx:0;const tips={fighter:"Don't burn Relentless early.",wizard:"Spell slot economy is everything.",rogue:"Exploit every Advantage. Sneak Attack ends fights early.",paladin:"Smite on crits — always.",ranger:"Hunter's Mark is your engine.",barbarian:"Rage before the first hit.",cleric:"Channel Divinity often beats spells.",druid:"Wild Shape is a second life bar."};const tease=["🍄 Strange fungi near the old forest path. Collectors or idiots only.","🏛 A vault beneath the Outpost road. Loot unclaimed."];const zone=typeof ZONES!=='undefined'?ZONES[Math.min(zi,ZONES.length-1)]:null;let html='';if(zone)html+=`<div class="nb-notice nb-warning"><div class="nb-tag">⚠ DUNGEON REPORT</div><div class="nb-title">Threat: ${zone.name}</div><div class="nb-desc">Scouts report ${zone.kills} contacts before the zone commander.</div></div>`;if(zi<tease.length)html+=`<div class="nb-notice nb-rumor"><div class="nb-tag">📌 RUMOR</div><div class="nb-desc">${tease[zi]}</div></div>`;const cid=G?G.classId:null;if(cid&&tips[cid])html+=`<div class="nb-notice nb-tip"><div class="nb-tag">💡 TIP</div><div class="nb-desc">${tips[cid]}</div></div>`;return html||'<div class="td-used">No current notices.</div>';}
 
 function townBuyDrink(){if(!G||G.gold<5){townFlash('Not enough gold!');return;}G.gold-=5;TOWN.tavernDrinkUsed=true;if(typeof log==='function')log("🍺 Rook: 'Generous soul.'",'l');if(typeof renderAll==='function')renderAll();document.getElementById('townDialogContent').innerHTML=_dlgTavern();setTimeout(()=>{const ls=document.querySelectorAll('.td-line');ls.forEach(l=>l.classList.remove('active'));if(ls[ls.length-1])ls[ls.length-1].classList.add('active');},80);}
