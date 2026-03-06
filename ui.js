@@ -3106,8 +3106,7 @@ function showScreen(id){
     const goldEl = document.getElementById('town-gold-display');
     if(goldEl && G) goldEl.textContent = G.gold + 'g';
   }
-  // Stop town engine if leaving town (but not for graveyard — it overlays town)
-  if(id !== 'town' && id !== 'graveyard' && typeof stopTownEngine === 'function') stopTownEngine();
+  if(id !== 'town' && typeof stopTownEngine === 'function') stopTownEngine();
 }
 
 // Fade to black → switch screen → fade back in

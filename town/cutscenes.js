@@ -632,6 +632,21 @@ function stopTownEngine(){
   if(hud) hud.innerHTML='';
 }
 
+function _resumeTown(){
+  if(!_tc) _tc=document.getElementById('townCanvas');
+  if(!_tc) return;
+  _tx=_tc.getContext('2d');
+  _tx.setTransform(DRAW_SCALE,0,0,DRAW_SCALE,0,0);
+  _tx.imageSmoothingEnabled=false;
+  for(const k in _keys) delete _keys[k];
+  document.addEventListener('keydown',_kd);
+  document.addEventListener('keyup',_ku);
+  window.addEventListener('resize',_onResize);
+  if(_tRAF) cancelAnimationFrame(_tRAF);
+  _tRunning=true;
+  _tRAF=requestAnimationFrame(_townTick);
+}
+
 function townEnterDungeon(){
   stopTownEngine();
   if(typeof AUDIO!=='undefined'&&AUDIO.sfx&&AUDIO.sfx.rage) AUDIO.sfx.rage();
