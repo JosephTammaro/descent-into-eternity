@@ -678,7 +678,7 @@
         <ul>
           <li><span class="help-hl">Action</span> — Your main move. Big damage, powerful spells, or key abilities. You get 1 per turn.</li>
           <li><span class="help-hl">Bonus Action</span> — A quick secondary move. Heals, buffs, or fast strikes. Also 1 per turn.</li>
-          <li><span class="help-hl">Reaction</span> — Triggered on the enemy's turn. Counters, shields, or instant effects. Use it wisely — it resets next round.</li>
+          <li><span class="help-hl">Reaction</span> — Triggered on the enemy's turn. Counters, shields, or instant effects. It resets each round — don't let it go to waste.</li>
           <li>Skills are shown in the <span class="help-hl">LEFT PANEL</span>. Each is labelled [A], [B], or [R] for Action, Bonus, or Reaction.</li>
           <li>When finished, click <span class="help-hl">END TURN</span>. You don't have to use every action — saving a Reaction can swing a fight.</li>
         </ul>
@@ -688,35 +688,46 @@
         <ul>
           <li>Skills cost your <span class="help-hl">class resource</span> (Momentum, Spell Slots, Combo Points, etc.) shown at the top of the skill panel.</li>
           <li>A skill with a number on it is on <span class="help-hl">cooldown</span> — that's how many turns remain before you can use it again.</li>
-          <li>Grayed-out skills mean you lack the resource, the action type was used, or it's on cooldown.</li>
+          <li>Grayed-out skills mean you lack the resource, the action type was already used, or it's on cooldown.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>ULTIMATE ABILITIES</h3>
+        <ul>
+          <li>Every class has a powerful <span class="help-hl">Ultimate</span> skill — usable <span class="help-hl">once per rest</span>. It resets at the Campfire.</li>
+          <li>Ultimates are your biggest tools: massive AoE damage, a free extra turn, full self-heals, or game-changing field effects.</li>
+          <li>Save your Ultimate for the boss — or for the moment a regular fight starts to go wrong.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>COMBAT STATES & CONDITIONS</h3>
         <ul>
-          <li><span class="help-hl">Advantage</span> — Roll twice, take the higher result. Rogues and many skills grant this.</li>
+          <li><span class="help-hl">Advantage</span> — Roll twice, take the higher result.</li>
           <li><span class="help-hl">Vulnerable</span> — Target takes increased damage from all sources.</li>
-          <li><span class="help-hl">Burning / Poisoned / Bleeding</span> — Damage-over-time effects that tick each round.</li>
-          <li><span class="help-hl">Stunned</span> — The afflicted creature loses their turn.</li>
+          <li><span class="help-hl">Burning / Poisoned / Bleeding</span> — Damage-over-time that ticks each round.</li>
+          <li><span class="help-hl">Stunned</span> — The afflicted creature loses their next turn.</li>
+          <li><span class="help-hl">Restrained</span> — Target is locked in place; attacks against them gain Advantage.</li>
+          <li><span class="help-hl">Frightened</span> — Target deals reduced damage while the fear persists.</li>
+          <li><span class="help-hl">Weakened</span> — Target's defenses are reduced.</li>
           <li><span class="help-hl">Shield</span> — Absorbs incoming damage before HP is reduced.</li>
-          <li><span class="help-hl">Rage</span> (Barbarian) — Reduces incoming damage and boosts melee hits while active.</li>
-          <li>Status icons appear beneath HP bars. Hover or read the combat log for details.</li>
+          <li><span class="help-hl">Rage</span> (Barbarian) — Reduces incoming physical damage and boosts melee hits while active.</li>
+          <li>Status icons appear beneath HP bars. Read the combat log for details.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>CRITICAL HITS</h3>
         <ul>
           <li>A <span class="help-hl">natural 20</span> (or expanded crit range with Champion/Evoker) deals double dice damage.</li>
-          <li>Some skills trigger special effects on crits — Surge Strike grants a free Bonus Action, Paladins should always Smite on a crit.</li>
+          <li>Some skills trigger bonus effects on crits — Surge Strike grants a free Bonus Action; Paladin crits are the ideal moment to land a Divine Smite.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>ZONE PROGRESSION</h3>
         <ul>
           <li>The <span class="help-hl">kill progress bar</span> at the top fills as you defeat enemies.</li>
-          <li>Once full, the <span class="help-hl">BOSS spawns</span>. Bosses are tougher, have special abilities, and drop better loot.</li>
-          <li>Defeat the boss to unlock the next zone and travel to Elderfen for supplies.</li>
-          <li>After the boss you can visit the <span class="help-hl">Campfire</span> — rest, craft, shop, or face a random event before moving on.</li>
+          <li>Once full, the <span class="help-hl">BOSS spawns</span>. Bosses are tougher, have special abilities, and may enter a stronger Phase 2.</li>
+          <li>Defeat the boss to reach the <span class="help-hl">Campfire</span> — rest, craft, shop, or face a random event before the next zone.</li>
+          <li>After Zone V's boss, your run ends and you return to Elderfen in victory.</li>
         </ul>
       </div>
     </div>
@@ -725,64 +736,64 @@
     <div class="help-pane" id="help-pane-classes">
       <div class="help-section">
         <h3>THE 8 CLASSES</h3>
-        <p>Each class plays differently. Your class determines your <span class="help-hl">primary resource</span>, skill set, stat scaling, and subclass at Level 3.</p>
+        <p>Each class plays differently. Your class determines your <span class="help-hl">primary resource</span>, skill set, stat scaling, subclass at Level 3, and Ultimate ability.</p>
       </div>
       <div class="help-class-grid">
         <div class="help-class-card">
           <div class="help-class-icon">⚔️</div>
           <div class="help-class-name">FIGHTER</div>
           <div class="help-class-res">Resource: Momentum</div>
-          <div class="help-class-sub">Subclass: Champion — expands crit range, gains Survivor passive</div>
-          <div class="help-class-tip">Surge Strike is your finisher. Use Second Wind between fights to conserve potions.</div>
+          <div class="help-class-sub">Subclass: Champion — expanded crit range, Surge Strike unlocked</div>
+          <div class="help-class-tip">Surge Strike is your finisher — and it gives a free Bonus Action on a crit. Use Second Wind between fights to conserve potions. Ultimate: <em>Action Surge</em> — a full extra turn at reduced costs.</div>
         </div>
         <div class="help-class-card">
           <div class="help-class-icon">🔮</div>
           <div class="help-class-name">WIZARD</div>
           <div class="help-class-res">Resource: Spell Slots</div>
           <div class="help-class-sub">Subclass: Evoker — Evocation spells deal maximum damage</div>
-          <div class="help-class-tip">Spell slots are finite until you rest. Never waste a Level 3 slot. Cantrips are free.</div>
+          <div class="help-class-tip">Spell slots are finite until you rest. Never waste a Level 3 slot on trash. Cantrips (Fire Bolt) are always free. Ultimate: <em>Time Stop</em> — 3 free actions while the enemy is frozen.</div>
         </div>
         <div class="help-class-card">
           <div class="help-class-icon">🗡️</div>
           <div class="help-class-name">ROGUE</div>
           <div class="help-class-res">Resource: Combo Points</div>
-          <div class="help-class-sub">Subclass: Thief — Fast Hands lets you use objects as Bonus Actions</div>
-          <div class="help-class-tip">Build Combo Points with basic attacks, spend on Sneak Attack. Always fight with Advantage.</div>
+          <div class="help-class-sub">Subclass: Thief — Pickpocket lets you steal gold, potions, or materials</div>
+          <div class="help-class-tip">Build Combo Points with basic attacks, spend on Sneak Attack. Always fight with Advantage. Ultimate: <em>Vanishing Act</em> — go untargetable for 2 rounds; next attack auto-crits.</div>
         </div>
         <div class="help-class-card">
           <div class="help-class-icon">🛡️</div>
           <div class="help-class-name">PALADIN</div>
           <div class="help-class-res">Resource: Holy Power</div>
-          <div class="help-class-sub">Subclass: Oath of Devotion — aura buffs and divine boons</div>
-          <div class="help-class-tip">Divine Smite on crits — always. Lay on Hands is your emergency button.</div>
+          <div class="help-class-sub">Subclass: Oath of Devotion — Sacred Weapon and Holy Nimbus</div>
+          <div class="help-class-tip">Divine Smite on crits — always. Lay on Hands is your emergency heal pool. Divine Shield can fully negate a hit. Ultimate: <em>Divine Intervention</em> — massive AoE radiant damage and a full self-heal.</div>
         </div>
         <div class="help-class-card">
           <div class="help-class-icon">🏹</div>
           <div class="help-class-name">RANGER</div>
           <div class="help-class-res">Resource: Focus</div>
-          <div class="help-class-sub">Subclass: Beast Master — summon a loyal animal companion</div>
-          <div class="help-class-tip">Apply Hunter's Mark first — it multiplies your output every single turn.</div>
+          <div class="help-class-sub">Subclass: Beast Master — companion attacks and Pack Hunt strike together</div>
+          <div class="help-class-tip">Apply Hunter's Mark turn 1, every fight — it multiplies your output. Beast's Aid intercepts hits for you. Ultimate: <em>Hail of Arrows</em> — AoE volley that Marks and Restrains all enemies.</div>
         </div>
         <div class="help-class-card">
           <div class="help-class-icon">💢</div>
           <div class="help-class-name">BARBARIAN</div>
           <div class="help-class-res">Resource: Rage</div>
-          <div class="help-class-sub">Subclass: Berserker — frenzied attacks and frightening presence</div>
-          <div class="help-class-tip">Always Rage before the first hit. Rage reduces damage taken and fuels your best abilities.</div>
+          <div class="help-class-sub">Subclass: Berserker — Frenzy auto-attacks on every turn while raging</div>
+          <div class="help-class-tip">Rage before the first hit lands — it's both your offense and defense. Reckless Attack hits hard but costs HP; save it for when you're healthy. Ultimate: <em>World Breaker</em> — shockwave that deals double damage to conditioned enemies.</div>
         </div>
         <div class="help-class-card">
           <div class="help-class-icon">✝️</div>
           <div class="help-class-name">CLERIC</div>
           <div class="help-class-res">Resource: Devotion</div>
-          <div class="help-class-sub">Subclass: Life Domain — empowered healing and radiant strikes</div>
-          <div class="help-class-tip">Channel Divinity often beats spending spell slots. Sacred Flame is your free offensive cantrip.</div>
+          <div class="help-class-sub">Subclass: Life Domain — Preserve Life heals for massive amounts</div>
+          <div class="help-class-tip">Channel Divinity often beats spending Devotion charges. Sacred Flame is your free damage cantrip. Spiritual Weapon deals passive damage each turn. Ultimate: <em>Miracle</em> — full heal yourself and blast all enemies with radiant damage.</div>
         </div>
         <div class="help-class-card">
           <div class="help-class-icon">🌿</div>
           <div class="help-class-name">DRUID</div>
           <div class="help-class-res">Resource: Nature's Charge</div>
-          <div class="help-class-sub">Subclass: Circle of the Moon — powerful Wild Shape forms</div>
-          <div class="help-class-tip">Wild Shape gives you a second HP bar. Pop it the moment your real HP drops low.</div>
+          <div class="help-class-sub">Subclass: Circle of the Moon — Elemental Form and Elemental Strike</div>
+          <div class="help-class-tip">Wild Shape gives you a second HP bar. Elemental Form upgrades this further with fire damage and condition immunity. Pop a form the moment your real HP drops low. Ultimate: <em>Primal Avatar</em> — massive HP surge and nature burst hitting all enemies.</div>
         </div>
       </div>
     </div>
@@ -794,25 +805,35 @@
         <ul>
           <li>Earn <span class="help-hl">XP</span> by killing enemies. Your level is shown in the top bar.</li>
           <li>Each level grants more <span class="help-hl">Max HP, ATK, and DEF</span>.</li>
-          <li>At <span class="help-hl">Level 3</span> you choose your <span class="help-hl">Subclass</span> — this permanently specialises your playstyle.</li>
-          <li>Every <span class="help-hl">3 levels</span> you pick a <span class="help-hl">Talent</span> — a passive that changes how your class works. Choose carefully; Talents are permanent.</li>
-        </ul>
-      </div>
-      <div class="help-section">
-        <h3>SKILL TREES</h3>
-        <ul>
-          <li>Some skills unlock or upgrade as you level up — check your skill panel for new greyed-in abilities after each level.</li>
-          <li>Subclass skills appear at Level 3 alongside your regular kit.</li>
+          <li>At <span class="help-hl">Level 3</span> you choose your <span class="help-hl">Subclass</span> — this permanently specialises your playstyle and unlocks a new skill.</li>
+          <li>Every <span class="help-hl">3 levels</span> you pick a <span class="help-hl">Talent</span> — a passive that changes how your class works. Choose carefully; Talents are permanent for the run.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>CAMPFIRE (BETWEEN BOSSES)</h3>
         <ul>
           <li>After each boss you stop at a <span class="help-hl">Campfire</span> before the next zone.</li>
-          <li><span class="help-hl">REST</span> — Fully restores HP and refills all class resources (spell slots, charges, etc.).</li>
+          <li><span class="help-hl">REST</span> — Restores HP (60% of max by default) and refills all class resources and Ultimate uses.</li>
           <li><span class="help-hl">CRAFT</span> — Use materials dropped by enemies to brew potions and consumables.</li>
-          <li><span class="help-hl">SHOP</span> — Buy equipment from a travelling merchant. Better items as you progress.</li>
-          <li><span class="help-hl">EVENT</span> — A random encounter. Multiple choices, real consequences. Read before clicking.</li>
+          <li><span class="help-hl">SHOP</span> — Buy equipment from a travelling merchant. Better items appear in deeper zones.</li>
+          <li><span class="help-hl">EVENT</span> — A random encounter with real consequences. Read all options carefully before choosing.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>✨ GRACES</h3>
+        <ul>
+          <li><span class="help-hl">Graces</span> are powerful passive bonuses earned by completing achievements and challenges.</li>
+          <li>Equip them at the <span class="help-hl">Grace Vault</span> in Elderfen (beside the dungeon gate). Each grace slot can hold one grace.</li>
+          <li>Graces persist across runs on the same save slot — they are your long-term power progression.</li>
+          <li>Higher-rarity graces have stronger effects. Improve your drop chances with the <span class="help-hl">Grace Affinity</span> upgrade at the Proving Grounds.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>RUN MODIFIERS</h3>
+        <ul>
+          <li>Before descending you can add <span class="help-hl">Run Modifiers</span> to change the rules of the run.</li>
+          <li>Modifiers increase difficulty (enemies deal more damage, have more HP, crits are more dangerous) but reward you with <span class="help-hl">bonus gold, better drops, or more XP</span>.</li>
+          <li>Some modifiers are unlocked by earning achievements. Stack them for a harder — and more rewarding — run.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -820,7 +841,7 @@
         <ul>
           <li>The game <span class="help-hl">auto-saves</span> after every fight and boss kill.</li>
           <li>You can also manually save from the <span class="help-hl">Pause menu</span>.</li>
-          <li>Multiple save slots are available from the title screen — use them for different classes or difficulty experiments.</li>
+          <li>Multiple save slots are available from the title screen — each slot tracks its own graces, upgrades, and achievements independently.</li>
         </ul>
       </div>
     </div>
@@ -829,26 +850,32 @@
     <div class="help-pane" id="help-pane-town">
       <div class="help-section">
         <h3>ELDERFEN — YOUR BASE</h3>
-        <p>Between dungeon runs you can visit <span class="help-hl">Elderfen</span>, the town hub. Walk around, talk to NPCs, and use each location for different services.</p>
+        <p>Between dungeon runs you visit <span class="help-hl">Elderfen</span>. Walk around, talk to NPCs, and use each building for its services. Press <span class="help-hl">E</span> to interact.</p>
       </div>
       <div class="help-section">
         <h3>LOCATIONS</h3>
         <ul>
-          <li><span class="help-hl">🍺 The Tavern — Rook</span> — Ex-soldier permanently at the bar. Buy him a drink (5g) to hear a zone rumor. Rumors give you intel on upcoming enemies.</li>
-          <li><span class="help-hl">⛪ The Temple — Seraphine</span> — Shrine keeper. Receive a free class-specific Blessing once per visit. Pray for a full HP restore at no cost if you're injured.</li>
-          <li><span class="help-hl">⚒ The Forge — Aldric</span> — Blacksmith. Sharpen your weapon (+2 ATK, 15g) once per visit. Sell unwanted materials here for gold.</li>
-          <li><span class="help-hl">📚 Malachar's Study — Malachar the Grey</span> — Scholar and mystic. Donate gold (100g per tier) to unlock access to Rare and then Legendary items in the shop.</li>
-          <li><span class="help-hl">📋 Notice Board</span> — Zone threat reports, scout rumors, and class-specific tactical tips. Check it before leaving town.</li>
-          <li><span class="help-hl">🛒 Mirela's Shop</span> — Buy weapons, armor, rings, and potions. Higher shop tiers (unlocked via Malachar) stock better gear.</li>
-          <li><span class="help-hl">📦 The Stash</span> — Personal storage across runs. Park items here that you don't need now but might want later.</li>
+          <li><span class="help-hl">🍺 The Rusted Flagon (Tavern)</span> — Rook, ex-soldier, is always at the bar. Buy him a drink (5g) to hear a zone rumor with intel on upcoming enemies.</li>
+          <li><span class="help-hl">⛪ Shrine of Seraphine (Temple)</span> — Receive a free class-specific Blessing once per visit. She'll also pray for a free HP restore if you're injured.</li>
+          <li><span class="help-hl">⚒ Aldric's Forge</span> — Sharpen your weapon (+2 ATK, 15g) once per visit. Sell unwanted materials here for gold.</li>
+          <li><span class="help-hl">📚 Malachar's Study</span> — Donate gold to unlock access to Rare and then Legendary items in Mirela's shop. This investment is permanent for the run.</li>
+          <li><span class="help-hl">🏛 The Proving Grounds</span> — Spend gold on <span class="help-hl">Permanent Upgrades</span> that persist across every run on your save slot: more HP, ATK, DEF, XP, gold, and class masteries.</li>
+          <li><span class="help-hl">🏨 The Broken Compass (Inn)</span> — Rosalind runs the inn. Visit for conversation; the inn reflects the mood of the town as the dungeon deepens.</li>
+          <li><span class="help-hl">🛒 Market District</span> — Browse stalls for goods and rumours. Vendors' stock and dialogue shift as the zone threat grows.</li>
+          <li><span class="help-hl">🛍 Mirela's Goods</span> — Buy weapons, armor, gloves, rings, amulets, and potions. Higher shop tiers (unlocked via Malachar) stock rarer gear.</li>
+          <li><span class="help-hl">✨ Grace Vault</span> — Equip <span class="help-hl">Graces</span> here. Graces are passive bonuses earned through achievements that carry forward across runs.</li>
+          <li><span class="help-hl">📦 The Stash</span> — Personal storage. Park items you don't need mid-run and retrieve them before the next descent via the Prepare screen.</li>
+          <li><span class="help-hl">📋 Notice Board</span> — Zone threat reports, scout rumors, and class-specific tips. Check it before leaving.</li>
+          <li><span class="help-hl">⚰ Graveyard</span> — A record of every hero you've lost. Visit to see their stories; a ghost of your last fallen hero may appear inside.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>TOWN TIPS</h3>
         <ul>
-          <li>Town services like the Temple blessing and Forge sharpening reset each time you return.</li>
-          <li>Donating to Malachar is permanent — invest early to unlock better loot tiers for the rest of the run.</li>
-          <li>Talk to every NPC — their dialogue changes based on your class and how deep into the dungeon you are.</li>
+          <li>Temple blessings and Forge sharpening reset each time you return to town.</li>
+          <li>Invest in Malachar early — better shop tiers compound across the entire run.</li>
+          <li>Proving Grounds upgrades are cross-run. Spend gold there even on losing runs.</li>
+          <li>NPC dialogue changes based on your class and how deep into the dungeon you've gone — talk to everyone.</li>
         </ul>
       </div>
     </div>
@@ -858,25 +885,26 @@
       <div class="help-section">
         <h3>EQUIPMENT SLOTS</h3>
         <ul>
-          <li>You have slots for <span class="help-hl">Weapon, Offhand, Armor, Helmet, Boots, Ring 1, Ring 2, and Amulet</span>.</li>
+          <li>You have slots for <span class="help-hl">Weapon, Offhand, Armor, Helmet, Gloves, Boots, Ring 1, Ring 2, and Amulet</span>.</li>
           <li>Your equipped items are shown in the <span class="help-hl">RIGHT PANEL</span> during combat.</li>
-          <li>Click an inventory item to see its stats, then click <span class="help-hl">EQUIP</span> to wear it. Old item goes back to inventory.</li>
+          <li>Click an inventory item to see its stats, then click <span class="help-hl">EQUIP</span> to wear it. The displaced item returns to inventory.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>ITEM RARITIES</h3>
         <ul>
-          <li><span class="help-hl" style="color:#aaa;">Common</span> — Basic stats. Useful early on.</li>
-          <li><span class="help-hl" style="color:#4fc3f7;">Uncommon</span> — Better stats, sometimes a minor bonus.</li>
-          <li><span class="help-hl" style="color:#81c784;">Rare</span> — Strong stats with a notable special effect.</li>
-          <li><span class="help-hl" style="color:#ce93d8;">Legendary</span> — Powerful unique effects that change how skills work. Build around these.</li>
+          <li><span class="help-hl" style="color:#aaa;">Common</span> — Basic stats. Good early on.</li>
+          <li><span class="help-hl" style="color:#4fc3f7;">Uncommon</span> — Better stats, sometimes a minor passive.</li>
+          <li><span class="help-hl" style="color:#81c784;">Rare</span> — Strong stats with a notable special effect. Unlock access via Malachar's Study.</li>
+          <li><span class="help-hl" style="color:#9b54bd;">Epic</span> — Powerful stats with strong passives. Found in deeper zones and from special sources.</li>
+          <li><span class="help-hl" style="color:var(--gold);">Legendary</span> — Unique effects that fundamentally change how your build works. Build around these.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>SET BONUSES</h3>
         <ul>
           <li>Certain items belong to <span class="help-hl">Sets</span>. Equip 2 or more pieces of the same set to activate bonus effects.</li>
-          <li>Set bonus descriptions are shown in the item tooltip. Full sets (4 pieces) grant the strongest bonuses.</li>
+          <li>Set bonus descriptions appear in the item tooltip. Full sets grant the most powerful bonuses.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -884,14 +912,15 @@
         <ul>
           <li>Potions appear in inventory. <span class="help-hl">Click to use</span> during or outside combat.</li>
           <li>Health Potions restore HP. Other potions grant temporary buffs like ATK boost, shields, or condition cures.</li>
-          <li>You can craft more potions at the Campfire using materials enemies drop.</li>
+          <li>Craft more potions at the Campfire using materials dropped by enemies.</li>
         </ul>
       </div>
       <div class="help-section">
-        <h3>PERMANENT UPGRADES</h3>
+        <h3>PERMANENT UPGRADES (THE PROVING GROUNDS)</h3>
         <ul>
-          <li>In the right panel, scroll down to find <span class="help-hl">Upgrade</span> options — spend gold to permanently increase your ATK, DEF, Max HP, or other stats.</li>
-          <li>These persist across zones and are separate from equipment.</li>
+          <li>Visit <span class="help-hl">The Proving Grounds</span> in Elderfen to spend gold on upgrades that persist across every run on your save slot.</li>
+          <li>Universal upgrades: Vitality (+HP), Might (+ATK), Fortitude (+DEF), Fortune (starting gold), Alchemist (starting potions), Scholar (+XP%), Precision (+crit range), Restful (better campfire healing), Haggler (shop discounts), Grace Affinity (higher grace drop rarity).</li>
+          <li>Each class also has a <span class="help-hl">Class Mastery</span> upgrade with a flat stat bonus tailored to that class.</li>
         </ul>
       </div>
     </div>
@@ -902,25 +931,28 @@
         <h3>💡 GENERAL TIPS</h3>
         <ul>
           <li>Don't hoard potions. If you're below 50% HP going into a boss, drink now — dead heroes carry nothing.</li>
-          <li>Read skill descriptions carefully. Many have hidden synergies (e.g. Paladin crits + Smite = massive burst).</li>
+          <li>Read skill descriptions carefully. Many have hidden synergies (e.g. Paladin crit + Divine Smite = massive burst).</li>
           <li>The <span class="help-hl">Pause menu</span> is available any time mid-combat. Use it to read the combat log or plan your next move.</li>
-          <li>Enemy HP bars show damage thresholds — if an enemy is nearly dead, it's worth burning a cooldown to finish them before they act.</li>
+          <li>If an enemy is nearly dead, burn a cooldown to finish it before it acts — saving resources for a corpse is wasteful.</li>
           <li>Check the <span class="help-hl">Notice Board</span> in Elderfen before every run — it posts zone-specific tips for your class.</li>
-          <li>Save gold for Malachar's Study donations early. Better shop tiers compound across the whole run.</li>
-          <li>Reactions are a free turn in your opponent's action phase — always try to have one available when the enemy has big swings remaining.</li>
+          <li>Invest in Malachar's Study donations early. Better shop tiers compound across the whole run.</li>
+          <li>Reactions are a free action in your opponent's phase — always have one ready when the enemy has a big hit coming.</li>
+          <li>Spend gold at the <span class="help-hl">Proving Grounds</span> even on losing runs. Those upgrades carry over to your next attempt.</li>
+          <li>Before descending, use the <span class="help-hl">Prepare screen</span> to pull items from your Stash into your starting loadout.</li>
+          <li>Visit the <span class="help-hl">Grace Vault</span> each return — newly earned graces won't help you until they're equipped.</li>
         </ul>
       </div>
       <div class="help-section">
         <h3>⚠ CLASS-SPECIFIC TIPS</h3>
         <ul>
-          <li><span class="help-hl">Fighter</span> — Don't burn Relentless early. Save it for emergencies.</li>
-          <li><span class="help-hl">Wizard</span> — Spell slot economy is everything. Use cantrips as filler, save high slots for bosses.</li>
-          <li><span class="help-hl">Rogue</span> — Always fight with Advantage. Sneak Attack ends fights early when applied correctly.</li>
-          <li><span class="help-hl">Paladin</span> — Smite on crits, always. Stack Holy Power for big burst windows.</li>
-          <li><span class="help-hl">Ranger</span> — Hunter's Mark is your engine. Apply it turn 1, every fight, no exceptions.</li>
-          <li><span class="help-hl">Barbarian</span> — Rage before the first hit lands. Rage is your defense as much as your offense.</li>
-          <li><span class="help-hl">Cleric</span> — Channel Divinity often beats spending Devotion charges. Sacred Flame is your free damage.</li>
-          <li><span class="help-hl">Druid</span> — Wild Shape is a second life bar. Activate it the moment real HP drops low, not at zero.</li>
+          <li><span class="help-hl">Fighter</span> — Save Action Surge for a turn when you're about to be overwhelmed. Second Wind between fights conserves potions.</li>
+          <li><span class="help-hl">Wizard</span> — Spell slot economy is everything. Fire Bolt is free — use it as filler and save Level 3 slots for bosses.</li>
+          <li><span class="help-hl">Rogue</span> — Always fight with Advantage. Vanishing Act gives you a free auto-crit setup — use it to burst a boss.</li>
+          <li><span class="help-hl">Paladin</span> — Divine Smite on every crit, always. Keep Holy Power for Smite; use Lay on Hands as your emergency heal.</li>
+          <li><span class="help-hl">Ranger</span> — Hunter's Mark is your engine. Apply it turn 1, every fight, no exceptions. Pack Hunt doubles your Mark turns.</li>
+          <li><span class="help-hl">Barbarian</span> — Rage before the first hit lands. Rage is defense as much as offense. Reckless Attack is powerful but costly — only use it when healthy.</li>
+          <li><span class="help-hl">Cleric</span> — Channel Divinity often beats spending Devotion charges. Spiritual Weapon passively deals damage every turn once summoned.</li>
+          <li><span class="help-hl">Druid</span> — Wild Shape and Elemental Form are second lives. Use them the moment real HP starts dropping, not at zero.</li>
         </ul>
       </div>
       <div class="help-section">
