@@ -1146,7 +1146,13 @@ function switchHelpTab(id, btn) {
 </div>
 
   <!-- JS modules loaded in dependency order -->
-  <script src="town.js"></script>
+  <!-- town -->
+  <script src="town/data.js"></script>
+  <script src="town/ambient.js"></script>
+  <script src="town/render.js"></script>
+  <script src="town/loop.js"></script>
+  <script src="town/cutscenes.js"></script>
+  <script src="town/services.js"></script>
   <script src="audio.js"></script>
   <!-- data -->
   <script src="data/constants.js"></script>
@@ -1172,7 +1178,13 @@ function switchHelpTab(id, btn) {
   <script src="main/effects.js"></script>
   <script src="sprite-engine.js"></script>
   <script src="animations.js"></script>
-  <script src="combat.js"></script>
+  <!-- combat -->
+  <script src="combat/helpers.js"></script>
+  <script src="combat/skills.js"></script>
+  <script src="combat/damage.js"></script>
+  <script src="combat/enemy.js"></script>
+  <script src="combat/boss.js"></script>
+  <script src="combat/death.js"></script>
   <script src="ui.js"></script>
   <script src="bugreport.js"></script>
   <!-- DEV: Remove this script tag before publishing to GitHub Pages -->
