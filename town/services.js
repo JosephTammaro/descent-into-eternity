@@ -309,10 +309,17 @@ const SHRINE_BLESSINGS={
   druid:  {icon:'🌿',name:"Nature's Grace",  desc:'Wild Shape can be entered as a bonus action.',apply:()=>{G._townBlessingWildFree=true;}},
 };
 const ROOK_ZONES=[
+  // State 0 — Zone I area
   ["I scouted those woods once. Once.","The Thornwarden's roots move underground. Watch your footing.","It slammed Kareth into a tree so hard we buried him and the tree. ...Pour me another?"],
+  // State 1 — Zones II-III area
   ["Grakthar. Yeah. I knew men who served under him — before.","His Bellow broke three men's nerves. WIS save, they said. In practice you just ran.","He still thinks the war's going. Don't try to reason. Just fight."],
+  // State 2 — Zones IV-V area
   ["Half the market packed up last night. Can't blame them.","Something's pulling the darkness up from below. I can feel it in the floorboards.","That horn's been sounding for three days. You hear it too, right?"],
-  ["It's just us now. The ones who couldn't leave.","I've kept that stool empty for thirty years. Don't know why. Feels important.","Whatever you're doing down there — it's working. Or it's making things worse. Either way, keep going."],
+  // State 3a — Zone V surfacing (after Zareth, zoneIdx ~5)
+  ["The horn stopped. Three days and then silence. I don't know which is worse.","You come back different every time. This time it's something in the eyes. Like you heard something you weren't meant to.","Something settled tonight. Through the floorboards — not the shaking kind. The other kind."],
+  // State 3b — Zone VI surfacing (after Valdris, zoneIdx ~6)
+  ["I dreamed of soldiers last night. Hundreds of them, standing down. Woke up feeling lighter than I have in years.","The stool. Thirty years. Tonight it finally feels like mine again — not kept, not waiting. Just mine.","It's just the few of us now. Somehow that's not sad. It's the right number."],
+  // State 4 — Zone VII+
   ["I dreamed about you last night. You were standing at the Gate. You looked... old.","I don't know what's at the bottom. But I know you're meant to find it.","Come back, yeah? I'll keep the stool."]
 ];
 // One line per boss — shown when that boss is the highest one defeated this save
@@ -331,6 +338,9 @@ const SERA_ZONES=[
   "The woods remember old blood. Let the Shrine cleanse what clings to you.",
   "The Outpost is a place of unfinished things. Carry the light in.",
   "The Shrine fire has been burning without oil for three days. I do not understand it. But I trust it.",
+  // State 3a — Zone V surfacing
+  "The fire shifted tonight — warmer than it has been. Something between what it was and what it is becoming. I do not have words for it yet.",
+  // State 3b — Zone VI surfacing
   "The others have gone. The fire burns gold now. I think it is waiting for something.",
   "Whatever you find at the bottom — know that the Shrine burned for you. It always did."
 ];
@@ -339,14 +349,20 @@ const ALDRIC_ZONES=[
   "These woods'll dull a blade faster than any whetstone.",
   "Undead rust iron from the inside out. Enchanted gear holds better.",
   "I've been forging something for weeks. Don't know who it's for yet. Feels like I'm waiting for the right hands.",
-  "My apprentice left with the second wave. I'm still here. The anvil won't let me leave.",
-  "Take this. I finished it last night. I think... I think it was always meant for you."
+  // State 3a — Zone V surfacing
+  "Something I've been making is almost done. Every time I work on it, it gets more certain. Like it knows who it's for before I do.",
+  // State 3b — Zone VI surfacing
+  "It's done. I'm not showing it yet — I'll know when the time's right. Whatever you need before the next run, I'm here.",
+  "Take this. I think... I think it was always meant for you."
 ];
 const ALDRIC_CLASS={fighter:"Good build. Keep the sword oiled — blood dries fast.",wizard:"Staff reinforcements. Mages keep breaking them.",rogue:"Short blade with a hollow handle — you'll know what it's for.",paladin:"Divine-blessed steel holds an edge longer.",ranger:"Broadhead tips that punch through chitin.",barbarian:"You're going to destroy whatever I give you. Take the cheap stuff.",cleric:"Holy-water tempered chainmail if you need it.",druid:"Most druids just grow thorns. But welcome."};
 const MALACHAR_ZONES=[
   "The Whispering Woods are older than this town. Something grew there before trees knew how.",
   "The garrison watched the east. The incursion came from below.",
   "I found your name in a document three hundred years old. Redacted from every official record. I am afraid of what it means.",
+  // State 3a — Zone V surfacing
+  "The document, the inscription, the accounts that contradict the official histories — I have been cross-referencing all week. They point to the same redacted name. I am beginning to understand what they buried.",
+  // State 3b — Zone VI surfacing
   "The Gate inscription keeps changing. The latest addition is a name I can almost read. I am writing everything down.",
   "One line left to translate. When you come back — I will read it to you."
 ];
@@ -364,7 +380,7 @@ const MALACHAR_LEGENDARY_LINES={
 const MALACHAR_LEGENDARY_DEFAULT="That item — I don't recognise it from any catalogue I own. That's either very bad or very interesting.";
 
 function _dlgTavern(){
-  const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),ROOK_ZONES.length-1);
+  const cid=G?G.classId:'fighter';let zi=_townState(_townBossCount());if(zi===3&&G&&G.zoneIdx>=6)zi=4;else if(zi>=4)zi=5;zi=Math.min(zi,ROOK_ZONES.length-1);
   const baseLines=ROOK_ZONES[zi]||[];
   // Inject a boss-specific line for the highest boss killed this save
   const lastBoss=G&&G.bossDefeated?G.bossDefeated.reduce((hi,v,i)=>v?i:hi,-1):-1;
@@ -375,17 +391,17 @@ function _dlgTavern(){
   return `<div class="td-portrait">🍺</div><div class="td-name">Rook <span class="td-sub">Ex-soldier. Permanently at the bar.</span></div><div class="td-greeting">"${ROOK_CLASS[cid]||'Welcome.'}"</div><div class="td-lines">${rHtml}</div><div style="margin-top:10px">${drink}</div>`;
 }
 function _dlgTemple(){
-  const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),SERA_ZONES.length-1);
+  const cid=G?G.classId:'fighter';let zi=_townState(_townBossCount());if(zi===3&&G&&G.zoneIdx>=6)zi=4;else if(zi>=4)zi=5;zi=Math.min(zi,SERA_ZONES.length-1);
   const bl=SHRINE_BLESSINGS[cid];
   const bHtml=TOWN.blessingUsed?`<div class="td-used">✝ Blessing granted.</div>`:bl?`<div class="td-blessing-card"><div class="td-blessing-icon">${bl.icon}</div><div><div class="td-blessing-name">${bl.name}</div><div class="td-blessing-desc">${bl.desc}</div></div></div><button class="td-btn td-btn-holy" onclick="townReceiveBlessing()">✝ Receive Blessing</button>`:'';
   const healHtml=G&&G.hp<G.maxHp?`<button class="td-btn" style="margin-top:8px" onclick="townFullHeal()">💖 Pray for healing (full HP)</button>`:`<div class="td-used" style="margin-top:8px">💖 You are at full health.</div>`;
   // Shrine fire glow shifts as zones deepen: cool white → amber → gold → deep red → radiant gold
-  const shrineGlow=['rgba(200,215,255,0.7)','rgba(255,210,120,0.7)','rgba(255,150,50,0.75)','rgba(200,60,20,0.8)','rgba(200,168,75,1)'][zi];
+  const shrineGlow=['rgba(200,215,255,0.7)','rgba(255,210,120,0.7)','rgba(255,150,50,0.75)','rgba(255,120,20,0.8)','rgba(210,165,25,0.95)','rgba(200,168,75,1)'][zi];
   return `<div class="td-portrait" style="filter:drop-shadow(0 0 10px ${shrineGlow}) drop-shadow(0 0 4px ${shrineGlow})">⛪</div><div class="td-name">Seraphine <span class="td-sub">Shrine Keeper</span></div><div class="td-greeting">"${SERA_CLASS[cid]||'Welcome.'}"</div><div class="td-zoneline">"${SERA_ZONES[zi]}"</div>${bHtml}${healHtml}`;
 }
-function _dlgForge(){const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),ALDRIC_ZONES.length-1);const hasMats=G&&G.inventory&&G.inventory.some(i=>i&&i.type==='material');const sell=hasMats?`<button class="td-btn" onclick="townSellMaterials()">💰 Sell all materials</button>`:`<div class="td-used">No materials to sell.</div>`;const offLabel=typeof getOffensiveStatLabel==='function'&&G?getOffensiveStatLabel(G):'ATK';const sharpen=TOWN.forgeVisited?`<div class="td-used">⚒ Already sharpened.</div>`:`<button class="td-btn" onclick="townSharpenWeapon()">⚒ Sharpen weapon — +2 ${offLabel} (15g)</button>`;return `<div class="td-portrait">⚒</div><div class="td-name">Aldric <span class="td-sub">Blacksmith</span></div><div class="td-greeting">"${ALDRIC_CLASS[cid]||'Need something forged?'}"</div><div class="td-zoneline">"${ALDRIC_ZONES[zi]}"</div><div style="margin-top:12px">${sharpen}<div style="margin-top:8px">${sell}</div></div>`;}
+function _dlgForge(){const cid=G?G.classId:'fighter';let zi=_townState(_townBossCount());if(zi===3&&G&&G.zoneIdx>=6)zi=4;else if(zi>=4)zi=5;zi=Math.min(zi,ALDRIC_ZONES.length-1);const hasMats=G&&G.inventory&&G.inventory.some(i=>i&&i.type==='material');const sell=hasMats?`<button class="td-btn" onclick="townSellMaterials()">💰 Sell all materials</button>`:`<div class="td-used">No materials to sell.</div>`;const offLabel=typeof getOffensiveStatLabel==='function'&&G?getOffensiveStatLabel(G):'ATK';const sharpen=TOWN.forgeVisited?`<div class="td-used">⚒ Already sharpened.</div>`:`<button class="td-btn" onclick="townSharpenWeapon()">⚒ Sharpen weapon — +2 ${offLabel} (15g)</button>`;return `<div class="td-portrait">⚒</div><div class="td-name">Aldric <span class="td-sub">Blacksmith</span></div><div class="td-greeting">"${ALDRIC_CLASS[cid]||'Need something forged?'}"</div><div class="td-zoneline">"${ALDRIC_ZONES[zi]}"</div><div style="margin-top:12px">${sharpen}<div style="margin-top:8px">${sell}</div></div>`;}
 function _dlgMalachar(){
-  const cid=G?G.classId:'fighter',zi=Math.min(_townState(_townBossCount()),MALACHAR_ZONES.length-1);
+  const cid=G?G.classId:'fighter';let zi=_townState(_townBossCount());if(zi===3&&G&&G.zoneIdx>=6)zi=4;else if(zi>=4)zi=5;zi=Math.min(zi,MALACHAR_ZONES.length-1);
   const donations=(typeof getWizardDonations==='function')?getWizardDonations():0;
   const tier=(typeof getShopTier==='function')?getShopTier():1;
   const tiers=['Standard','Rare','Legendary'];
