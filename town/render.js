@@ -140,14 +140,39 @@ function _drawExtTiles(ctx, a, cx, cy, cw, ch){
       if(t===0){
         ctx.fillStyle=a.ground; ctx.fillRect(sx,sy,TILE,TILE);
         if((c+r)%2===0){ctx.fillStyle='rgba(255,255,255,0.02)';ctx.fillRect(sx,sy,TILE,TILE);}
+        // Micro-texture: position-seeded brightness variation + sparse grass marks
+        const _gs=(c*7+r*13)%8;
+        if(_gs>5){ctx.fillStyle='rgba(255,255,255,0.03)';ctx.fillRect(sx,sy,TILE,TILE);}
+        else if(_gs>3){ctx.fillStyle='rgba(255,255,255,0.015)';ctx.fillRect(sx,sy,TILE,TILE);}
+        if(_gs===2||_gs===6){ctx.fillStyle='rgba(80,120,40,0.15)';ctx.fillRect(sx+3,sy+5,2,3);ctx.fillRect(sx+9,sy+2,2,4);ctx.fillRect(sx+12,sy+9,2,3);}
+        else if(_gs===4){ctx.fillStyle='rgba(60,100,30,0.12)';ctx.fillRect(sx+1,sy+10,3,2);ctx.fillRect(sx+8,sy+4,2,3);}
       } else if(t===1){
         ctx.fillStyle=a.path; ctx.fillRect(sx,sy,TILE,TILE);
         ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.5; ctx.strokeRect(sx+1,sy+1,TILE-2,TILE-2);
+        // Edge darkening where path meets grass
+        const _pN=r>0?EXT_MAP[r-1][c]:1,_pS=r<EXT_ROWS-1?EXT_MAP[r+1][c]:1;
+        const _pW=c>0?EXT_MAP[r][c-1]:1,_pE=c<EXT_COLS-1?EXT_MAP[r][c+1]:1;
+        ctx.fillStyle='rgba(0,0,0,0.12)';
+        if(_pN===0){ctx.fillRect(sx,sy,TILE,2);}
+        if(_pS===0){ctx.fillRect(sx,sy+TILE-2,TILE,2);}
+        if(_pW===0){ctx.fillRect(sx,sy,2,TILE);}
+        if(_pE===0){ctx.fillRect(sx+TILE-2,sy,2,TILE);}
+        // Gravel marks
+        const _pgm=(c*11+r*7)%6;
+        if(_pgm===0){ctx.fillStyle='rgba(0,0,0,0.08)';ctx.fillRect(sx+5,sy+7,2,2);ctx.fillRect(sx+11,sy+3,1,1);}
+        else if(_pgm===3){ctx.fillStyle='rgba(255,255,255,0.04)';ctx.fillRect(sx+8,sy+10,2,1);ctx.fillRect(sx+3,sy+5,1,2);}
       } else if(t===2){
         ctx.fillStyle=a.water; ctx.fillRect(sx,sy,TILE,TILE);
-        const s=Math.sin(Date.now()*0.001+c*0.8+r*0.5)*0.06;
-        ctx.fillStyle=`rgba(80,140,200,${0.08+s})`; ctx.fillRect(sx,sy,TILE,TILE/2);
+        const _wt=Date.now()*0.001;
+        const _ws1=Math.sin(_wt+c*0.8+r*0.5)*0.06;
+        const _ws2=Math.sin(_wt*1.4+c*0.5+r*0.9+1.5)*0.04;
+        ctx.fillStyle=`rgba(80,140,200,${0.08+_ws1})`; ctx.fillRect(sx,sy,TILE,TILE/2);
+        ctx.fillStyle=`rgba(80,140,200,${0.05+_ws2})`; ctx.fillRect(sx,sy+TILE/2,TILE,TILE/2);
         ctx.fillStyle='rgba(255,255,255,0.04)'; ctx.fillRect(sx+1,sy+2,TILE-2,1);
+        // Sparkle highlights
+        const _wsk=(c*7+r*11)%5;
+        const _wsp=Math.sin(_wt*2+_wsk*1.2);
+        if(_wsp>0.85){ctx.fillStyle=`rgba(255,255,255,${(_wsp-0.85)*2})`;ctx.fillRect(sx+_wsk*2+1,sy+3,2,1);}
       } else if(t===3){
         ctx.fillStyle=a.wallDark; ctx.fillRect(sx,sy,TILE,TILE);
         ctx.fillStyle='rgba(255,255,255,0.02)'; ctx.fillRect(sx,sy,TILE,1);
@@ -604,8 +629,10 @@ function _drawExtBuilding(ctx, b, a, cx, cy){
     return;
   }
 
-  // Drop shadow
-  ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(x+4,y+h,w,5);
+  // Drop shadow — gradient fade
+  const _shg=ctx.createLinearGradient(0,y+h,0,y+h+8);
+  _shg.addColorStop(0,'rgba(0,0,0,0.35)'); _shg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=_shg; ctx.fillRect(x+2,y+h,w+4,8);
 
   // ── HELPERS ──────────────────────────────────────────────
   function _roof(rx,ry,rw,rh,col,overhang=3){
@@ -801,6 +828,13 @@ function _drawExtBuilding(ctx, b, a, cx, cy){
       _door(dx+2,dy,TILE-4,TILE,'#251808');
       ctx.fillStyle='#4a3018'; ctx.fillRect(dx+1,dy+2,TILE-2,3); ctx.fillRect(dx+1,dy+8,TILE-2,3); ctx.fillRect(dx+1,dy+14,TILE-2,3);
     }
+
+    // Roof-slope corner cuts — triangular shadow covers rectangular wall corners
+    {const _roofH=wallY-y,_slope=(w/2+3)/_roofH;
+    const _cW=Math.round(w*0.1),_cH=Math.round(_cW/_slope);
+    ctx.fillStyle='rgba(0,0,0,0.5)';
+    ctx.beginPath(); ctx.moveTo(x,wallY); ctx.lineTo(x+_cW,wallY); ctx.lineTo(x,wallY+_cH); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x+w,wallY); ctx.lineTo(x+w-_cW,wallY); ctx.lineTo(x+w,wallY+_cH); ctx.closePath(); ctx.fill();}
 
   } else {
     // ── NAMED BUILDINGS ──────────────────────────────────────
@@ -1011,6 +1045,13 @@ function _drawDecor(ctx, d, a, cx, cy){
     ctx.fillStyle='rgba(255,255,255,0.04)'; ctx.fillRect(sx+4,sy+1,3,3);
     ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.fillRect(sx+2,sy+9,12,2);
   } else if(d.type==='lamp'){
+    // Ground light pool
+    const _lglx=sx+13,_lgly=sy+TILE+4;
+    const _lgR=14+2*Math.sin(Date.now()*0.003);
+    const _lgg=ctx.createRadialGradient(_lglx,_lgly,0,_lglx,_lgly,_lgR);
+    _lgg.addColorStop(0,`rgba(${a.tr},${a.tg},${a.tb},0.18)`);
+    _lgg.addColorStop(1,`rgba(${a.tr},${a.tg},${a.tb},0)`);
+    ctx.fillStyle=_lgg; ctx.beginPath(); ctx.arc(_lglx,_lgly,_lgR,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='rgba(80,60,30,0.9)'; ctx.fillRect(sx+7,sy+5,2,11); ctx.fillRect(sx+7,sy+5,6,2);
     const lx=sx+13,ly=sy+3;
     ctx.fillStyle=`rgb(${a.tr},${a.tg},${a.tb})`; ctx.fillRect(lx-3,ly,6,6);
@@ -1127,7 +1168,7 @@ function _drawNPC(ctx, npc, wx, wy, facing, cx, cy, near, label){
   // Walking bob — only if NPC is moving (non-stationary) 
   const moving = !npc.stationary && npc._moving;
   const legSwing = moving ? Math.sin(t*3.5) : 0;
-  const bob = moving ? Math.abs(Math.sin(t*3.5))*0.8 : 0;
+  const bob = moving ? Math.abs(Math.sin(t*3.5))*0.8 : Math.sin(t*0.5)*0.5;
 
   // ── Shadow ──
   ctx.fillStyle='rgba(0,0,0,0.25)';

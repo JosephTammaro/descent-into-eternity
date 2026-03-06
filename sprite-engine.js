@@ -25,6 +25,11 @@ const IMAGE_SPRITES = {
     attack: ['sprites/rogue-attack-1.png','sprites/rogue-attack-2.png','sprites/rogue-attack-3.png','sprites/rogue-attack-4.png'],
     defend: ['sprites/rogue-defend-1.png','sprites/rogue-defend-2.png','sprites/rogue-defend-3.png'],
   },
+  paladin: {
+    idle:   ['sprites/paladin-idle-1.png','sprites/paladin-idle-2.png','sprites/paladin-idle-3.png','sprites/paladin-idle-4.png'],
+    attack: ['sprites/paladin-attack-1.png','sprites/paladin-attack-2.png','sprites/paladin-attack-3.png','sprites/paladin-attack-4.png'],
+    defend: ['sprites/paladin-defend-1.png','sprites/paladin-defend-2.png','sprites/paladin-defend-3.png'],
+  },
 };
 
 // Idle timing per class (ms per frame)
@@ -32,6 +37,7 @@ const IMG_IDLE_TIMING = {
   fighter: [220, 160, 220, 160],
   wizard:  [320, 280, 320, 280],
   rogue:   [200, 180, 200, 180],
+  paladin: [240, 180, 240, 180],
 };
 
 // ── Chroma definitions — 8 classes × 4 each ─────────────────

@@ -12,30 +12,6 @@ const CLASS_SPRITES = {
 //  Row  19    : BOOTS
 // ══════════════════════════════════════════════════════════════════
 
-// ── PALADIN ─ gold plate, holy cross on chest, cape ──────────────
-paladin:[
-  [C._,C._,C._,C._,C._,GD,  GD2, GD,  GD,  GD2, GD,  C._,C._,C._,C._,C._],  //  0 helm crest
-  [C._,C._,C._,C._,GD2, GD,  SL,  SL,  SL,  SL,  GD,  GD2, C._,C._,C._,C._],  //  1 helm top
-  [C._,C._,C._,GD,  SL,  SL,  SK,  SK,  SK,  SK,  SL,  SL,  GD,  C._,C._,C._],  //  2 face+helm
-  [C._,C._,C._,GD,  SL,  SK,  SK2, GD,  GD,  SK2, SK,  SL,  GD,  C._,C._,C._],  //  3 eyes/cross
-  [C._,C._,C._,GD,  SL,  SK,  SK,  SK,  SK,  SK,  SK,  SL,  GD,  C._,C._,C._],  //  4 chin guard
-  [C._,C._,C._,C._,GD,  GD2, GD,  GD,  GD,  GD,  GD2, GD,  C._,C._,C._,C._],  //  5 gorget
-  [RD, GD,  SL,  GD,  GD2, GD,  GD,  GD,  GD,  GD,  GD,  GD2, GD,  SL,  GD,  RD],  //  6 pauldrons+cape
-  [RD, GD2, SL,  SL,  GD,  GD2, WH,  GD,  GD,  WH,  GD2, GD,  SL,  SL,  GD2, RD],  //  7 arms+chest cross
-  [RD, GD,  SL,  SL,  GD2, WH,  WH,  GD2, GD2, WH,  WH,  GD2, SL,  SL,  GD,  RD],  //  8 arms+cross lower
-  [C._,GD2, SL,  GD,  GD2, GD,  GD,  GD,  GD,  GD,  GD,  GD2, GD,  SL,  GD2, C._],  //  9 lower arms+torso
-  [C._,C._,GD,  GD2, GD,  GD2, GD,  GD2, GD2, GD,  GD2, GD,  GD2, GD,  C._,C._],  // 10 belt
-  [C._,C._,GD2, GD,  SL,  GD2, GD,  C._,C._,GD,  GD2, SL,  GD,  GD2, C._,C._],  // 11 fists+hips
-  [C._,C._,C._,GD,  SL,  GD,  GD2, GD,  GD,  GD2, GD,  SL,  GD,  C._,C._,C._],  // 12 hip plates
-  [C._,C._,C._,C._,SL,  GD,  SL,  C._,C._,SL,  GD,  SL,  C._,C._,C._,C._],  // 13 thigh upper
-  [C._,C._,C._,C._,GD,  SL,  GD,  C._,C._,GD,  SL,  GD,  C._,C._,C._,C._],  // 14 thigh lower
-  [C._,C._,C._,C._,GD2, SL,  GD2, C._,C._,GD2, SL,  GD2, C._,C._,C._,C._],  // 15 knee
-  [C._,C._,C._,C._,SL,  GD,  SL,  C._,C._,SL,  GD,  SL,  C._,C._,C._,C._],  // 16 shin upper
-  [C._,C._,C._,C._,GD,  SL,  GD,  C._,C._,GD,  SL,  GD,  C._,C._,C._,C._],  // 17 shin lower
-  [C._,C._,C._,C._,GD2, GD,  C._,C._,C._,C._,GD,  GD2, C._,C._,C._,C._],  // 18 ankle
-  [C._,C._,C._,GD2, GD,  SL,  GD,  GD2, GD2, GD,  SL,  GD,  GD2, C._,C._,C._],  // 19 sabatons
-],
-
 // ── RANGER ─ hooded cloak, bow in left hand, quiver on back ──────
 ranger:[
   [C._,C._,C._,C._,C._,GR,  GR2, GR2, GR2, GR,  C._,C._,C._,C._,C._,C._],  //  0 hood tip
@@ -137,30 +113,6 @@ druid:[
 // ── CLASS SPRITE ALTERNATE FRAMES (for idle animation) ──────────────
 // Each class has a second frame showing slight movement/effect variation
 const CLASS_SPRITE_FRAMES = {
-
-// PALADIN frame 2: cape billowed out (RD extends further, holy light pulses WH brighter)
-paladin:[
-  [C._,C._,C._,C._,C._,GD,  GD2, GD,  GD,  GD2, GD,  C._,C._,C._,C._,C._],  //  0 helm crest
-  [C._,C._,C._,C._,GD2, GD,  SL,  SL,  SL,  SL,  GD,  GD2, C._,C._,C._,C._],  //  1 helm top
-  [C._,C._,C._,GD,  SL,  SL,  SK,  SK,  SK,  SK,  SL,  SL,  GD,  C._,C._,C._],  //  2 face+helm
-  [C._,C._,C._,GD,  SL,  SK,  SK2, GD,  GD,  SK2, SK,  SL,  GD,  C._,C._,C._],  //  3 eyes
-  [C._,C._,C._,GD,  SL,  SK,  SK,  SK,  SK,  SK,  SK,  SL,  GD,  C._,C._,C._],  //  4 chin guard
-  [C._,C._,C._,C._,GD,  GD2, GD,  GD,  GD,  GD,  GD2, GD,  C._,C._,C._,C._],  //  5 gorget
-  [RD2, GD, SL,  GD,  GD2, GD,  GD,  GD,  GD,  GD,  GD,  GD2, GD,  SL,  GD,  RD2],  //  6 cape darker edge fluttered
-  [RD,  GD2, SL, SL,  GD,  GD2, WH,  GD,  GD,  WH,  GD2, GD,  SL,  SL,  GD2, RD],  //  7 arms+cross
-  [RD,  GD,  SL, SL,  GD2, WH,  WH,  GD2, GD2, WH,  WH,  GD2, SL,  SL,  GD,  RD],  //  8 cross lower
-  [RD2, GD2, SL, GD,  GD2, GD,  GD,  GD,  GD,  GD,  GD,  GD2, GD,  SL,  GD2, RD2],  //  9 lower — cape flutter
-  [C._,C._,GD,  GD2, GD,  GD2, GD,  GD2, GD2, GD,  GD2, GD,  GD2, GD,  C._,C._],  // 10 belt
-  [C._,C._,GD2, GD,  SL,  GD2, GD,  C._,C._,GD,  GD2, SL,  GD,  GD2, C._,C._],  // 11 fists+hips
-  [C._,C._,C._,GD,  SL,  GD,  GD2, GD,  GD,  GD2, GD,  SL,  GD,  C._,C._,C._],  // 12 hip plates
-  [C._,C._,C._,C._,SL,  GD,  SL,  C._,C._,SL,  GD,  SL,  C._,C._,C._,C._],  // 13 thigh upper
-  [C._,C._,C._,C._,GD,  SL,  GD,  C._,C._,GD,  SL,  GD,  C._,C._,C._,C._],  // 14 thigh lower
-  [C._,C._,C._,C._,GD2, SL,  GD2, C._,C._,GD2, SL,  GD2, C._,C._,C._,C._],  // 15 knee
-  [C._,C._,C._,C._,SL,  GD,  SL,  C._,C._,SL,  GD,  SL,  C._,C._,C._,C._],  // 16 shin upper
-  [C._,C._,C._,C._,GD,  SL,  GD,  C._,C._,GD,  SL,  GD,  C._,C._,C._,C._],  // 17 shin lower
-  [C._,C._,C._,C._,GD2, GD,  C._,C._,C._,C._,GD,  GD2, C._,C._,C._,C._],  // 18 ankle
-  [C._,C._,C._,GD2, GD,  SL,  GD,  GD2, GD2, GD,  SL,  GD,  GD2, C._,C._,C._],  // 19 sabatons
-],
 
 // RANGER frame 2: bow arm drawn back, bowstring taut
 ranger:[
@@ -264,30 +216,6 @@ druid:[
 // Frame 3 is slightly past neutral in the opposite direction of frame 2.
 // This gives the cycle a natural arc — the limb overshoots before settling.
 const CLASS_SPRITE_FRAMES3 = {
-
-// PALADIN frame 3: cape half-settled, holy light mid-intensity — between frame 1 and 2
-paladin:[
-  [C._,C._,C._,C._,C._,GD,  GD2, GD,  GD,  GD2, GD,  C._,C._,C._,C._,C._],  //  0 helm crest
-  [C._,C._,C._,C._,GD2, GD,  SL,  SL,  SL,  SL,  GD,  GD2, C._,C._,C._,C._],  //  1 helm top
-  [C._,C._,C._,GD,  SL,  SL,  SK,  SK,  SK,  SK,  SL,  SL,  GD,  C._,C._,C._],  //  2 face
-  [C._,C._,C._,GD,  SL,  SK,  SK2, GD,  GD,  SK2, SK,  SL,  GD,  C._,C._,C._],  //  3 eyes
-  [C._,C._,C._,GD,  SL,  SK,  SK,  SK,  SK,  SK,  SK,  SL,  GD,  C._,C._,C._],  //  4 chin
-  [C._,C._,C._,C._,GD,  GD2, GD,  GD,  GD,  GD,  GD2, GD,  C._,C._,C._,C._],  //  5 gorget
-  [RD, GD,  SL,  GD,  GD2, GD,  GD,  GD,  GD,  GD,  GD,  GD2, GD,  SL,  GD,  RD],  //  6 cape mid-settle
-  [RD, GD2, SL,  SL,  GD,  GD2, WH,  GD,  GD,  WH,  GD2, GD,  SL,  SL,  GD2, RD],  //  7 cross mid glow
-  [RD, GD,  SL,  SL,  GD2, WH,  GD2, GD2, GD2, GD2, WH,  GD2, SL,  SL,  GD,  RD],  //  8 cross lower slightly dimmer
-  [RD, GD2, SL,  GD,  GD2, GD,  GD,  GD,  GD,  GD,  GD,  GD2, GD,  SL,  GD2, RD],  //  9 cape settling
-  [C._,C._,GD,  GD2, GD,  GD2, GD,  GD2, GD2, GD,  GD2, GD,  GD2, GD,  C._,C._],  // 10 belt
-  [C._,C._,GD2, GD,  SL,  GD2, GD,  C._,C._,GD,  GD2, SL,  GD,  GD2, C._,C._],  // 11 fists
-  [C._,C._,C._,GD,  SL,  GD,  GD2, GD,  GD,  GD2, GD,  SL,  GD,  C._,C._,C._],  // 12 hip plates
-  [C._,C._,C._,C._,SL,  GD,  SL,  C._,C._,SL,  GD,  SL,  C._,C._,C._,C._],  // 13 thigh upper
-  [C._,C._,C._,C._,GD,  SL,  GD,  C._,C._,GD,  SL,  GD,  C._,C._,C._,C._],  // 14 thigh lower
-  [C._,C._,C._,C._,GD2, SL,  GD2, C._,C._,GD2, SL,  GD2, C._,C._,C._,C._],  // 15 knee
-  [C._,C._,C._,C._,SL,  GD,  SL,  C._,C._,SL,  GD,  SL,  C._,C._,C._,C._],  // 16 shin upper
-  [C._,C._,C._,C._,GD,  SL,  GD,  C._,C._,GD,  SL,  GD,  C._,C._,C._,C._],  // 17 shin lower
-  [C._,C._,C._,C._,GD2, GD,  C._,C._,C._,C._,GD,  GD2, C._,C._,C._,C._],  // 18 ankle
-  [C._,C._,C._,GD2, GD,  SL,  GD,  GD2, GD2, GD,  SL,  GD,  GD2, C._,C._,C._],  // 19 sabatons
-],
 
 // RANGER frame 3: bow arm follow-through — slightly forward past neutral after release
 ranger:[
