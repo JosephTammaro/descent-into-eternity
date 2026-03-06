@@ -208,6 +208,16 @@ function spawnEnemy(){
   const z=ZONES[G.zoneIdx];
   let isBoss=false;
 
+  // ── Zone echo — ghostly reminder of a past death in this zone ─────────
+  if(G.zoneKills===0 && !G._zoneEchoDone && typeof loadGraveyard==='function'){
+    const pastDeaths=loadGraveyard().filter(e=>e.zoneIdx===G.zoneIdx);
+    if(pastDeaths.length){
+      const d=pastDeaths[0];
+      log(`👻 A familiar stillness. A ${(d.className||'hero').toLowerCase()} fell here once — slain by ${d.causeOfDeath||'the dark'}.`,'c');
+    }
+    G._zoneEchoDone=true;
+  }
+
   // ── Boss check ────────────────────────────────────────────
   if(G.bossReady&&!G.runBossDefeated[G.zoneIdx]){
     isBoss=true;

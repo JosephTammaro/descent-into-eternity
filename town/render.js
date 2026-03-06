@@ -99,6 +99,9 @@ function _findNearInteractable(){
     // Notice board
     const nb=EXT_BUILDINGS.find(b=>b.id==='noticeboard');
     if(nb){ const dx=(_pl.wx/TILE)-nb.doorTx,dy=(_pl.wy/TILE)-nb.doorTy; if(Math.hypot(dx,dy)<1.8) return {type:'notice',ref:nb}; }
+    // Graveyard entrance — opens death history
+    const gy=EXT_BUILDINGS.find(b=>b.id==='graveyard');
+    if(gy){ const dx=(_pl.wx/TILE)-gy.doorTx,dy=(_pl.wy/TILE)-gy.doorTy; if(Math.hypot(dx,dy)<1.8) return {type:'graveyard',ref:gy}; }
     // Wanderers
     for(const w of _wanderers){
       const dx=_pl.wx-w.wx, dy=_pl.wy-w.wy;
@@ -1594,6 +1597,7 @@ function _drawHUD(ctx, a, near){
     else if(near.type==='graceVault') prompt='[E] Open Grace Vault';
     else if(near.type==='stashChest') prompt='[E] Open Stash';
     else if(near.type==='notice') prompt='[E] Read Notices';
+    else if(near.type==='graveyard') prompt='[E] Open the Graveyard';
     else if(near.type==='exit')   prompt='[E] Leave building';
     else if(near.type==='wanderer'||near.type==='npc') prompt='[E] Talk';
     ctx.fillStyle='#ffd84a';

@@ -230,6 +230,8 @@ function _handleInteract(near){
     townOpenDialog('stash');
   } else if(near.type==='notice'){
     townOpenDialog('notice');
+  } else if(near.type==='graveyard'){
+    if(typeof showGraveyard==='function') showGraveyard();
   } else if(near.type==='wanderer'){
     _talkToWanderer(near.ref);
   } else if(near.type==='npc'){

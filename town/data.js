@@ -607,6 +607,9 @@ function _townBossCount(){
   return G.bossDefeated.filter(Boolean).length;
 }
 function _getDeathCount(){
+  if(typeof loadGraveyard==='function'){
+    return loadGraveyard().length;
+  }
   if(typeof activeSaveSlot==='undefined'||!activeSaveSlot||typeof loadSlotData!=='function') return 0;
   const d=loadSlotData(activeSaveSlot);
   return (d&&d.unlocks&&d.unlocks.stats&&d.unlocks.stats.totalDeaths)||0;
@@ -649,8 +652,13 @@ function _buildWanderers(bossesBeaten) {
              : ["I've been at the Gate every morning since you left for the last one. Watching. Waiting.","The journal's almost full. I left the last page blank. For the ending.","When you come back — and you will — I want to write what you say. Whatever you say. That's the last entry."];
         const deaths=_getDeathCount();
         if(deaths===0) return base;
-        const deathLine = deaths===1 ? "I wrote an ending for page one. Then you came back. I crossed it out."
-          : deaths<=3 ? `Page ${deaths+1} now. The first ${deaths} had endings. This one doesn't yet.`
+        const last = (typeof loadGraveyard==='function') ? loadGraveyard()[0] : null;
+        const lastDesc = last
+          ? `A ${(last.className||'hero').toLowerCase()} lost to ${last.causeOfDeath||'the dark'} in ${last.zoneName||'the dungeon'}.`
+          : '';
+        const deathLine = deaths===1
+          ? `I wrote an ending for page one. Then you came back. I crossed it out.${lastDesc?' '+lastDesc:''}`
+          : deaths<=3 ? `Page ${deaths+1} now. The first ${deaths} had endings. This one doesn't yet.${lastDesc?' '+lastDesc:''}`
           : deaths<=7 ? `I stopped writing endings before you come back. Feels presumptuous. You're on page ${deaths+1}.`
           : `I lost count for a while. Then I kept counting anyway. You're at ${deaths}. I stopped being surprised around five.`;
         return [deathLine,...base];
@@ -775,6 +783,26 @@ function _buildWanderers(bossesBeaten) {
       { id:'refugee', label:'Refugee', color:'#907060', icon:'🧳', wx:13,wy:36, wanderArea:{x1:11,y1:34,x2:16,y2:38}, lines:["We came from the Outpost road. There's nothing left of the waystation.","I don't know where we're going. Just away from there."] },
       { id:'soldier2', label:'Scout', color:'#a09060', icon:'⚔', wx:42,wy:26, wanderArea:{x1:38,y1:22,x2:48,y2:30}, lines:["I scouted ahead of the garrison. Came back alone. I don't talk about what I saw.","The road east is passable. Barely. Don't go at night."] },
     ] : []),
+
+    // ── Ghost of last fallen hero — appears inside graveyard when deaths exist ──
+    ...((()=>{
+      if(typeof loadGraveyard!=='function') return [];
+      const gy=loadGraveyard();
+      if(!gy.length) return [];
+      const last=gy[0];
+      const causeShort=last.causeOfDeath||'the dark';
+      const clsLower=(last.className||'hero').toLowerCase();
+      return [{
+        id:'ghost_hero', label:'Fallen Hero', color:'#9090bb', icon:'👻',
+        wx:39, wy:31, stationary:true,
+        getLines: ()=>[
+          `A ${clsLower}. Level ${last.level}. Lost to ${causeShort} in ${last.zoneName}.`,
+          `I remember ${last.zoneName}. I remember ${causeShort}. I don't remember anything else.`,
+          `I keep thinking I can go back in. I can't. But you can. That's the part that matters.`,
+          `${last.kills} enemies. ${last.bossesKilled} bosses. It wasn't enough that time. Maybe it will be now.`,
+        ],
+      }];
+    })()),
   ];
   return baseWanderers.map(w => ({
     ...w,

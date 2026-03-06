@@ -2541,7 +2541,7 @@ function renderWorldMap(){
 }
 
 function travelToZone(zoneIdx){
-  G.zoneIdx=zoneIdx;G.zoneKills=0;G.bossReady=false;
+  G.zoneIdx=zoneIdx;G.zoneKills=0;G.bossReady=false;G._zoneEchoDone=false;
   G.dungeonFights=0;G.campUnlocked=false;G.dungeonGoal=zoneIdx>=5?6:5;
   G.restsThisZone=0;
   G._ironmanFlag=true; // Track if player stays above 50% HP all zone
@@ -3106,8 +3106,8 @@ function showScreen(id){
     const goldEl = document.getElementById('town-gold-display');
     if(goldEl && G) goldEl.textContent = G.gold + 'g';
   }
-  // Stop town engine if leaving town
-  if(id !== 'town' && typeof stopTownEngine === 'function') stopTownEngine();
+  // Stop town engine if leaving town (but not for graveyard — it overlays town)
+  if(id !== 'town' && id !== 'graveyard' && typeof stopTownEngine === 'function') stopTownEngine();
 }
 
 // Fade to black → switch screen → fade back in

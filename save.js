@@ -44,6 +44,8 @@ function emptySlotData(){
     lifetimeChannelsCleric: 0,
     lifetimeWildShapeTurnsDruid: 0,
     lifetimePoisonsDruid: 0,
+    // Death history — newest first, max 20 entries
+    deathHistory: [],
   };
 }
 
@@ -95,6 +97,7 @@ function loadSlotData(slot){
     if(d.lifetimeChannelsCleric===undefined)     d.lifetimeChannelsCleric = 0;
     if(d.lifetimeWildShapeTurnsDruid===undefined) d.lifetimeWildShapeTurnsDruid = 0;
     if(d.lifetimePoisonsDruid===undefined)       d.lifetimePoisonsDruid = 0;
+    if(!d.deathHistory)                          d.deathHistory = [];
     return d;
   } catch(e){ return null; }
 }
@@ -107,6 +110,51 @@ function loadGameData(slot){
 function deleteSave(slot){
   localStorage.removeItem(getSaveKey(slot));
   if(activeSaveSlot === slot) activeSaveSlot = null;
+}
+
+// ══════════════════════════════════════════════════════════
+//  DEATH HISTORY — tracks fallen heroes per slot
+// ══════════════════════════════════════════════════════════
+
+function recordGraveyardEntry(g){
+  if(!activeSaveSlot || !g) return;
+  const cls  = (typeof CLASSES!=='undefined' && CLASSES[g.classId]) ? CLASSES[g.classId] : null;
+  const zone = (typeof ZONES!=='undefined'   && ZONES[g.zoneIdx])   ? ZONES[g.zoneIdx]   : null;
+  const bestItem = g.equipped
+    ? Object.values(g.equipped).filter(Boolean).sort((a,b)=>{
+        const r=['common','uncommon','rare','epic','legendary'];
+        return r.indexOf(b.rarity)-r.indexOf(a.rarity);
+      })[0]
+    : null;
+  const entry = {
+    ts:           Date.now(),
+    className:    cls ? cls.name : (g.classId||'Unknown'),
+    subclass:     (g.subclassUnlocked && cls && cls.subclass) ? cls.subclass.name : null,
+    level:        g.level || 1,
+    zoneIdx:      g.zoneIdx || 0,
+    zoneName:     zone ? zone.name  : 'Unknown',
+    zoneNum:      zone ? zone.num   : 1,
+    causeOfDeath: g.causeOfDeath || 'Unknown',
+    kills:        g.totalKills  || 0,
+    gold:         g.totalGold   || 0,
+    bossesKilled: g.bossDefeated ? Object.values(g.bossDefeated).filter(Boolean).length : 0,
+    playTime:     g.playTime    || 0,
+    bestItem:     bestItem ? { icon:bestItem.icon, name:bestItem.name, rarity:bestItem.rarity } : null,
+    weapon:       (g.equipped && g.equipped.weapon)
+                    ? { icon:g.equipped.weapon.icon, name:g.equipped.weapon.name, id:g.equipped.weapon.id }
+                    : null,
+  };
+  updateSlotData(activeSaveSlot, d=>{
+    if(!d.deathHistory) d.deathHistory = [];
+    d.deathHistory.unshift(entry);
+    if(d.deathHistory.length > 20) d.deathHistory.length = 20;
+  });
+}
+
+function loadGraveyard(){
+  if(!activeSaveSlot) return [];
+  const d = loadSlotData(activeSaveSlot);
+  return (d && d.deathHistory) ? d.deathHistory : [];
 }
 
 function autoSave(){
