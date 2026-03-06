@@ -281,15 +281,16 @@ function townOpenDialog(id){
   if(id==='stash')         co.innerHTML=_dlgStash();
   if(id==='upgrades')      co.innerHTML=_dlgUpgrades();
   ov.classList.toggle('mirela-open', id==='mirela_shop');
+  ov.classList.toggle('vareth-open', id==='upgrades');
   ov.classList.add('open');
   // Auto-hide loadout HUD so it doesn't overlap the dialog
   const lhud=document.getElementById('townLoadoutHUD');
   if(lhud) lhud.classList.add('loadout-hidden');
-  // Hide pause button when Mirela's fullscreen shop is open
+  // Hide pause button when Mirela's or Vareth's fullscreen is open
   const pb=document.getElementById('townPauseBtn');
-  if(pb) pb.style.display = id==='mirela_shop' ? 'none' : '';
+  if(pb) pb.style.display = (id==='mirela_shop'||id==='upgrades') ? 'none' : '';
 }
-function townCloseDialog(){ _activeDlg=null; const _ov=document.getElementById('townDialogOverlay'); if(_ov){_ov.classList.remove('open');_ov.classList.remove('mirela-open');}
+function townCloseDialog(){ _activeDlg=null; const _ov=document.getElementById('townDialogOverlay'); if(_ov){_ov.classList.remove('open');_ov.classList.remove('mirela-open');_ov.classList.remove('vareth-open');}
   const lhud=document.getElementById('townLoadoutHUD');
   if(lhud) lhud.classList.remove('loadout-hidden');
   const pb=document.getElementById('townPauseBtn');
@@ -466,23 +467,28 @@ function _dlgUpgrades(){
   });
 
   return `
-    <div class="td-portrait">🏛</div>
-    <div class="td-name">Vareth <span class="td-sub">Retired Delver · Upgrade Master</span></div>
-    <div class="td-greeting">"${VARETH_CLASS[cid]||'Welcome.'}"</div>
-    <div class="td-zoneline">"${VARETH_ZONES[zi]}"</div>
-    <div class="pg-topbar">
-      <div class="pg-section-label">PERMANENT UPGRADES</div>
-      <div class="pg-gold">${goldLabel}: <span class="pg-gold-val">🪙 ${gold}</span></div>
-    </div>
-    <div class="pg-section">
-      <div class="pg-section-sub">UNIVERSAL</div>
-      <div class="pg-card-grid">${universals.map(u=>upgradeCard(u,false)).join('')}</div>
-    </div>
-    <div class="pg-section">
-      <div class="pg-section-sub">CLASS MASTERY</div>
-      <div class="pg-card-grid">${sortedMasteries.map(u=>upgradeCard(u,true)).join('')}</div>
-    </div>
-    <div class="pg-footer">Upgrades persist across all runs on this save slot.</div>`;
+    <div class="pg-layout">
+      <div class="pg-sidebar">
+        <div class="td-portrait">🏛</div>
+        <div class="td-name">Vareth <span class="td-sub">Retired Delver · Upgrade Master</span></div>
+        <div class="td-greeting">"${VARETH_CLASS[cid]||'Welcome.'}"</div>
+        <div class="td-zoneline">"${VARETH_ZONES[zi]}"</div>
+        <div class="pg-sidebar-gold">${goldLabel}: <span class="pg-gold-val">🪙 ${gold}</span></div>
+        <div class="pg-footer">Upgrades persist across all runs on this save slot.</div>
+      </div>
+      <div class="pg-main">
+        <div class="pg-tabs">
+          <button class="pg-tab pg-tab-active" data-tab="universal" onclick="pgSetTab('universal')">⚔ UNIVERSAL</button>
+          <button class="pg-tab" data-tab="class" onclick="pgSetTab('class')">★ CLASS MASTERY</button>
+        </div>
+        <div id="pg-panel-universal" class="pg-panel pg-panel-active">
+          <div class="pg-card-grid">${universals.map(u=>upgradeCard(u,false)).join('')}</div>
+        </div>
+        <div id="pg-panel-class" class="pg-panel">
+          <div class="pg-card-grid">${sortedMasteries.map(u=>upgradeCard(u,true)).join('')}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function townBuyUpgrade(upgradeId){
@@ -492,8 +498,15 @@ function townBuyUpgrade(upgradeId){
   if(typeof AUDIO!=='undefined'&&AUDIO.sfx&&AUDIO.sfx.gold) AUDIO.sfx.gold();
   townFlash('Upgrade purchased!');
   if(typeof renderAll==='function' && typeof G!=='undefined' && G) renderAll();
+  const activeTab = document.querySelector('.pg-tab-active')?.dataset.tab || 'universal';
   document.getElementById('townDialogContent').innerHTML = _dlgUpgrades();
+  pgSetTab(activeTab);
   updateTownLoadout();
+}
+
+function pgSetTab(tab){
+  document.querySelectorAll('.pg-tab').forEach(b=>b.classList.toggle('pg-tab-active', b.dataset.tab===tab));
+  document.querySelectorAll('.pg-panel').forEach(p=>p.classList.toggle('pg-panel-active', p.id==='pg-panel-'+tab));
 }
 
 // ══════════════════════════════════════════════════════════
@@ -641,7 +654,7 @@ function _dlgStash(){
     return `<div class="td-portrait">📦</div>
       <div class="td-name">Stash <span class="td-sub">Your personal storage</span></div>
       <div class="td-greeting" style="font-style:italic;color:var(--dim)">Empty. Buy items from Mirela or salvage gear from a run.</div>
-      <div style="margin-top:10px;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim)">Town Gold: <span style="color:var(--gold)">🪙 ${gold}</span></div>`;
+      <div class="td-donate-info" style="margin-top:10px">Town Gold: <span style="color:var(--gold)">🪙 ${gold}g</span></div>`;
   }
 
   const itemsHTML = stash.filter(item=>item!=null).map((item,i)=>{
@@ -661,9 +674,9 @@ function _dlgStash(){
 
   return `<div class="td-portrait">📦</div>
     <div class="td-name">Stash <span class="td-sub">${stash.length}/40 items</span></div>
-    <div style="margin-bottom:8px;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim)">Town Gold: <span style="color:var(--gold)">🪙 ${gold}</span></div>
+    <div class="td-donate-info" style="margin-bottom:10px">Town Gold: <span style="color:var(--gold)">🪙 ${gold}g</span></div>
     <div class="stash-dlg-list">${itemsHTML}</div>
-    <div style="margin-top:10px;font-size:10px;color:var(--dim);font-style:italic">Items here carry over between runs. Load them at the gate before descending.</div>`;
+    <div class="td-used" style="margin-top:12px;border-left:none;padding-left:0">Items carry over between runs. Load them at the gate before descending.</div>`;
 }
 
 function stashDiscardItem(idx){
