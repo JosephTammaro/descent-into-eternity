@@ -4026,12 +4026,13 @@ function townOpenDialog(id){
   if(id==='mirela_shop')   co.innerHTML=_dlgMirelaShop();
   if(id==='stash')         co.innerHTML=_dlgStash();
   if(id==='upgrades')      co.innerHTML=_dlgUpgrades();
+  ov.classList.toggle('mirela-open', id==='mirela_shop');
   ov.classList.add('open');
   // Auto-hide loadout HUD so it doesn't overlap the dialog
   const lhud=document.getElementById('townLoadoutHUD');
   if(lhud) lhud.classList.add('loadout-hidden');
 }
-function townCloseDialog(){ _activeDlg=null; document.getElementById('townDialogOverlay')?.classList.remove('open');
+function townCloseDialog(){ _activeDlg=null; const _ov=document.getElementById('townDialogOverlay'); if(_ov){_ov.classList.remove('open');_ov.classList.remove('mirela-open');}
   const lhud=document.getElementById('townLoadoutHUD');
   if(lhud) lhud.classList.remove('loadout-hidden');
 }

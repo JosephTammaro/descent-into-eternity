@@ -3186,6 +3186,22 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   background: linear-gradient(180deg, transparent, rgba(0,0,0,0.1));
 }
 
+/* ── Mirela's shop: fullscreen, no scrollbar ── */
+.town-dialog-overlay.mirela-open {
+  top: 0;
+}
+.town-dialog-overlay.mirela-open .town-dialog-box {
+  max-height: 100%;
+  height: 100%;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.town-dialog-overlay.mirela-open .town-dialog-content {
+  flex: 1;
+  overflow-y: hidden;
+}
+
 /* ── Dialog content styles ── */
 .td-portrait { font-size: clamp(28px,3.5vw,42px); margin-bottom: clamp(6px,0.9vh,10px);
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
