@@ -118,6 +118,11 @@ function dealToEnemy(dmg,crit,source){
   if(G._graceFirstBlade&&!G._graceFirstBladeUsed){G._graceFirstBladeUsed=true;dmg=Math.ceil(dmg*1.5);log('🗡️ The First Blade: +50% DAMAGE!','s');}
   // Tutorial: cap per-hit damage so the Training Dummy survives long enough to practice on
   if(G.currentEnemy.isTutorial) dmg=Math.min(dmg,10);
+  // ── Valdris — Frozen Bulwark: 50% dmg reduction while Frozen Soldiers are alive ──
+  if(G.currentEnemy&&G.currentEnemy.id==='valdris'){
+    const hasSoldiers=(G.currentEnemies||[]).some(en=>!en.dead&&en.hp>0&&en._isFrozenSoldier);
+    if(hasSoldiers){dmg=Math.ceil(dmg*0.5);log('❄ Frozen Bulwark shields Valdris! (-50% dmg)','c');}
+  }
   G.currentEnemy.hp-=dmg;
   // Run summary tracking
   G.totalDmgDealt=(G.totalDmgDealt||0)+dmg;
