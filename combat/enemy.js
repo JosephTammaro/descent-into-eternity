@@ -51,7 +51,7 @@ function doEnemyTurn(){
       log('☠ Poison: '+poisonDmg+' damage!','c');
     }
     if(G.conditions.includes('Burning')){
-      const burnDmg=5+G.zoneIdx*2;
+      const burnDmg=G._crimsonBrand?12:5+G.zoneIdx*2;
       G.hp-=burnDmg;
       spawnFloater(burnDmg,'dmg',false);
       AUDIO.sfx.burn();
@@ -97,6 +97,8 @@ function doEnemyTurn(){
       return true;
     });
     renderConditions();
+    // Vexara Crimson Brand cleanup: clear brand flag when Burning wears off
+    if(G._crimsonBrand&&!G.conditions.includes('Burning'))delete G._crimsonBrand;
   }
 
   // Tick enemy conditions — check effects BEFORE ticking so 1-turn conditions work correctly
@@ -170,6 +172,12 @@ function doEnemyTurn(){
   // Eternal Bastion: regen 2 HP/turn
   if(G._graceBastion&&G.hp<G.maxHp){const rh=Math.min(2,G.maxHp-G.hp);G.hp+=rh;spawnFloater(rh,'heal',false);log('❤️ Eternal Bastion: +'+rh+' HP','s');renderHUD();}
 
+  // ── MALVARIS — Grief Aura: -1 resource per turn (passive) ──
+  if(e.id==='malvaris'&&G.res>0){
+    G.res=Math.max(0,G.res-1);
+    log('🌑 Grief Aura: −1 '+(typeof CLASSES!=='undefined'&&CLASSES[G.classId]?CLASSES[G.classId].res||'resource':'resource'),'c');
+  }
+
   // ── BOSS PHASE 2 TRIGGER ──
   if(e.isBoss&&e.phase2&&!e.phaseTriggered&&e.hp<=Math.floor(e.maxHp*0.5)){
     e.phaseTriggered=true;
@@ -198,6 +206,139 @@ function doEnemyTurn(){
     showPhase2Overlay(e.name, e.phase2.name);
     if(typeof triggerPhase2Zoom==='function') triggerPhase2Zoom();
     if(typeof triggerScreenShake==='function') triggerScreenShake('boss');
+  }
+
+  // ── THORNWARDEN REGEN — stops when phase 2 triggers ──
+  if(e.regen&&!e.phaseTriggered&&e.hp<e.maxHp){
+    const rh=Math.min(e.regen,e.maxHp-e.hp);
+    e.hp+=rh;
+    updateEnemyBar();
+    spawnFloater(rh,'heal',true);
+    log('🌿 '+e.name+' regenerates '+rh+' HP!','c');
+  }
+
+  // ── GRAKTHAR — Rally the Garrison at 60% HP ──
+  if(e.id==='grakthar'&&!e._rallyUsed&&e.hp<=e.maxHp*0.6){
+    e._rallyUsed=true;
+    const soldier={id:'garrison_soldier',name:'Garrison Soldier',sprite:'skeleton',color:'#8a6a5a',
+      hp:50,maxHp:50,atk:16,def:4,xp:0,gold:0,isUndead:true,_isGarrisonSoldier:true};
+    spawnBossAdd(soldier);
+    e._rallyDefBonus=4;e.def+=4;
+    AUDIO.sfx.bossSpecial();
+    if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+    log('⚔ Grakthar rallies the garrison! A Garrison Soldier joins the fight!','e');
+    log('🛡 Grakthar +4 DEF while the soldier stands!','e');
+  }
+
+  // ── VEXARA — Crimson Brand on brandRound ──
+  if(e.brandRound&&G.roundNum===e.brandRound&&!e._brandApplied){
+    e._brandApplied=true;
+    G._crimsonBrand=true;
+    addCondition('Burning',4);
+    AUDIO.sfx.burn();
+    if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+    log('🔥 CRIMSON BRAND! Vexara\'s mark sears into your flesh!','e');
+    log('🔥 Burning for 4 turns — 12 damage per turn! No save!','e');
+    afterEnemyActs();return;
+  }
+
+  // ── NETHRIX — Memory Flood every 4 rounds ──
+  if(e.id==='nethrix'&&G.roundNum>0&&G.roundNum%4===0){
+    const panels=['actionSkills','bonusSkills','reactionSkills'];
+    G._nethrixShuffleOrder={};
+    panels.forEach(panelId=>{
+      const el=document.getElementById(panelId);
+      if(!el)return;
+      const count=el.children.length;
+      if(count<=1)return;
+      const indices=Array.from({length:count},(_,i)=>i);
+      for(let i=indices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[indices[i],indices[j]]=[indices[j],indices[i]];}
+      G._nethrixShuffleOrder[panelId]=indices;
+    });
+    if(typeof triggerScreenShake==='function')triggerScreenShake('hit');
+    log('🧠 Memory Flood! Your skills scramble — trust your instincts!','e');
+  }
+
+  // ── ZARETH — Abyssal Charge trigger at 40% HP ──
+  if(e.id==='zareth'&&!e._chargeUsed&&!e._chargingBlast&&e.hp<=e.maxHp*0.4){
+    e._chargeUsed=true;e._chargingBlast=2;
+    AUDIO.sfx.bossSpecial();
+    if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+    log('💀 Zareth draws all abyssal energy inward — something terrible is building...','e');
+  }
+  // Zareth — Abyssal Charge countdown / fire
+  if(e.id==='zareth'&&e._chargingBlast>0){
+    e._chargingBlast--;
+    if(e._chargingBlast===0){
+      const blastDmg=Math.ceil(G.maxHp*0.6);
+      log('💀 ABYSSAL BLAST — Zareth unleashes everything! ('+blastDmg+' dmg)','e');
+      if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+      AUDIO.sfx.bossSpecial();
+      showReactionPrompt('💀 ABYSSAL BLAST — REACT?',
+        ()=>{dealDamageToPlayer(blastDmg,'Abyssal Blast');afterEnemyActs();},
+        ()=>{dealDamageToPlayer(blastDmg,'Abyssal Blast');afterEnemyActs();}
+      );
+      return;
+    }
+    log('⚡ Zareth is charging the blast... ('+e._chargingBlast+' turn'+(e._chargingBlast===1?'':'s')+' remaining)','e');
+    afterEnemyActs();return;
+  }
+
+  // ── VALDRIS — Frozen Bulwark at 65% HP ──
+  if(e.id==='valdris'&&!e._bulwarkUsed&&e.hp<=e.maxHp*0.65){
+    e._bulwarkUsed=true;
+    const mkSoldier=()=>({id:'frozen_soldier',name:'Frozen Soldier',sprite:'zombie',color:'#aabbcc',
+      hp:70,maxHp:70,atk:30,def:10,xp:0,gold:0,_isFrozenSoldier:true});
+    spawnBossAdd(mkSoldier());spawnBossAdd(mkSoldier());
+    AUDIO.sfx.bossSpecial();
+    if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+    log('❄ Valdris summons 2 Frozen Soldiers! While they stand, Valdris takes 50% reduced damage!','e');
+  }
+  // Valdris — Last Stand at 30% HP
+  if(e.id==='valdris'&&!e._lastStand&&e.hp<=e.maxHp*0.3){
+    e._lastStand=true;
+    e.atk=Math.ceil(e.atk*1.25);
+    if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+    log('💢 VALDRIS LAST STAND! Fury incarnate — +25% ATK for the rest of the fight!','e');
+  }
+
+  // ── AURANTHOS — Divine Blindness ──
+  if(e.id==='auranthos'&&G.roundNum>0){
+    const blindInterval=e.phaseTriggered?2:3;
+    if(G.roundNum%blindInterval===0){
+      const allBtns=Array.from(document.querySelectorAll('.skill-btn'));
+      if(allBtns.length>=2){
+        const indices=[];
+        while(indices.length<2){const i=Math.floor(Math.random()*allBtns.length);if(!indices.includes(i))indices.push(i);}
+        G._auranthosBlindedBtns=indices;
+        log('👁 Divine Blindness! Two of your skills are hidden from memory...','e');
+      }
+    }
+  }
+
+  // ── MALVARIS — Shadow Split at 50% HP ──
+  if(e.id==='malvaris'&&!e._splitUsed&&e.hp<=e.maxHp*0.5){
+    e._splitUsed=true;
+    e._isRealEmpress=true;
+    const shadowHp=Math.ceil(e.maxHp*0.30);
+    const shadow={id:'malvaris_shadow',name:'Shadow of the Empress',sprite:'ghost',color:'#4a2a6a',
+      hp:shadowHp,maxHp:shadowHp,atk:Math.ceil(e.atk*0.7),def:0,xp:0,gold:0,
+      ignoresArmor:true,_isShadowCopy:true};
+    spawnBossAdd(shadow);
+    AUDIO.sfx.bossSpecial();
+    if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+    log('🌑 Malvaris SPLITS! A Shadow copy emerges from the dark!','e');
+    log('⚠ Kill the Shadow and the Empress heals 20% HP. Find the real one — she glows gold.','e');
+  }
+  // Malvaris — Soul Drain at 25% HP
+  if(e.id==='malvaris'&&!e._soulDrainUsed&&e.hp<=e.maxHp*0.25){
+    e._soulDrainUsed=true;
+    const drained=Math.ceil(G.res/2);
+    G.res=Math.max(0,G.res-drained);
+    log('🌑 SOUL DRAIN! The Empress tears '+drained+' resource'+(drained===1?'':'s')+' from your very soul!','e');
+    if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
+    AUDIO.sfx.bossSpecial();
+    if(typeof renderHUD==='function')renderHUD();
   }
 
   // Boss special — every 2 rounds in phase 2, every 3 in phase 1
