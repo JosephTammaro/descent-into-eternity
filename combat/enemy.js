@@ -802,11 +802,13 @@ function doEnemyAttack(e){
   }
 
   if(dmg>0){
+    if(typeof _dev_godMode==='undefined'||!_dev_godMode){
     G.hp-=dmg;
     G._fightDamageTaken=true;
     if(G.hp>0 && G.hp<Math.floor(G.maxHp*0.5)) G._ironmanFlag=false;
     // ── Chroma tracking: cleric below 25% HP ──
     if(G.classId==='cleric'&&G.hp>0&&G.hp<Math.floor(G.maxHp*0.25)) G._droppedBelow25=true;
+    }
     spawnFloater(dmg,'dmg',false);
     AUDIO.sfx.playerHit();
     log(e.name+' attacks: '+dmg+' damage','e');
@@ -924,6 +926,7 @@ function dealDamageToPlayer(dmg, sourceName){
     renderHUD();
   }
   if(dmg>0){
+    if(typeof _dev_godMode==='undefined'||!_dev_godMode){
     G.hp-=dmg;
     G.totalDmgTaken=(G.totalDmgTaken||0)+dmg;
     G.causeOfDeath=sourceName||'Unknown';
@@ -931,6 +934,7 @@ function dealDamageToPlayer(dmg, sourceName){
     if(G.hp>0 && G.hp<Math.floor(G.maxHp*0.5)) G._ironmanFlag=false;
     // ── Chroma tracking: cleric below 25% HP (from special) ──
     if(G.classId==='cleric'&&G.hp>0&&G.hp<Math.floor(G.maxHp*0.25)) G._droppedBelow25=true;
+    }
     spawnFloater(dmg,'dmg',false);
     AUDIO.sfx.playerHit();
     log(sourceName+': '+dmg+' damage','e');
