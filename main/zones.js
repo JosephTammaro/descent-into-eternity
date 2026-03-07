@@ -80,9 +80,13 @@ function setPlayerTurn(isPlayer){
       if(G.sx.primalAvatar===0){dealToEnemy(paDot+8,false,'Primal Avatar 🌿 expiry burst');delete G.sx.primalAvatar;log('Primal Avatar fades — nature reclaims its power!','s');}
     }
     renderAll();
+    updateEnemyIntent();
   } else {
     ts.textContent='🔴 ENEMY TURN';
     ts.className='turn-state enemy-turn';
+    // Clear intent while enemy is acting
+    const _intentEl=document.getElementById('enemyIntent');
+    if(_intentEl){_intentEl.innerHTML='';_intentEl.className='enemy-intent';}
     renderSkillButtons();
     // Disable enemy targeting during enemy turn
     const mr=document.getElementById('multiEnemyRow');
@@ -189,6 +193,12 @@ function closeRareEvent(){
   else spawnEnemy();
 }
 
+// ── Tutorial enemy (used during first-ever dungeon fight) ─
+const TUTORIAL_ENEMY = {
+  name: 'Training Dummy', icon: '🪆', sprite: 'skeleton',
+  hp: 40, atk: 1, def: 0, xp: 5, gold: 0, isTutorial: true,
+};
+
 function spawnEnemy(){
   // Fire any level-up/subclass screens deferred from first-clear boss transition
   if(G&&G._pendingLevelUpScreens&&G._pendingLevelUpScreens.length>0&&!levelUpShowing){
@@ -234,8 +244,10 @@ function spawnEnemy(){
   // Encounter count scales by zone tier
   let enemyCount=1;
   if(!isBoss){
-    if(G.zoneIdx<=1){        // Zones I-II: 55/35/10
-      enemyCount=roll100<55?1:roll100<90?2:3;
+    if(G.dungeonFights===0){   // First fight of the run — always solo
+      enemyCount=1;
+    } else if(G.zoneIdx<=1){   // Zones I-II: 80/17/3
+      enemyCount=roll100<80?1:roll100<97?2:3;
     } else if(G.zoneIdx<=4){ // Zones III-V: 40/35/20/5
       enemyCount=roll100<40?1:roll100<75?2:roll100<95?3:4;
     } else {                 // Zones VI-VIII: 30/35/25/10
@@ -321,6 +333,17 @@ function spawnEnemy(){
       G.currentEnemies.push(built);
     }
     if(finalHornActive&&adjustedCount>enemyCount) log('📯 The horn\'s echo draws reinforcements!','c');
+  }
+  // ── Tutorial fight override ───────────────────────────────
+  if(G._isTutorialFight && !isBoss){
+    const tutorialBuilt = {
+      ...TUTORIAL_ENEMY,
+      isBoss: false,
+      effectiveLvl: 1,
+      maxHp: TUTORIAL_ENEMY.hp,
+      dead: false, _revived: false,
+    };
+    G.currentEnemies = [tutorialBuilt];
   }
   G.targetIdx=0;
   G.currentEnemy=G.currentEnemies[0];
@@ -475,7 +498,8 @@ function spawnEnemy(){
   const actualCount=G.currentEnemies.length;
   const cntMsgActual=actualCount>1?` + ${actualCount-1} more!`:'';
   log(`A ${G.currentEnemy.name} appears! [Lv.${effectiveLvl}]${cntMsgActual}`,'s');
-  setPlayerTurn(true);
+  // Tutorial: don't start the player's turn yet — the choice/tour overlay controls this
+  if(!G._pauseForTutorial) setPlayerTurn(true);
   renderEnemyArea();
 }
 
@@ -548,11 +572,51 @@ function renderEnemyArea(){
     const name  = `<div class="enemy-card-name">${e.name}<br><span style="color:var(--dim);font-size:4px;">Lv.${e.effectiveLvl}</span></div>`;
     const arrow = isTarget ? `<div class="enemy-target-arrow">▼</div>` : '';
     const deadX = isDead   ? `<div class="enemy-card-dead-x">💀</div>` : '';
+    // Intent badge on each card
+    let intentHtml='';
+    if(!isDead){
+      const isRestrained=e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
+      const isSpecial=e.isBoss&&G.roundNum>0&&G.roundNum%(e.phaseTriggered?2:3)===0;
+      if(isRestrained)intentHtml=`<div class="enemy-card-intent">🔗</div>`;
+      else if(isSpecial)intentHtml=`<div class="enemy-card-intent intent-special">💥</div>`;
+      else intentHtml=`<div class="enemy-card-intent">⚔</div>`;
+    }
 
     card.appendChild(spriteCanvas);
-    card.insertAdjacentHTML('beforeend', hpBar+hpTxt+name+arrow+deadX);
+    card.insertAdjacentHTML('beforeend', hpBar+hpTxt+name+arrow+deadX+intentHtml);
     multiRow.appendChild(card);
   });
+}
+
+// ══════════════════════════════════════════════════════════
+//  ENEMY INTENT DISPLAY
+// ══════════════════════════════════════════════════════════
+function updateEnemyIntent(){
+  const el=document.getElementById('enemyIntent');
+  if(!el)return;
+  if(!G||!G.currentEnemy||G.currentEnemy.hp<=0){
+    el.innerHTML='';el.className='enemy-intent';return;
+  }
+  const e=G.currentEnemy;
+
+  // Enemy is Restrained — will lose their action
+  const isRestrained=e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
+  if(isRestrained){
+    el.innerHTML='🔗 RESTRAINED';el.className='enemy-intent intent-blocked';return;
+  }
+
+  // Boss special check — same logic as doEnemyTurn()
+  if(e.isBoss&&G.roundNum>0){
+    const interval=e.phaseTriggered?2:3;
+    if(G.roundNum%interval===0){
+      const sp=e.phaseTriggered&&e.phase2?e.phase2:e.special;
+      const spName=sp&&sp.name?sp.name.toUpperCase():'SPECIAL ATTACK';
+      el.innerHTML='💥 '+spName;el.className='enemy-intent intent-special';return;
+    }
+  }
+
+  // Normal attack
+  el.innerHTML='⚔ STRIKES';el.className='enemy-intent intent-attack';
 }
 
 function selectTarget(idx){
