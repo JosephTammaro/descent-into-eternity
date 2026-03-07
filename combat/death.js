@@ -622,15 +622,9 @@ function showDeathScreen(){
   // Blood drop particles
   const screen=document.getElementById('screen-death');
 
-  // Update button text based on lives
+  // Always offer return to Elderfen — run continues from town
   const retryBtn=document.getElementById('deathRetryBtn');
-  if(retryBtn){
-    if(G.lives<=0){
-      retryBtn.textContent='⚔ NEW RUN';
-    } else {
-      retryBtn.textContent='⚔ RETURN TO ELDERFEN';
-    }
-  }
+  if(retryBtn) retryBtn.textContent='⚔ RETURN TO ELDERFEN';
 
   for(let i=0;i<18;i++){
     setTimeout(()=>{
@@ -735,6 +729,8 @@ function showPhase2Overlay(bossName, phaseName){
 
 function onPlayerDied(){
   if(!G||G._dyingFlag)return;
+  // God mode: block death entirely — restore HP and continue
+  if(typeof _dev_godMode!=='undefined'&&_dev_godMode){G.hp=G.maxHp;if(typeof renderHUD==='function')renderHUD();return;}
   // Undying Fury (Barbarian): survive at 1 HP once per rest
   if(G.classId==='barbarian'&&G._undyingFury&&!G._undyingFuryUsed){
     G._undyingFuryUsed=true;G.hp=1;G._dyingFlag=false;
@@ -754,50 +750,19 @@ function onPlayerDied(){
   AUDIO.sfx.death();
   log('💔 You have fallen...','e');
 
-  // Decrement lives
-  if(G.lives===undefined) G.lives=3;
-  G.lives=Math.max(0,G.lives-1);
-  // Phase B: Track death for unlocks
+  // Track death for unlocks
   if(typeof updateUnlockStats==='function') updateUnlockStats('death');
   if(typeof checkUnlocks==='function') checkUnlocks();
   autoSave();
 
-  if(G.lives<=0){
-    // Run over — show death overlay, offer salvage, then show full death screen
-    log('💀 No lives remaining. Your journey ends here.','e');
-    setTimeout(()=>{
-      showDeathOverlay(()=>{
-        // Show salvage prompt — player picks 1 item before death screen
-        showSalvagePrompt(()=>{
-          // Save persistent gold before showing death screen
-          if(typeof updateSlotData==='function'&&activeSaveSlot){
-            updateSlotData(activeSaveSlot,d=>{
-              if(G && G.gold > 0) d.persistentGold = (d.persistentGold||0) + G.gold;
-            });
-          }
-          // Show the full death screen — G still alive for stats display
-          showDeathScreen();
-        });
+  // Always: brief overlay → salvage prompt → death screen → "Return to Elderfen"
+  setTimeout(()=>{
+    showDeathOverlay(()=>{
+      showSalvagePrompt(()=>{
+        showDeathScreen();
       });
-    },800);
-    return;
-  }
-
-  // Lives remain — always go to campfire (unlock it if needed)
-  showDeathOverlay(()=>{
-    if(!G)return;
-    G._dyingFlag=false;
-    G.hp=Math.max(1,Math.floor(G.maxHp*0.25));
-    G.currentEnemy=null;
-    G.conditions=[];G.conditionTurns={};
-    G.raging=false;G.concentrating=null;G.wildShapeHp=0;
-    G.actionUsed=false;G.bonusUsed=false;G.reactionUsed=false;
-    // Always send to campfire — unlock it if player hadn't reached it yet
-    G.campUnlocked=true;
-    G._campReached=true;
-    log('💀 You died — retreating to the campfire...','e');
-    if(typeof showCampfire==='function') showCampfire();
-  });
+    });
+  },800);
 }
 
 function showDeathOverlay(onDone){
