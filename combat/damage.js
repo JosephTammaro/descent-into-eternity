@@ -116,6 +116,8 @@ function dealToEnemy(dmg,crit,source){
   if(G._rareEventFlags.empressBossBonus&&G.currentEnemy.isBoss&&G.currentEnemy.name==='Malvaris, The Hollow Empress') dmg=Math.ceil(dmg*1.25);
   // Legendary Grace — The First Blade: first attack each fight deals double damage
   if(G._graceFirstBlade&&!G._graceFirstBladeUsed){G._graceFirstBladeUsed=true;dmg=Math.ceil(dmg*1.5);log('🗡️ The First Blade: +50% DAMAGE!','s');}
+  // Tutorial: cap per-hit damage so the Training Dummy survives long enough to practice on
+  if(G.currentEnemy.isTutorial) dmg=Math.min(dmg,10);
   G.currentEnemy.hp-=dmg;
   // Run summary tracking
   G.totalDmgDealt=(G.totalDmgDealt||0)+dmg;
