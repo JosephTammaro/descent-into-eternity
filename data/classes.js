@@ -14,7 +14,7 @@ const CLASSES = {
       {id:'second_wind',name:'Second Wind',type:'bonus',icon:'🫀',desc:'Heal 1d10+LVL HP',cd:0,cost:0,charges:3,effect:'second_wind'},
       {id:'parry',name:'Parry',type:'reaction',icon:'🛡',desc:'Halve next hit damage',cd:0,cost:0,charges:3,effect:'parry'},
       {id:'surge_strike',name:'Surge Strike',type:'action',icon:'⚡',desc:'2d10+STR — if it crits, gain a bonus action',cd:3,cost:25,subclassOnly:true,effect:'surge_strike'},
-      {id:'action_surge',name:'Action Surge',type:'action',icon:'🌪️',desc:'Extra turn: halved costs, crit 17-20 (once per rest)',cd:0,cost:0,ultimateOnly:true,effect:'action_surge'},
+      {id:'action_surge',name:'Action Surge',type:'bonus',icon:'🌪️',desc:'Use bonus action: reset action, halved costs, crit 17-20 (once per rest)',cd:0,cost:0,ultimateOnly:true,effect:'action_surge'},
     ]},
   wizard:{name:'Wizard',res:'Spell Slots',resColor:'#2980b9',resMax:7,
     desc:'Arcane scholar who bends reality. Cantrips are free; spell slots power devastating magic.',

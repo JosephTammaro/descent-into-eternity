@@ -643,7 +643,14 @@ function renderSkillButtons(){
   ['action','bonus','reaction'].forEach(type=>{
     const container=document.getElementById(type+'Skills');
     if(!container) return;
-    const skills=cls.skills.filter(s=>s.type===type && (!s.subclassOnly || G.subclassUnlocked) && (!s.ultimateOnly || G.ultimateUnlocked));
+    let skills=cls.skills.filter(s=>s.type===type && (!s.subclassOnly || G.subclassUnlocked) && (!s.ultimateOnly || G.ultimateUnlocked));
+    // ── Nethrix Memory Flood: reorder skills array before render ──
+    if(G._nethrixShuffleOrder&&G._nethrixShuffleOrder[type]){
+      const order=G._nethrixShuffleOrder[type];
+      skills=order.map(id=>skills.find(s=>s.id===id)).filter(Boolean);
+      // append any skills not in the order at the end (safety net)
+      skills=skills.concat(cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||G.subclassUnlocked)&&(!s.ultimateOnly||G.ultimateUnlocked)&&!order.includes(s.id)));
+    }
     container.innerHTML=skills.map(sk=>{
       const cdRaw=G.skillCooldowns[sk.id];
       const cdEnd=(cdRaw==='active')?Infinity:(cdRaw||0);
@@ -692,23 +699,13 @@ function renderSkillButtons(){
   // End turn button
   document.getElementById('endTurnBtn').disabled=!G.isPlayerTurn||paused;
 
-  // ── Nethrix: apply shuffle order ──
-  if(G&&G._nethrixShuffleOrder){
-    Object.entries(G._nethrixShuffleOrder).forEach(([panelId,order])=>{
-      const panel=document.getElementById(panelId);
-      if(!panel)return;
-      const btns=Array.from(panel.children);
-      order.forEach(origIdx=>{if(btns[origIdx])panel.appendChild(btns[origIdx]);});
-    });
-  }
   // ── Auranthos: apply blindness ──
   if(G&&G._auranthosBlindedBtns){
     const allBtns=Array.from(document.querySelectorAll('.skill-btn'));
     G._auranthosBlindedBtns.forEach(idx=>{
       const btn=allBtns[idx];
       if(!btn)return;
-      btn.setAttribute('data-blind-orig',btn.innerHTML);
-      btn.innerHTML='<span style="font-family:\'Press Start 2P\',monospace;font-size:9px;color:#555;display:block;text-align:center;padding:8px 0">???</span>';
+      btn.innerHTML='<span class="sk-icon" style="opacity:0.35">👁</span><span class="sk-name" style="color:#555;letter-spacing:1px">???</span>';
     });
   }
 }

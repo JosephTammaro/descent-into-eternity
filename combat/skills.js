@@ -812,7 +812,7 @@ function doSkillEffect(effect, sk){
     case 'action_surge':{
       if(G._ultimateUsed){log('Action Surge — already used this rest!','e');break;}
       G._ultimateUsed=true;
-      G.actionUsed=false; G.bonusUsed=false;
+      G.actionUsed=false; // bonus was spent to activate — action is reset so fighter can act again
       G._surgeTurns=1;
       G._surgeCritBonus=3; // crit on 17+
       // Fighter capstone — Unbreakable: Action Surge resets Second Wind and Parry

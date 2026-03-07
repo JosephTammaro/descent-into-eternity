@@ -1,8 +1,8 @@
 const ULTIMATES = {
   fighter:{
     ultimate1:{id:'action_surge',name:'Action Surge',icon:'🌪️',
-      desc:'Gain an entire extra turn. Momentum costs halved, crit range 17–20 for that turn.',
-      type:'action',effect:'action_surge'},
+      desc:'Spend bonus action: reset your action, halved Momentum costs, crit range 17–20 for that turn.',
+      type:'bonus',effect:'action_surge'},
     capstone:{id:'unbreakable',name:'Unbreakable',icon:'🔱',
       desc:'PASSIVE: All attacks roll twice, take higher (Advantage). Below 25% HP: auto +50 Momentum and next attack crits (once per fight). Action Surge resets Second Wind and Parry.',
       type:'passive',effect:'unbreakable_capstone'},

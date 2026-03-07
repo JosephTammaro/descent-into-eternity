@@ -245,19 +245,21 @@ function doEnemyTurn(){
 
   // ── NETHRIX — Memory Flood every 4 rounds ──
   if(e.id==='nethrix'&&G.roundNum>0&&G.roundNum%4===0){
-    const panels=['actionSkills','bonusSkills','reactionSkills'];
-    G._nethrixShuffleOrder={};
-    panels.forEach(panelId=>{
-      const el=document.getElementById(panelId);
-      if(!el)return;
-      const count=el.children.length;
-      if(count<=1)return;
-      const indices=Array.from({length:count},(_,i)=>i);
-      for(let i=indices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[indices[i],indices[j]]=[indices[j],indices[i]];}
-      G._nethrixShuffleOrder[panelId]=indices;
-    });
+    const cls=CLASSES[G.classId];
+    if(cls){
+      G._nethrixShuffleOrder={};
+      ['action','bonus','reaction'].forEach(type=>{
+        const typeSkills=cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||G.subclassUnlocked)&&(!s.ultimateOnly||G.ultimateUnlocked));
+        if(typeSkills.length>1){
+          const ids=typeSkills.map(s=>s.id);
+          for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
+          G._nethrixShuffleOrder[type]=ids;
+        }
+      });
+    }
     if(typeof triggerScreenShake==='function')triggerScreenShake('hit');
     log('🧠 Memory Flood! Your skills scramble — trust your instincts!','e');
+    afterEnemyActs();return;
   }
 
   // ── ZARETH — Abyssal Charge trigger at 40% HP ──
