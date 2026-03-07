@@ -1,4 +1,14 @@
 
+// ── Returns true if the farewell cinematic has already played this save slot ──
+function _farewellHasPlayed(){
+  if(typeof G!=='undefined'&&G&&G._farewellShown) return true;
+  if(typeof loadSlotData==='function'&&typeof activeSaveSlot!=='undefined'&&activeSaveSlot){
+    const d=loadSlotData(activeSaveSlot);
+    if(d&&d.farewellShown) return true;
+  }
+  return false;
+}
+
 // ── Gate logic ────────────────────────────────────────────
 function _handleGate(){
   const hasClass = typeof G!=='undefined' && G && G.classId;
@@ -7,11 +17,15 @@ function _handleGate(){
     window._classFromTown=true;
     if(typeof showScreen==='function') showScreen('class');
     if(typeof renderClassSelect==='function') renderClassSelect();
-  } else if(G.zoneIdx >= 7 && !G._farewellShown) {
+  } else if(G.bossDefeated && G.bossDefeated[6] && !_farewellHasPlayed()) {
     G._farewellShown = true;
+    // Persist to save slot so it never fires again after G resets
+    if(typeof updateSlotData==='function'&&typeof activeSaveSlot!=='undefined'&&activeSaveSlot){
+      updateSlotData(activeSaveSlot, d=>{ d.farewellShown=true; });
+    }
     // Phase B: Track farewell for unlocks before state gets wiped
     if(typeof updateUnlockStats==='function') updateUnlockStats('farewell');
-    startFarewellInTown(()=>{ stopTownEngine(); townEnterDungeon(); });
+    startFarewellInTown(()=>{ openPrepareScreen(); });
   } else {
     openPrepareScreen();
   }
