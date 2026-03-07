@@ -544,10 +544,10 @@ function doEnemyAttack(e){
     }
     if(G.mirrorImages===0)log('All mirror images are gone.','s');
   }
-  // Blink — 60% chance to negate
+  // Blink — 75% chance to negate
   if(G.sx.blink){
     delete G.sx.blink;
-    if(Math.random()<0.6){
+    if(Math.random()<0.75){
       AUDIO.sfx.blink();
       log('💫 Blink! You phase out — attack misses entirely!','s');
       afterEnemyActs();
