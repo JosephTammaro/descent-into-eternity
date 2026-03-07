@@ -48,6 +48,8 @@ function setPlayerTurn(isPlayer){
       if(srv>0)log(`Survivor: +${srv} HP`,'s');
     }
     G.roundNum++;
+    // ── Roll intent for all living enemies this round ──
+    (G.currentEnemies||[]).forEach(en=>{if(!en.dead&&en.hp>0)_rollIntentForEnemy(en);});
 
     // ── BOSS TELEGRAPH — warn player before special fires ──
     if(G.currentEnemy&&G.currentEnemy.isBoss&&G.currentEnemy.hp>0){
@@ -575,11 +577,8 @@ function renderEnemyArea(){
     // Intent badge on each card
     let intentHtml='';
     if(!isDead){
-      const isRestrained=e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
-      const isSpecial=e.isBoss&&G.roundNum>0&&G.roundNum%(e.phaseTriggered?2:3)===0;
-      if(isRestrained)intentHtml=`<div class="enemy-card-intent">🔗</div>`;
-      else if(isSpecial)intentHtml=`<div class="enemy-card-intent intent-special">💥</div>`;
-      else intentHtml=`<div class="enemy-card-intent">⚔</div>`;
+      const d=_getIntentDisplay(e);
+      if(d)intentHtml=`<div class="enemy-card-intent${d.cls==='intent-special'||d.cls==='intent-blocked'?' '+d.cls:''}">${d.icon}</div>`;
     }
 
     card.appendChild(spriteCanvas);
@@ -591,32 +590,55 @@ function renderEnemyArea(){
 // ══════════════════════════════════════════════════════════
 //  ENEMY INTENT DISPLAY
 // ══════════════════════════════════════════════════════════
+const _INTENT_DISPLAY={
+  striking: {icon:'⚔', label:'STRIKING',  cls:'intent-attack'},
+  defending:{icon:'🛡', label:'DEFENDING', cls:'intent-defend'},
+  poisoning:{icon:'☠', label:'POISONING', cls:'intent-status'},
+  burning:  {icon:'🔥',label:'BURNING',   cls:'intent-status'},
+  stunning: {icon:'💫',label:'STUNNING',  cls:'intent-status'},
+  casting:  {icon:'✨', label:'CASTING',   cls:'intent-cast'},
+};
+
+function _rollIntentForEnemy(e){
+  if(!e||e.hp<=0||e.dead||e.isBoss){e._intent=null;return;}
+  // Only re-roll once per round
+  if(e._intentRolledRound===G.roundNum)return;
+  e._intentRolledRound=G.roundNum;
+  const pool=['striking','striking','striking','striking'];
+  if(e.canPoison)  pool.push('poisoning','poisoning');
+  if(e.canBurn)    pool.push('burning','burning');
+  if(e.canStun)    pool.push('stunning');
+  if(e.ignoresArmor) pool.push('casting','casting','casting');
+  if(e.def>=8)     pool.push('defending');
+  e._intent=pool[Math.floor(Math.random()*pool.length)];
+}
+
+function _getIntentDisplay(e){
+  if(!e)return null;
+  const isRestrained=e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
+  if(isRestrained)return{icon:'🔗',label:'RESTRAINED',cls:'intent-blocked'};
+  if(e.isBoss&&G.roundNum>0){
+    const interval=e.phaseTriggered?2:3;
+    if(G.roundNum%interval===0){
+      const sp=e.phaseTriggered&&e.phase2?e.phase2:e.special;
+      const spName=sp&&sp.name?sp.name.toUpperCase():'SPECIAL ATTACK';
+      return{icon:'💥',label:spName,cls:'intent-special'};
+    }
+    return _INTENT_DISPLAY.striking;
+  }
+  return _INTENT_DISPLAY[e._intent]||_INTENT_DISPLAY.striking;
+}
+
 function updateEnemyIntent(){
   const el=document.getElementById('enemyIntent');
   if(!el)return;
   if(!G||!G.currentEnemy||G.currentEnemy.hp<=0){
     el.innerHTML='';el.className='enemy-intent';return;
   }
-  const e=G.currentEnemy;
-
-  // Enemy is Restrained — will lose their action
-  const isRestrained=e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
-  if(isRestrained){
-    el.innerHTML='🔗 RESTRAINED';el.className='enemy-intent intent-blocked';return;
-  }
-
-  // Boss special check — same logic as doEnemyTurn()
-  if(e.isBoss&&G.roundNum>0){
-    const interval=e.phaseTriggered?2:3;
-    if(G.roundNum%interval===0){
-      const sp=e.phaseTriggered&&e.phase2?e.phase2:e.special;
-      const spName=sp&&sp.name?sp.name.toUpperCase():'SPECIAL ATTACK';
-      el.innerHTML='💥 '+spName;el.className='enemy-intent intent-special';return;
-    }
-  }
-
-  // Normal attack
-  el.innerHTML='⚔ STRIKES';el.className='enemy-intent intent-attack';
+  const d=_getIntentDisplay(G.currentEnemy);
+  if(!d){el.innerHTML='';el.className='enemy-intent';return;}
+  el.innerHTML=d.icon+' '+d.label;
+  el.className='enemy-intent '+d.cls;
 }
 
 function selectTarget(idx){
