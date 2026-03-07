@@ -385,7 +385,7 @@ function spawnEnemy(){
     // Cursed Ground: take damage at fight start
     if(fx.startDmgPct){
       const cdmg=Math.max(1,Math.floor(G.maxHp*fx.startDmgPct));
-      G.hp=Math.max(1,G.hp-cdmg);
+      if(typeof _dev_godMode==='undefined'||!_dev_godMode) G.hp=Math.max(1,G.hp-cdmg);
       log('☠️ Cursed Ground: -'+cdmg+' HP from the corrupted earth.','c');
       if(typeof renderHUD==='function') renderHUD();
     }
@@ -458,7 +458,7 @@ function spawnEnemy(){
   const ref=G._rareEventFlags;
   // Vexara's Crown: 5 damage per fight
   if(ref.vexaraCrown&&ref.vexaraCrown.zoneIdx===G.zoneIdx){
-    G.hp=Math.max(1,G.hp-5); G._fightDamageTaken=true;
+    if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp=Math.max(1,G.hp-5); G._fightDamageTaken=true;}
     log('👑 Crimson Authority burns: −5 HP','c');
     // Weaken enemies -10% HP
     for(const en of G.currentEnemies){en.hp=Math.floor(en.hp*0.90);en.maxHp=en.hp;}
