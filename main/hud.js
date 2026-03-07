@@ -18,6 +18,32 @@ function enterZone(){
   renderModifierHud();
   autoSave();
 
+  // ── Dungeon tutorial — first-ever Zone I entry ───────────
+  if(G.zoneIdx === 0){
+    let tutorialShown = false;
+    if(typeof loadSlotData==='function' && typeof activeSaveSlot!=='undefined' && activeSaveSlot){
+      const sd = loadSlotData(activeSaveSlot);
+      if(sd && sd._dungeonTutorialShown) tutorialShown = true;
+    }
+    if(!tutorialShown){
+      // Pre-spawn the Training Dummy so it is visible during the tour.
+      // G._pauseForTutorial prevents setPlayerTurn() from firing inside spawnEnemy().
+      // The choice overlay / tour will call setPlayerTurn(true) when ready.
+      G._isTutorialFight  = true;
+      G._pauseForTutorial = true;
+      spawnEnemy();
+      // Pre-populate the battle log with sample lines so the player can see it working.
+      if(typeof log==='function'){
+        log('⚔ The Training Dummy lumbers into position...','s');
+        log('📜 Battle events appear here — damage, conditions, skills used.','c');
+      }
+      if(typeof showDungeonTutorialChoice === 'function'){
+        showDungeonTutorialChoice();
+        return;
+      }
+    }
+  }
+
   // Phase B: Show modifier announcement, THEN spawn first enemy
   if(G._activeModifier){
     showModifierAnnouncement(()=>{
