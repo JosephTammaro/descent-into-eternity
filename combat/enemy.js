@@ -9,6 +9,9 @@ function setCooldown(skillId, seconds){
 
 function playerEndTurn(){
   if(!G.isPlayerTurn||paused)return;
+  // Clear Nethrix shuffle and Auranthos blindness — they last exactly 1 player turn
+  if(G._nethrixShuffleOrder)delete G._nethrixShuffleOrder;
+  if(G._auranthosBlindedBtns)delete G._auranthosBlindedBtns;
   // ── Chroma tracking: wild shape turns ──
   if(G.classId==='druid'&&G.wildShapeActive) G._lifetimeWildShapeTurns=(G._lifetimeWildShapeTurns||0)+1;
   if(G.talents.includes('Storm Call')&&G.currentEnemy&&G.currentEnemy.hp>0){
@@ -45,15 +48,13 @@ function doEnemyTurn(){
     // Apply tick damage before ticking down
     if(G.conditions.includes('Poisoned')){
       const poisonDmg=3+G.zoneIdx;
-      G.hp-=poisonDmg;
-      spawnFloater(poisonDmg,'dmg',false);
+      if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=poisonDmg;spawnFloater(poisonDmg,'dmg',false);}
       AUDIO.sfx.poison();
       log('☠ Poison: '+poisonDmg+' damage!','c');
     }
     if(G.conditions.includes('Burning')){
       const burnDmg=G._crimsonBrand?12:5+G.zoneIdx*2;
-      G.hp-=burnDmg;
-      spawnFloater(burnDmg,'dmg',false);
+      if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=burnDmg;spawnFloater(burnDmg,'dmg',false);}
       AUDIO.sfx.burn();
       log('🔥 Burning: '+burnDmg+' fire damage!','c');
     }
@@ -320,10 +321,12 @@ function doEnemyTurn(){
   if(e.id==='malvaris'&&!e._splitUsed&&e.hp<=e.maxHp*0.5){
     e._splitUsed=true;
     e._isRealEmpress=true;
-    const shadowHp=Math.ceil(e.maxHp*0.30);
-    const shadow={id:'malvaris_shadow',name:'Shadow of the Empress',sprite:'ghost',color:'#4a2a6a',
-      hp:shadowHp,maxHp:shadowHp,atk:Math.ceil(e.atk*0.7),def:0,xp:0,gold:0,
-      ignoresArmor:true,_isShadowCopy:true};
+    // Shadow inherits Malvaris's current HP + sprite so they look identical
+    // Only the faint gold border on the real Empress tells them apart
+    const shadow={id:'malvaris_shadow',name:'Shadow of the Empress',
+      sprite:e.sprite||'nethrix',color:e.color||'#220033',
+      hp:e.hp,maxHp:e.maxHp,atk:Math.ceil(e.atk*0.7),def:0,xp:0,gold:0,
+      _usesBossSprite:true,ignoresArmor:true,_isShadowCopy:true};
     spawnBossAdd(shadow);
     AUDIO.sfx.bossSpecial();
     if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
@@ -340,6 +343,9 @@ function doEnemyTurn(){
     AUDIO.sfx.bossSpecial();
     if(typeof renderHUD==='function')renderHUD();
   }
+
+  // Zareth: during charge countdown, skip all attack/special logic
+  if(e.id==='zareth'&&e._chargingBlast>0){afterEnemyActs();return;}
 
   // Boss special — every 2 rounds in phase 2, every 3 in phase 1
   const specialInterval=e.isBoss&&e.phaseTriggered?2:3;
