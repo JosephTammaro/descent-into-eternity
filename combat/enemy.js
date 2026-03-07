@@ -112,8 +112,6 @@ function doEnemyTurn(){
     if(enemyBurning){const bd=5+G.zoneIdx*2;e.hp-=bd;updateEnemyBar();log('🔥 '+e.name+' burns: '+bd+' fire damage!','c');if(e.hp<=0){onEnemyDied();return;}}
     if(enemyPoisoned){const pd=3+G.zoneIdx*2;e.hp-=pd;updateEnemyBar();log('☠ '+e.name+' is poisoned: '+pd+' damage!','c');if(e.hp<=0){onEnemyDied();return;}}
     if(enemyBleeding){e.hp-=5;updateEnemyBar();log('🩸 '+e.name+' bleeds: 5 damage!','c');if(e.hp<=0){onEnemyDied();return;}}
-    // Consecrate (Paladin): radiant damage each turn
-    if(e._consecrateTurns>0){e.hp-=e._consecrateHit;e._consecrateTurns--;updateEnemyBar();log('✝️ Consecrate: '+e._consecrateHit+' radiant damage on '+e.name+'! ('+e._consecrateTurns+'t left)','s');if(e.hp<=0){onEnemyDied();return;}}
     // Cyclone: 1d6 per turn while Restrained
     const enemyRestrained=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
     if(enemyRestrained&&e._cycloneDmg){const cd=roll(6);e.hp-=cd;updateEnemyBar();log('🌀 Cyclone: '+cd+' nature damage while Restrained!','c');if(e.hp<=0){onEnemyDied();return;}}
@@ -134,6 +132,12 @@ function doEnemyTurn(){
     }
     if(restrained){log(e.name+' is Restrained and loses their action!','c');setPlayerTurn(true);return;}
   }
+
+  // Tick _defDebuffTurns (from Rend, Crippling Shot): persistent DEF reduction
+  if(e._defDebuffTurns>0){e._defDebuffTurns--;if(e._defDebuffTurns<=0){e._defDebuff=0;log(e.name+' DEF penalty expires.','c');}}
+
+  // Consecrate (Paladin): radiant damage each enemy turn — outside conditions block so it always fires
+  if(e._consecrateTurns>0){e.hp-=e._consecrateHit;e._consecrateTurns--;updateEnemyBar();log('✝️ Consecrate: '+e._consecrateHit+' radiant on '+e.name+'! ('+e._consecrateTurns+'t left)','s');if(e.hp<=0){onEnemyDied();return;}}
 
   // Tick persistent buffs
   if(G.raging){
@@ -742,14 +746,17 @@ function doEnemyAttack(e){
     // Ancestral Fury: enemies +1% dmg per player kill stack
     if(fx.enemyDmgPerStack && G._ancestralStacks > 0)
       dmg=Math.ceil(dmg*(1+G._ancestralStacks*fx.enemyDmgPerStack));
-    // Cursed Ground: enemy Weakened status
-    if(e._weakened && e._weakened > 0){ dmg=Math.ceil(dmg*0.85); e._weakened--; }
+    // Cursed Ground: enemy Weakened status (moved outside modifier block — see below)
     // Volatile: enemies get occasional crits (10% chance, +50% dmg)
     if(fx.critDmgMult && Math.random() < 0.10){
       dmg=Math.ceil(dmg*fx.critDmgMult);
       log('💥 '+e.name+' lands a critical strike!','c');
     }
   }
+  // Weakened: -15% enemy damage (always applies regardless of zone modifier)
+  if(e._weakened&&e._weakened>0){dmg=Math.ceil(dmg*0.85);e._weakened--;}
+  // Blinded: reduced ATK (from Mirage/Smoke Bomb)
+  if(e._blindedAtk&&e._blindedAtk>0){dmg=Math.max(1,dmg-e._blindedAtk);if(e._blindedTurns>0){e._blindedTurns--;if(e._blindedTurns<=0){e._blindedAtk=0;log(e.name+' is no longer Blinded.','c');}}}
   // Legendary Grace — Immortal Aegis: 10% chance to fully block attack
   if(G._graceAegis&&Math.random()<0.10){AUDIO.sfx.block();log('🛡️ Immortal Aegis: attack fully blocked!','s');afterEnemyActs();return;}
   // G.def already includes armor/offhand from applyItemStats — don't add again

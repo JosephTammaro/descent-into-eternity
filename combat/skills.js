@@ -940,7 +940,7 @@ function doSkillEffect(effect, sk){
       const totalMdmg=mdmg+bonusDice;
       dealToEnemy(totalMdmg,mcrit,'Maneuver Strike 🎯');
       addConditionEnemy('Restrained',1);
-      if(G.currentEnemy){G.currentEnemy._defBoost=(G.currentEnemy._defBoost||0)-3;log('🎯 Maneuver Strike: Restrained(1) + ATK -3!','s');}
+      if(G.currentEnemy){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+3;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,2);log('🎯 Maneuver Strike: Restrained(1) + DEF -3!','s');}
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
 
@@ -1004,8 +1004,8 @@ function doSkillEffect(effect, sk){
     case 'aura_of_protection':{
       G.sx.immuneFrightened=3;G.sx.immuneRestrained=3;
       const aliveEnemies=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
-      aliveEnemies.forEach(e=>e._defBoost=(e._defBoost||0)-2);
-      log('😇 Aura of Protection: immune Frightened+Restrained 3 turns, enemies -2 ATK!','s');
+      aliveEnemies.forEach(e=>{e._defDebuff=(e._defDebuff||0)+2;e._defDebuffTurns=Math.max(e._defDebuffTurns||0,3);});
+      log('😇 Aura of Protection: immune Frightened+Restrained 3 turns, enemies -2 DEF!','s');
       break;}
 
     // Vengeance — Vow Strike
@@ -1079,8 +1079,8 @@ function doSkillEffect(effect, sk){
     case 'intimidating_presence':{
       addConditionEnemy('Frightened',3);
       const aliveI=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
-      aliveI.forEach(e=>e._defBoost=(e._defBoost||0)-3);
-      log('😤 Intimidating Presence: Frightened(3) + ATK -3!','s');
+      aliveI.forEach(e=>{e._defDebuff=(e._defDebuff||0)+3;e._defDebuffTurns=Math.max(e._defDebuffTurns||0,3);});
+      log('😤 Intimidating Presence: Frightened(3) + DEF -3!','s');
       break;}
 
     // Life Domain — Supreme Healing
@@ -1127,7 +1127,7 @@ function doSkillEffect(effect, sk){
       const rendDmg=Math.ceil(rdmg*1.5);
       dealToEnemy(rendDmg,rcrit,'Rend 🗡');
       addConditionEnemy('Bleeding',3);
-      if(G.currentEnemy){G.currentEnemy._defBoost=(G.currentEnemy._defBoost||0)-3;G.currentEnemy._rendTurns=2;}
+      if(G.currentEnemy){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+3;G.currentEnemy._defDebuffTurns=2;}
       log('🗡 Rend: Bleeding(3) + enemy DEF -3 for 2 turns!','s');
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
@@ -1193,8 +1193,8 @@ function doSkillEffect(effect, sk){
     // Ranger — Crippling Shot
     case 'crippling_shot':{
       addConditionEnemy('Restrained',2);
-      if(G.currentEnemy){G.currentEnemy._defBoost=(G.currentEnemy._defBoost||0)-4;G.currentEnemy._crippledTurns=2;}
-      log('🎯 Crippling Shot: Restrained(2) + ATK -4 for 2 turns!','s');
+      if(G.currentEnemy){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,2);}
+      log('🎯 Crippling Shot: Restrained(2) + DEF -4 for 2 turns!','s');
       break;}
 
     // Ranger — Camouflage
@@ -1253,7 +1253,7 @@ function doSkillEffect(effect, sk){
         const saved=G.currentEnemy;
         G.currentEnemy=target;
         addConditionEnemy('Restrained',3);
-        target._defBoost=(target._defBoost||0)-2;
+        target._defDebuff=(target._defDebuff||0)+2;target._defDebuffTurns=Math.max(target._defDebuffTurns||0,3);
         G.currentEnemy=saved;
         log("🌿 Nature's Grasp: "+target.name+' Restrained(3) + DEF -2!','s');
       }

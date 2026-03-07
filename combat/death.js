@@ -769,7 +769,23 @@ function onPlayerDied(){
   if(typeof checkUnlocks==='function') checkUnlocks();
   autoSave();
 
-  // Always: brief overlay → salvage prompt → death screen → "Return to Elderfen"
+  // If lives remain: decrement and retreat to campfire instead of full death screen
+  if(G.lives>0){
+    G.lives--;
+    G.hp=Math.max(1,Math.floor(G.maxHp*0.25)); // survive at 25% HP
+    G.currentEnemies=[];
+    const subEl=document.getElementById('deathOverlaySub');
+    if(subEl) subEl.textContent='RETREATING TO CAMPFIRE... ('+G.lives+' '+(G.lives===1?'LIFE':'LIVES')+' LEFT)';
+    autoSave();
+    setTimeout(()=>{
+      showDeathOverlay(()=>{
+        if(typeof showCampfire==='function') showCampfire();
+      });
+    },800);
+    return;
+  }
+
+  // No lives left: salvage prompt → death screen → "Return to Elderfen"
   setTimeout(()=>{
     showDeathOverlay(()=>{
       showSalvagePrompt(()=>{

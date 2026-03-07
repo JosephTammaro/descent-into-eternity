@@ -62,7 +62,7 @@ function calcPlayerDmg(){
   if(G._starryFormActive){const sf=roll(8)+Math.max(0,md(G.stats&&G.stats.wis?G.stats.wis:10));base+=sf;log('⭐ Starry Form: +'+sf+' radiant!','s');}
   // Rampage keystone: +3 bonus damage per kill stack (max 5)
   if(G._keystoneRampage&&G._rampageStacks>0){const r=G._rampageStacks*3;base+=r;log('🔥 Rampage: +'+r+' damage!','s');}
-  const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)):0;
+  const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)-(G.currentEnemy._defDebuff||0)):0;
   let dmg=Math.max(1,base-Math.floor(def/2)+roll(4)-2);
   let crit=false;
   // Ghost Step: first attack of each fight is a guaranteed crit
@@ -258,4 +258,17 @@ function updateEnemyBar(){
   fill.style.background=pct<25?'var(--red2)':pct<50?'var(--orange2)':'var(--green2)';
   const txt=document.getElementById('enemyHpText');
   if(txt)txt.textContent=Math.max(0,Math.ceil(G.currentEnemy.hp))+' / '+G.currentEnemy.maxHp+' HP';
+  // Render active conditions as tags under the enemy name
+  const ctEl=document.getElementById('enemyConditionTags');
+  if(ctEl){
+    const condColors={Burning:'#e74c3c',Poisoned:'#27ae60',Bleeding:'#c0392b',Stunned:'#f39c12',Restrained:'#8e44ad',Frightened:'#2980b9',Weakened:'#7f8c8d',Vulnerable:'#e67e22'};
+    const conds=G.currentEnemy.conditions?G.currentEnemy.conditions.filter(c=>c.turns>0):[];
+    // Also show non-condition flags
+    const extras=[];
+    if((G.currentEnemy._consecrateTurns||0)>0) extras.push({name:'Consecrated',color:'#f1c40f'});
+    if((G.currentEnemy._blindedAtk||0)>0) extras.push({name:'Blinded',color:'#95a5a6'});
+    if((G.currentEnemy._defDebuff||0)>0) extras.push({name:'Exposed',color:'#e67e22'});
+    ctEl.innerHTML=conds.map(c=>`<span style="font-family:'Press Start 2P',monospace;font-size:5px;color:#fff;background:${condColors[c.name]||'#555'};padding:1px 4px;border-radius:2px;">${c.name} ${c.turns}t</span>`).join('')
+      +extras.map(e=>`<span style="font-family:'Press Start 2P',monospace;font-size:5px;color:#fff;background:${e.color};padding:1px 4px;border-radius:2px;">${e.name}</span>`).join('');
+  }
 }
