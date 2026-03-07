@@ -416,17 +416,20 @@ function slotContinue(slot){
   } else {
     showScreen('game');
     setTimeout(function(){
+      // Reconstruct currentEnemy BEFORE renderAll() so rendering functions
+      // have a valid reference — otherwise renderEnemyArea shows null fallback
+      const living = G.currentEnemies && G.currentEnemies.filter(e=>!e.dead&&e.hp>0);
+      if(living && living.length > 0){
+        G.currentEnemy = living.find(e=>e.isBoss) || living[0];
+        G.targetIdx    = G.currentEnemies.indexOf(G.currentEnemy);
+      }
       if(typeof renderAll==='function')      renderAll();
       if(typeof renderHud==='function')      renderHud();
       if(typeof updateCampBtn==='function')  updateCampBtn();
       if(typeof setupGameUI==='function')    setupGameUI();
       if(typeof startPlayTimer==='function') startPlayTimer();
       if(typeof log==='function') log('&#x2736; Welcome back, adventurer.','l');
-      const living = G.currentEnemies && G.currentEnemies.filter(e=>!e.dead&&e.hp>0);
       if(living && living.length > 0){
-        // Resume existing fight — reconstruct the broken currentEnemy reference
-        G.currentEnemy = living.find(e=>e.isBoss) || living[0];
-        G.targetIdx    = G.currentEnemies.indexOf(G.currentEnemy);
         AUDIO.playBGM(living.some(e=>e.isBoss) ? 'boss' : 'dungeon');
         if(typeof renderEnemyArea==='function') renderEnemyArea();
         if(typeof setPlayerTurn==='function')   setPlayerTurn(true);
@@ -1580,3 +1583,8 @@ function graceSellEquipped(slotKey){
     ()=>{ sellGraceEquipped(slotKey); renderGraceScreen(); }
   );
 }
+
+// ── Save on page close/refresh so mid-turn state is never lost ──
+window.addEventListener('beforeunload', function(){
+  if(typeof autoSave==='function') autoSave();
+});

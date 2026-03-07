@@ -540,9 +540,33 @@ function renderEnemyArea(){
   if(!singleWrap||!multiRow) return;
 
   if(single){
-    // Single enemy — use the normal UI elements unchanged
     singleWrap.style.display='';
     multiRow.style.display='none';
+    if(!G.currentEnemy) return;
+    // Render sprite + name/HP for the single-enemy view
+    // (spawnEnemy does this on a new fight; renderEnemyArea must also do it so
+    // combat restores after page reload render correctly)
+    const e=G.currentEnemy;
+    const isBoss=e.isBoss||false;
+    const eEl=document.getElementById('enemySprite');
+    if(eEl){
+      const spriteData=(isBoss||e._usesBossSprite)?BOSS_SPRITES[e.sprite]:ENEMY_SPRITES[e.sprite];
+      if(spriteData) renderSprite(spriteData,isBoss?15:13,eEl);
+      eEl.className=isBoss?'boss-anim':'';
+      eEl.style.filter=`drop-shadow(0 0 4px ${e.color||'#888'})`;
+    }
+    const hpPct=e.maxHp>0?Math.max(0,e.hp/e.maxHp*100):100;
+    const hpFill=document.getElementById('enemyHpFill');
+    if(hpFill) hpFill.style.width=hpPct+'%';
+    const hpTxt=document.getElementById('enemyHpText');
+    if(hpTxt) hpTxt.textContent=Math.ceil(e.hp)+' / '+e.maxHp+' HP';
+    const lvl=e.effectiveLvl||(G.zoneIdx+1);
+    const lvlBadge=`<span style="font-size:11px;color:var(--dim);margin-left:6px;">Lv.${lvl}</span>`;
+    const nameTag=document.getElementById('enemyNameTag');
+    if(nameTag){
+      nameTag.innerHTML=(isBoss?`⚠ ${e.name}`:e.name)+lvlBadge;
+      nameTag.className='fighter-name-tag '+(isBoss?'boss-name-tag':'');
+    }
     return;
   }
 
