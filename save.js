@@ -184,22 +184,14 @@ function serializeState(g){
     if(OMIT.has(k)) continue;
     try{ copy[k] = JSON.parse(JSON.stringify(v)); } catch{ copy[k]=v; }
   }
-  copy.currentEnemy          = null;
-  copy.isPlayerTurn          = true;
-  copy.actionUsed            = false;
-  copy.bonusUsed             = false;
-  copy.reactionUsed          = false;
-  copy.raging                = false;
-  copy.rageTurns             = 0;
-  copy.concentrating         = null;
-  copy.mirrorImages          = 0;
-  copy.spiritualWeaponActive = false;
-  copy.spiritualWeaponTurns  = 0;
-  copy.firstAttackUsed       = false;
-  copy.roundNum              = 0;
-  copy.conditions            = [];
-  copy.conditionTurns        = {};
-  copy.sx                    = {};
+  copy.currentEnemy = null;   // reference — reconstructed from currentEnemies on load
+  copy.isPlayerTurn = true;   // always resume at start of player's turn
+  copy.actionUsed   = false;
+  copy.bonusUsed    = false;
+  copy.reactionUsed = false;
+  // Render-ephemeral boss flags — only valid during the exact turn they were set
+  delete copy._nethrixShuffleOrder;
+  delete copy._auranthosBlindedBtns;
   return copy;
 }
 
@@ -279,9 +271,9 @@ function openSlotDetail(slot){
   // Action buttons
   const s = data.state;
   const actEl = document.getElementById('slotDetailActions');
-  actEl.innerHTML =
-    (s ? `<button class="btn btn-gold" style="font-size:8px;" onclick="slotContinue(${slot})">▶ CONTINUE RUN</button>` : '')+
-    `<button class="btn" style="border-color:var(--gold-dim);color:var(--gold);font-size:8px;" onclick="slotNewRun(${slot})">↺ NEW RUN</button>`;
+  actEl.innerHTML = s
+    ? `<button class="btn btn-gold" style="font-size:8px;" onclick="slotContinue(${slot})">▶ CONTINUE RUN</button>`
+    : `<button class="btn" style="border-color:var(--gold-dim);color:var(--gold);font-size:8px;" onclick="slotNewRun(${slot})">↺ NEW RUN</button>`;
 
   showScreen('slotDetail');
   slotDetailTab('overview', document.querySelector('.sdt-tab'));
@@ -424,14 +416,25 @@ function slotContinue(slot){
   } else {
     showScreen('game');
     setTimeout(function(){
-      if(typeof renderAll==='function')     renderAll();
-      if(typeof renderHud==='function')     renderHud();
-      if(typeof updateCampBtn==='function') updateCampBtn();
-      if(typeof setupGameUI==='function')   setupGameUI();
-      if(typeof spawnEnemy==='function')    spawnEnemy();
+      if(typeof renderAll==='function')      renderAll();
+      if(typeof renderHud==='function')      renderHud();
+      if(typeof updateCampBtn==='function')  updateCampBtn();
+      if(typeof setupGameUI==='function')    setupGameUI();
       if(typeof startPlayTimer==='function') startPlayTimer();
-      AUDIO.playBGM('dungeon');
       if(typeof log==='function') log('&#x2736; Welcome back, adventurer.','l');
+      const living = G.currentEnemies && G.currentEnemies.filter(e=>!e.dead&&e.hp>0);
+      if(living && living.length > 0){
+        // Resume existing fight — reconstruct the broken currentEnemy reference
+        G.currentEnemy = living.find(e=>e.isBoss) || living[0];
+        G.targetIdx    = G.currentEnemies.indexOf(G.currentEnemy);
+        AUDIO.playBGM(living.some(e=>e.isBoss) ? 'boss' : 'dungeon');
+        if(typeof renderEnemyArea==='function') renderEnemyArea();
+        if(typeof setPlayerTurn==='function')   setPlayerTurn(true);
+      } else {
+        // No saved combat — spawn the next encounter normally
+        AUDIO.playBGM('dungeon');
+        if(typeof spawnEnemy==='function') spawnEnemy();
+      }
     }, 100);
   }
 }

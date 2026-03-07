@@ -17,6 +17,7 @@ function playerEndTurn(){
   if(G.talents.includes('Storm Call')&&G.currentEnemy&&G.currentEnemy.hp>0){
     const sd=8+G.level;dealToEnemy(sd,false,'Storm Call ⚡');
   }
+  if(typeof autoSave==='function') autoSave();
   setPlayerTurn(false);
 }
 

@@ -503,6 +503,7 @@ function spawnEnemy(){
   // Tutorial: don't start the player's turn yet — the choice/tour overlay controls this
   if(!G._pauseForTutorial) setPlayerTurn(true);
   renderEnemyArea();
+  if(typeof autoSave==='function'&&!G._pauseForTutorial) autoSave();
 }
 
 // ── Target helpers ────────────────────────────────────────
