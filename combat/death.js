@@ -5,6 +5,39 @@ function onEnemyDied(){
   if(typeof triggerKillFreeze==='function') triggerKillFreeze();
   const e=G.currentEnemy;
   G.isPlayerTurn=true;
+
+  // ── Garrison Soldier death — remove Grakthar's rally DEF bonus ──
+  if(e&&e._isGarrisonSoldier){
+    const boss=(G.currentEnemies||[]).find(en=>en.id==='grakthar'&&!en.dead&&en.hp>0);
+    if(boss&&boss._rallyDefBonus){
+      boss.def=Math.max(0,boss.def-boss._rallyDefBonus);
+      delete boss._rallyDefBonus;
+      log('⚔ The Garrison Soldier falls — Grakthar\'s defense wavers!','s');
+    }
+  }
+  // ── Frozen Soldier death — log bulwark status ──
+  if(e&&e._isFrozenSoldier){
+    const remaining=(G.currentEnemies||[]).filter(en=>!en.dead&&en.hp>0&&en._isFrozenSoldier).length;
+    if(remaining===0)log('❄ Both Frozen Soldiers fall — Valdris\'s bulwark shatters!','s');
+    else log('❄ A Frozen Soldier falls! '+remaining+' remaining — Valdris still shielded!','s');
+  }
+  // ── Shadow copy death — heal the real Empress ──
+  if(e&&e._isShadowCopy){
+    const real=(G.currentEnemies||[]).find(en=>en._isRealEmpress&&!en.dead&&en.hp>0);
+    if(real){
+      const healAmt=Math.ceil(real.maxHp*0.20);
+      real.hp=Math.min(real.maxHp,real.hp+healAmt);
+      updateEnemyBar();
+      log('🌑 The Shadow\'s death feeds the Empress — she heals '+healAmt+' HP!','e');
+      if(typeof triggerScreenShake==='function')triggerScreenShake('hit');
+    }
+  }
+  // ── Real Empress death — despawn shadow ──
+  if(e&&e._isRealEmpress){
+    const shadow=(G.currentEnemies||[]).find(en=>en._isShadowCopy&&!en.dead&&en.hp>0);
+    if(shadow){shadow.hp=0;shadow.dead=true;log('🌑 The Shadow dissolves as the Empress falls...','s');}
+  }
+
   // If we're in a branch, hand off to branch system
   if(G._inBranch){
     AUDIO.sfx.enemyDeath();
