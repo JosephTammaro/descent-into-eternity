@@ -564,7 +564,17 @@ function doEnemyAttack(e){
     afterEnemyActs();return;
   }
 
+  // ── Intent: DEFENDING — halve damage, grant temp DEF boost ──
+  if(e._intent==='defending'){
+    e._defBoost=Math.ceil((e.def||0)*0.5);
+    log('🛡 '+e.name+' braces for impact! (-50% dmg, +DEF this round)','c');
+  } else {
+    delete e._defBoost;
+  }
+
   let dmg=e.atk+roll(4)-2;
+  if(e._intent==='defending') dmg=Math.ceil(dmg*0.5);
+  if(e._intent==='poisoning'||e._intent==='burning'||e._intent==='stunning') dmg=Math.ceil(dmg*0.75);
   // Rare Event: Cursed Forge — all enemies deal +10% damage
   if(G._rareEventFlags.cursedForge) dmg=Math.ceil(dmg*1.10);
   // ── Phase B: Zone modifier enemy damage multipliers ──
@@ -701,20 +711,20 @@ function doEnemyAttack(e){
       log('Radiant Aura: '+reflectDmg+' radiant reflected','s');
       if(G.currentEnemy.hp<=0){onEnemyDied();return;}
     }
-    // On-hit status effects from enemy flags
-    if(e.canPoison&&!G.conditions.includes('Poisoned')&&Math.random()<0.25){
+    // On-hit status effects — guaranteed when intent matches, random otherwise
+    if(e.canPoison&&!G.conditions.includes('Poisoned')&&(e._intent==='poisoning'||Math.random()<0.25)){
     checkObjectiveProgress('condition_gained','Poisoned');
       addCondition('Poisoned',3);
       AUDIO.sfx.poison();
       log('☠ Poisoned! Take damage each turn (3 turns).','c');
     }
-    if(e.canBurn&&!G.conditions.includes('Burning')&&Math.random()<0.3){
+    if(e.canBurn&&!G.conditions.includes('Burning')&&(e._intent==='burning'||Math.random()<0.3)){
     checkObjectiveProgress('condition_gained','Burning');
       addCondition('Burning',3);
       AUDIO.sfx.burn();
       log('🔥 Burning! Take fire damage each turn (3 turns).','c');
     }
-    if(e.canStun&&!G.conditions.includes('Stunned')&&Math.random()<0.2){
+    if(e.canStun&&!G.conditions.includes('Stunned')&&(e._intent==='stunning'||Math.random()<0.2)){
       if(G.classId==='barbarian'&&G._unstoppable&&G.raging){log('💢 Unstoppable: Stun blocked by Rage!','s');}
       else{addCondition('Stunned',1);AUDIO.sfx.stun();log('💫 Stunned! You will lose your next turn.','c');}
     }
