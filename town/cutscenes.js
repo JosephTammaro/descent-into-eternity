@@ -872,3 +872,254 @@ function townEnterDungeon(){
   }
   if(typeof travelToZone==='function') travelToZone(0);
 }
+
+// ══════════════════════════════════════════════════════════
+//  DUNGEON TUTORIAL — v2
+//  Phase 1: Choice overlay ("DO TUTORIAL" / "SKIP TUTORIAL")
+//    Training Dummy is already spawned + visible when choice shows.
+//  Phase 2: Full UI tour with fixed spotlight + floating card
+//  Phase 3: setPlayerTurn(true) starts the Training Dummy fight
+//  Gated by _dungeonTutorialShown in the save slot.
+// ══════════════════════════════════════════════════════════
+
+const DUNGEON_TOUR_STEPS = [
+  { target: null,
+    icon: '⚔',
+    heading: 'YOUR FIRST DUNGEON',
+    text: "Welcome! This tour points out every part of the combat screen. You will then fight a Training Dummy to practice — it barely hits back, so experiment freely with all your skills." },
+  { target: '.ae-row',
+    icon: '🎯',
+    heading: 'ACTION ECONOMY',
+    text: 'Each turn you get one ACTION, one BONUS ACTION, and one REACTION. These pips track what you have spent. They all reset at the start of your next turn.' },
+  { target: '.topbar-bars',
+    icon: '❤️',
+    heading: 'HP & RESOURCES',
+    text: "Your HP bar is on the left — if it hits zero you die. Below it is your class resource: mana, rage, focus, or devotion. Manage both across every fight." },
+  { target: '#zoneKillsTxt',
+    icon: '🗺️',
+    heading: 'ZONE PROGRESS',
+    text: 'This counter shows enemies left in the zone. Clear them all and the zone boss appears. Defeat the boss to descend to the next zone. There are 8 zones total.' },
+  { target: '#enemyArea',
+    icon: '👹',
+    heading: 'THE ENEMY',
+    text: 'Your foe appears here with their HP bar and name. The training dummy is up now — try your skills on it. Real enemies have special abilities and hit much harder.' },
+  { target: '.battle-log-wrap',
+    icon: '📜',
+    heading: 'BATTLE LOG',
+    text: 'Every hit, miss, skill, and condition appears here. Read it after each turn to understand exactly what happened and plan your next move.' },
+  { target: '#panelLeft',
+    icon: '🧙',
+    heading: 'YOUR STATS',
+    text: 'Your class, level, attack, and defence are listed here. Click the panel header marked C to open your full character sheet with talents and conditions.' },
+  { target: '#actionSkills',
+    icon: '🔴',
+    heading: 'ACTIONS',
+    text: 'Your most powerful moves — attacks, spells, and major skills. You get ONE action per turn. These cost the most but deal the most damage or the best effects.' },
+  { target: '#bonusSkills',
+    icon: '🟡',
+    heading: 'BONUS ACTIONS',
+    text: 'Faster moves — quick buffs, off-hand strikes, or repositioning. Use one before or after your action. ONE bonus action per turn.' },
+  { target: '#reactionSkills',
+    icon: '🔵',
+    heading: 'REACTIONS',
+    text: 'Arm a reaction BEFORE ending your turn. It fires automatically when the enemy attacks — Parry reduces damage, Counter strikes back, Blink evades the hit entirely.' },
+  { target: '#endTurnBtn',
+    icon: '▶️',
+    heading: 'END TURN',
+    text: "When done acting, click END TURN or press Space. The enemy then attacks. POTION (P) heals you mid-fight. CAMP recharges after kills and lets you rest at a campfire." },
+];
+
+// ── State ──────────────────────────────────────────────────
+let _dtTourStep = 0;
+let _dtTourTimer = null;
+let _dtTourDone = false;
+
+// ── Entry point called from enterZone() ────────────────────
+// Training Dummy is already spawned (G._pauseForTutorial prevents the fight starting).
+function showDungeonTutorialChoice() {
+  const overlay = document.getElementById('dtChoiceOverlay');
+  if (!overlay) {
+    // Fallback: release pause and let fight begin
+    if (typeof G !== 'undefined' && G) G._pauseForTutorial = false;
+    if (typeof setPlayerTurn === 'function') setPlayerTurn(true);
+    return;
+  }
+  overlay.style.display = 'flex';
+}
+
+// Called by "DO TUTORIAL" button
+function _dtDoTutorial() {
+  const overlay = document.getElementById('dtChoiceOverlay');
+  if (overlay) overlay.style.display = 'none';
+  _dtStartTour();
+}
+
+// Called by "SKIP TUTORIAL" button —
+// clears the training dummy and spawns a real Zone I enemy instead.
+function _dtSkipAll() {
+  const overlay = document.getElementById('dtChoiceOverlay');
+  if (overlay) overlay.style.display = 'none';
+  _dtMarkShown();
+  if (typeof G !== 'undefined' && G) {
+    G._isTutorialFight   = false;
+    G._pauseForTutorial  = false;
+    G.currentEnemies     = [];
+    G.currentEnemy       = null;
+  }
+  if (typeof spawnEnemy === 'function') spawnEnemy();
+}
+
+// ── Tour ───────────────────────────────────────────────────
+function _dtStartTour() {
+  _dtTourStep = 0;
+  _dtTourDone = false;
+  const bg   = document.getElementById('dtTourBg');
+  const card = document.getElementById('dtTourCard');
+  if (bg)   bg.style.display   = 'block';
+  if (card) card.style.display = 'block';
+  _dtShowTourStep(0);
+  document.addEventListener('keydown', _dtTourKeyHandler);
+}
+
+function _dtShowTourStep(step) {
+  const steps = DUNGEON_TOUR_STEPS;
+  _dtClearHighlight();
+
+  const s = steps[step];
+  if (!s) { _dtFinishTour(); return; }
+
+  _dtHighlight(s.target);
+  _dtPositionCard(s.target);
+
+  const prog    = document.getElementById('dtTourProgress');
+  const iconEl  = document.getElementById('dtTourIcon');
+  const headEl  = document.getElementById('dtTourHeading');
+  const textEl  = document.getElementById('dtTourText');
+  const nextBtn = document.getElementById('dtTourNext');
+
+  if (prog)    prog.textContent    = 'STEP ' + (step + 1) + ' / ' + steps.length;
+  if (iconEl)  iconEl.textContent  = s.icon || '';
+  if (headEl)  headEl.textContent  = s.heading || '';
+  if (textEl)  textEl.textContent  = '';
+  if (nextBtn) nextBtn.textContent = (step >= steps.length - 1) ? "⚔ LET'S FIGHT!" : 'NEXT ▸';
+
+  if (_dtTourTimer) clearTimeout(_dtTourTimer);
+  if (textEl) {
+    var i = 0;
+    var txt = s.text;
+    (function type() {
+      if (_dtTourDone) return;
+      if (i < txt.length) {
+        textEl.textContent += txt[i++];
+        _dtTourTimer = setTimeout(type, 13);
+      }
+    })();
+  }
+}
+
+function _dtTourNext() {
+  var s      = DUNGEON_TOUR_STEPS[_dtTourStep];
+  var textEl = document.getElementById('dtTourText');
+
+  if (s && textEl && textEl.textContent.length < s.text.length) {
+    if (_dtTourTimer) clearTimeout(_dtTourTimer);
+    textEl.textContent = s.text;
+    return;
+  }
+
+  _dtTourStep++;
+  if (_dtTourStep >= DUNGEON_TOUR_STEPS.length) {
+    _dtFinishTour();
+  } else {
+    _dtShowTourStep(_dtTourStep);
+  }
+}
+
+function _dtTourKeyHandler(e) {
+  if (e.key === 'Escape') {
+    _dtFinishTour();
+  } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'e' || e.key === 'E') {
+    e.preventDefault();
+    _dtTourNext();
+  }
+}
+
+function _dtFinishTour() {
+  _dtTourDone = true;
+  if (_dtTourTimer) { clearTimeout(_dtTourTimer); _dtTourTimer = null; }
+  document.removeEventListener('keydown', _dtTourKeyHandler);
+  _dtClearHighlight();
+
+  var bg   = document.getElementById('dtTourBg');
+  var card = document.getElementById('dtTourCard');
+  if (bg)   bg.style.display   = 'none';
+  if (card) card.style.display = 'none';
+
+  _dtMarkShown();
+  // Training Dummy already spawned — just release the pause and start the fight
+  if (typeof G !== 'undefined' && G) G._pauseForTutorial = false;
+  if (typeof setPlayerTurn === 'function') setPlayerTurn(true);
+}
+
+// ── Positioning ─────────────────────────────────────────────
+function _dtPositionCard(sel) {
+  var card = document.getElementById('dtTourCard');
+  if (!card) return;
+  card.style.top = card.style.bottom = card.style.left = card.style.right = 'auto';
+  card.style.transform = '';
+
+  if (!sel) {
+    card.style.top       = '50%';
+    card.style.left      = '50%';
+    card.style.transform = 'translate(-50%,-50%)';
+    return;
+  }
+
+  var el = document.querySelector(sel);
+  if (!el) {
+    card.style.top = '50%'; card.style.left = '50%';
+    card.style.transform = 'translate(-50%,-50%)';
+    return;
+  }
+
+  var r  = el.getBoundingClientRect();
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  var cx = r.left + r.width  / 2;
+  var cy = r.top  + r.height / 2;
+  var mg = 16;
+
+  if (cx > vw / 2) { card.style.left  = mg + 'px'; }
+  else             { card.style.right = mg + 'px'; }
+  if (cy > vh / 2) { card.style.top    = mg + 'px'; }
+  else             { card.style.bottom = mg + 'px'; }
+}
+
+// ── Spotlight (fixed-position gold ring, immune to overflow clipping) ──
+function _dtHighlight(sel) {
+  _dtClearHighlight();
+  var spot = document.getElementById('dtSpotlight');
+  if (!spot) return;
+  if (!sel) { spot.style.display = 'none'; return; }
+  var el = document.querySelector(sel);
+  if (!el) { spot.style.display = 'none'; return; }
+  var r = el.getBoundingClientRect();
+  var pad = 4; // padding around the element
+  spot.style.display = 'block';
+  spot.style.top    = (r.top    - pad) + 'px';
+  spot.style.left   = (r.left   - pad) + 'px';
+  spot.style.width  = (r.width  + pad * 2) + 'px';
+  spot.style.height = (r.height + pad * 2) + 'px';
+}
+
+function _dtClearHighlight() {
+  var spot = document.getElementById('dtSpotlight');
+  if (spot) spot.style.display = 'none';
+}
+
+// ── Persistence ────────────────────────────────────────────
+function _dtMarkShown() {
+  if (typeof updateSlotData === 'function' && typeof activeSaveSlot !== 'undefined' && activeSaveSlot) {
+    updateSlotData(activeSaveSlot, function(d) { d._dungeonTutorialShown = true; });
+  }
+}
