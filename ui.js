@@ -940,7 +940,7 @@ function cfRestHTML(){
     ${cfSceneHTML()}
     <p style="font-size:17px;color:var(--parchment);margin-bottom:16px;">Take a Long Rest to restore HP, ${G.classId==='wizard'?'spell slots':'resources'}, and clear conditions.</p>
     <div class="rest-preview">
-      <div class="rest-item">❤️ HP<span>Restore to ${Math.floor(G.maxHp * Math.min(1.0, (G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken ? 0.40 : 0.60) + (G._campfireHealBonus||0)))} / ${G.maxHp}</span></div>
+      <div class="rest-item">❤️ HP<span>Restore to ${Math.floor(G.maxHp * Math.min(1.0, (G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken ? 0.40 : 0.75) + (G._campfireHealBonus||0)))} / ${G.maxHp}</span></div>
       ${G.classId==='wizard'?`<div class="rest-item">🔮 Spell Slots<span>All restored</span></div>`:`<div class="rest-item">◈ ${CLASSES[G.classId].res}<span>Fully refilled</span></div>`}
       <div class="rest-item">⚠️ Conditions<span>All cleared</span></div>
     </div>
@@ -982,7 +982,7 @@ function cfDoRest(){
   G._longRestUsed=true;
   G._noRestStreak=0; // Reset no-rest achievement streak
   // Rare Event: Last Campfire weakens this rest to 50%
-  const baseRestPct=G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken?0.40:0.60;
+  const baseRestPct=G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken?0.40:0.75;
   // Permanent upgrade: Restful adds +10% per level to rest heal
   const restPct=Math.min(1.0, baseRestPct + (G._campfireHealBonus || 0));
   if(G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken) delete G._rareEventFlags.lastCampfireWeaken;
