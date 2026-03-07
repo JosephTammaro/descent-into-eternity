@@ -3304,33 +3304,20 @@ function closeBugLog(){
   document.getElementById('buglog-overlay').classList.remove('open');
 }
 function deathReturnToTown(){
-  // Called from death screen — reset combat state and return to Elderfen
-  if(!G){
-    // G was already nulled (shouldn't happen now, but safety)
-    showScreen('saveSlots');
-    return;
-  }
-  if(G.lives<=0){
-    // Run is over — wipe save state and start fresh from Elderfen
-    if(typeof updateSlotData==='function'&&activeSaveSlot){
-      updateSlotData(activeSaveSlot,d=>{
-        d.state=null;
-      });
-    }
-    G=null;
-    if(typeof renderTitleSaveSlots==='function') renderTitleSaveSlots();
-    showScreen('saveSlots');
-    return;
-  }
-  // Lives remain — reset combat and send to town
+  // Called from death screen — always return to Elderfen with character preserved
+  if(!G){showScreen('saveSlots');return;}
+  // Reset combat state — keep all character progress (level, items, gold, bosses)
   G.currentEnemy=null;
+  G.currentEnemies=[];
   G.conditions=[];G.conditionTurns={};G.sx={};
   G.raging=false;G.hunterMarked=false;G.concentrating=null;
   G.wildShapeActive=false;G.spiritualWeaponActive=false;
   G.isPlayerTurn=true;G.actionUsed=false;G.bonusUsed=false;G.reactionUsed=false;
-  G.hp=Math.max(1,Math.floor(G.maxHp/2)); // arrive at half HP
+  G.bossReady=false;G.zoneKills=0;G.dungeonFights=0;
+  G.roundNum=0;G._dyingFlag=false;
+  G.hp=G.maxHp; // full HP restore — they're heading back to town
   if(typeof autoSave==='function') autoSave();
-  showTownHub();
+  if(typeof showTownHub==='function') showTownHub();
 }
 
 function deathGoToMenu(){
