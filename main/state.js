@@ -62,6 +62,7 @@ function newState(classId){
     branchDefeated:{catacombs:false,fungalwarren:false,sunkenvault:false,ashenwastes:false},
     branchPassives:[],
     dungeonFights:0, campUnlocked:false,
+    _isTutorialFight:false, _pauseForTutorial:false,
     lives: 3,
     // Turn state
     isPlayerTurn:true, actionUsed:false, bonusUsed:false, reactionUsed:false,
