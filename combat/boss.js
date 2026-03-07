@@ -1,3 +1,14 @@
+function spawnBossAdd(enemyObj){
+  if(!G||!G.currentEnemies)return;
+  const zd=ZONES&&ZONES[G.zoneIdx];
+  enemyObj.effectiveLvl=zd?zd.reqLvl+Math.floor(G.dungeonFights*0.5):G.level;
+  if(!enemyObj.maxHp)enemyObj.maxHp=enemyObj.hp;
+  G.currentEnemies.push(enemyObj);
+  if(typeof renderEnemyArea==='function')renderEnemyArea();
+  if(typeof updateEnemyBar==='function')updateEnemyBar();
+  if(typeof renderAll==='function')renderAll();
+}
+
 function doBossSpecial(e, usePhase2=false){
   const sp=usePhase2&&e.phase2 ? e.phase2 : e.special;
   if(!sp)return;
