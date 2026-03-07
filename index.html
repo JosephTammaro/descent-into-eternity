@@ -435,6 +435,7 @@
             <div class="fighter-hp-bar"><div class="fighter-hp-fill" id="enemyHpFill" style="width:100%;background:var(--green2)"></div></div>
             <div id="enemyHpText" style="font-family:'Press Start 2P',monospace;font-size:5px;color:var(--dim);text-align:center;margin-top:2px;"></div>
             <div class="fighter-name-tag" id="enemyNameTag">ENEMY</div>
+            <div id="enemyIntent" class="enemy-intent"></div>
           </div>
           <div id="multiEnemyRow" style="display:none;flex-direction:row;gap:12px;align-items:flex-end;justify-content:center;"></div>
         </div>
@@ -1299,5 +1300,37 @@ function switchHelpTab(id, btn) {
     <div class="mod-announce-flavor" id="modAnnounceFlavor"></div>
   </div>
 </div>
+<!-- ══════════════════════════════════════════════════════════
+     DUNGEON TUTORIAL — three global elements, never inside a .screen
+══════════════════════════════════════════════════════════ -->
+
+<!-- Choice screen: "Do Tutorial" vs "Skip Tutorial" -->
+<div id="dtChoiceOverlay" style="display:none">
+  <div id="dtChoiceCard">
+    <div id="dtChoiceIcon">⚔</div>
+    <div id="dtChoiceTitle">FIRST DUNGEON</div>
+    <div id="dtChoiceSub">You're about to enter the dungeon for the first time.</div>
+    <div id="dtChoiceBtns">
+      <button id="dtDoTutorial" onclick="_dtDoTutorial()">⚔ DO TUTORIAL</button>
+      <button id="dtSkipTutorial" onclick="_dtSkipAll()">⏭ SKIP TUTORIAL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tour: semi-transparent dimmer that blocks game interaction -->
+<div id="dtTourBg" style="display:none"></div>
+
+<!-- Tour: fixed-position gold spotlight ring drawn around the highlighted element -->
+<div id="dtSpotlight" style="display:none"></div>
+
+<!-- Tour: floating card that repositions dynamically -->
+<div id="dtTourCard" style="display:none">
+  <div id="dtTourProgress"></div>
+  <div id="dtTourIcon"></div>
+  <div id="dtTourHeading"></div>
+  <div id="dtTourText"></div>
+  <button id="dtTourNext" onclick="_dtTourNext()">NEXT ▸</button>
+</div>
+
 </body>
 </html>
