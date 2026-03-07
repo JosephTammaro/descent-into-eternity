@@ -132,7 +132,7 @@ function recordGraveyardEntry(g){
   const entry = {
     ts:           Date.now(),
     className:    cls ? cls.name : (g.classId||'Unknown'),
-    subclass:     (g.subclassUnlocked && cls && cls.subclass) ? cls.subclass.name : null,
+    subclass:     (g.subclassId && typeof SUBCLASSES!=='undefined' && SUBCLASSES[g.subclassId]) ? SUBCLASSES[g.subclassId].name : null,
     level:        g.level || 1,
     zoneIdx:      g.zoneIdx || 0,
     zoneName:     zone ? zone.name  : 'Unknown',

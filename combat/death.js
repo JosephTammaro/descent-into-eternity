@@ -596,7 +596,7 @@ function showDeathScreen(){
   })[0]:null;
 
   document.getElementById('deathStats').innerHTML=`
-    <div class="death-stat-row"><span class="death-stat-label">Class</span><span class="death-stat-val highlight">${cls.name}${G.subclassUnlocked?' / '+cls.subclass.name:''}</span></div>
+    <div class="death-stat-row"><span class="death-stat-label">Class</span><span class="death-stat-val highlight">${cls.name}${G.subclassId&&typeof SUBCLASSES!=='undefined'&&SUBCLASSES[G.subclassId]?' / '+SUBCLASSES[G.subclassId].name:''}</span></div>
     <div class="death-stat-row"><span class="death-stat-label">Level Reached</span><span class="death-stat-val highlight">${G.level}</span></div>
     <div class="death-stat-row"><span class="death-stat-label">Zone</span><span class="death-stat-val">${zone.name}</span></div>
     <div class="death-stat-row"><span class="death-stat-label">Enemies Slain</span><span class="death-stat-val">${G.totalKills}</span></div>

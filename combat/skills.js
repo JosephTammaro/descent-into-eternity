@@ -139,8 +139,8 @@ function doSkillEffect(effect, sk){
   switch(effect){
     case 'basic_attack':{
       AUDIO.sfx.attack();const r=calcPlayerDmg();
-      // Beast Companion (Ranger subclass): companion strikes alongside basic attack
-      if(G.classId==='ranger'&&G.subclassUnlocked){
+      // Beast Companion (Beast Master subclass): companion strikes alongside basic attack
+      if(G.classId==='ranger'&&G.subclassId==='beast_master'){
         r.dmg+=roll(6)+(G._apexCompanion?roll(6):0);
       }
       dealToEnemy(r.dmg,r.crit,'Attack');
@@ -173,7 +173,7 @@ function doSkillEffect(effect, sk){
         log('🌪 Flurry: second strike!','s');
       }
       // Berserker Frenzy: auto second attack while raging (fired after attack animation)
-      if(G.classId==='barbarian'&&G.subclassUnlocked&&G.raging&&G.currentEnemy&&G.currentEnemy.hp>0){
+      if(G.classId==='barbarian'&&G.subclassId==='berserker'&&G.raging&&G.currentEnemy&&G.currentEnemy.hp>0){
         G._frenzyPending=true;
       }
       // Fix 5: Spiritual Weapon fires alongside attack on same turn
@@ -220,7 +220,7 @@ function doSkillEffect(effect, sk){
       break;}
     case 'parry':AUDIO.sfx.block();G.sx.parry=true;log('⛊ Parry set — next hit halved!','s');break;
     case 'fire_bolt':{AUDIO.sfx.burn();
-      let fbd=roll(10)+getSpellPower()+(G.subclassUnlocked&&G.classId==='wizard'?roll(6):0);
+      let fbd=roll(10)+getSpellPower()+(G.subclassId==='evoker'?roll(6):0);
       // Brilliant Focus: +INT mod to spell damage
       if(G.classId==='wizard'&&G._brilliantFocus)fbd+=Math.max(0,md(G.stats.int));
       // Overload: spells penetrate 30% of enemy DEF
@@ -497,14 +497,14 @@ function doSkillEffect(effect, sk){
       break;}
     case 'sacred_flame':{
       AUDIO.sfx.sacredFlame();const scalingBonus=Math.floor(G.level/4);
-      const d=roll(10)+scalingBonus+getSpellPower()+(G.subclassUnlocked&&G.classId==='cleric'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
+      const d=roll(10)+scalingBonus+getSpellPower()+(G.subclassId==='life'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
       dealToEnemy(d,false,'Sacred Flame ☀️');
       // Wrath of the Righteous: applies Vulnerable (+15% dmg taken) for 1 turn
       if(G.classId==='cleric'&&G._wrathRighteous&&G.currentEnemy&&G.currentEnemy.hp>0){G.currentEnemy._vulnerable=true;log('⚡ Wrath of the Righteous: Vulnerable!','c');}
       // Wrath of God: sacred flame hits twice (once per turn)
       if(G.classId==='cleric'&&G._wrathOfGod&&!G._wrathOfGodUsed&&G.currentEnemy&&G.currentEnemy.hp>0){
         G._wrathOfGodUsed=true;
-        const d2=roll(10)+scalingBonus+getSpellPower()+(G.subclassUnlocked?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
+        const d2=roll(10)+scalingBonus+getSpellPower()+(G.subclassId==='life'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
         dealToEnemy(d2,false,'Wrath of God ⚡ second flame');
         log('⚡ Wrath of God: second Sacred Flame!','s');
       }
@@ -513,14 +513,14 @@ function doSkillEffect(effect, sk){
       break;}
     case 'healing_word':{
       AUDIO.sfx.heal();
-      let hwHeal=roll(4)+md(G.stats.wis)+(G.subclassUnlocked&&G.classId==='cleric'?4:0)+(G.talents.includes('Blessed Healing')?5:0);
+      let hwHeal=roll(4)+md(G.stats.wis)+(G.subclassId==='life'?4:0)+(G.talents.includes('Blessed Healing')?5:0);
       // Tidal Grace: +1d6 to Healing Word
       if(G.classId==='cleric'&&G._tidalGrace)hwHeal+=roll(6);
       heal(hwHeal,'Healing Word 💚');
       // Overflowing Font: once per fight, Healing Word fires twice
       if(G.classId==='cleric'&&G._overflowingFont&&!G._overflowingFontUsed){
         G._overflowingFontUsed=true;
-        let hw2=roll(4)+md(G.stats.wis)+(G.subclassUnlocked?4:0)+(G.talents.includes('Blessed Healing')?5:0);
+        let hw2=roll(4)+md(G.stats.wis)+(G.subclassId==='life'?4:0)+(G.talents.includes('Blessed Healing')?5:0);
         if(G._tidalGrace)hw2+=roll(6);
         heal(hw2,'Overflowing Font 💫 second word');
         log('💫 Overflowing Font: second Healing Word!','s');

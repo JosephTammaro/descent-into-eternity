@@ -55,7 +55,7 @@ function doLevelUp(){
     }
   }
   // Improved crit (Champion)
-  if(G.classId==='fighter'&&G.subclassUnlocked&&G.level>=7)G.critRange=19;
+  if(G.classId==='fighter'&&G.subclassId==='champion'&&G.level>=7)G.critRange=19;
 
   const flavors=[
     "The darkness trembles at your growing power.",
@@ -150,7 +150,7 @@ function showNextLevelUp(){
     luSkillsEl.innerHTML=`
       <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--dim);letter-spacing:2px;margin-bottom:8px;">YOUR ABILITIES</div>
       <div style="display:flex;flex-direction:column;gap:5px;text-align:left;max-height:160px;overflow-y:auto;">
-        ${cls.skills.filter(sk=>(!sk.subclassOnly||G.subclassUnlocked)&&(!sk.ultimateOnly||G.ultimateUnlocked)).map(sk=>`
+        ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`
           <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid var(--border);padding:5px 8px;border-radius:2px;">
             <span style="font-size:16px;flex-shrink:0;">${sk.icon}</span>
             <div style="flex:1;min-width:0;">
@@ -162,11 +162,11 @@ function showNextLevelUp(){
               <div style="font-size:10px;color:var(--dim);margin-top:2px;">${sk.desc}</div>
             </div>
           </div>`).join('')}
-        ${G.subclassUnlocked?`
+        ${G.subclassId&&typeof SUBCLASSES!=='undefined'&&SUBCLASSES[G.subclassId]?`
           <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gold);margin-top:4px;padding:4px 8px;background:rgba(200,168,75,.08);border:1px solid var(--gold-dim);">
-            ⭐ ${cls.subclass.name} PERKS
+            ⭐ ${SUBCLASSES[G.subclassId].name} PERKS
           </div>
-          ${cls.subclass.perks.map(p=>`<div style="font-size:10px;color:#c8a84b;padding:3px 8px;background:rgba(200,168,75,.05);border-left:2px solid var(--gold-dim);">• ${p}</div>`).join('')}
+          ${(SUBCLASSES[G.subclassId].perks||[]).map(p=>`<div style="font-size:10px;color:#c8a84b;padding:3px 8px;background:rgba(200,168,75,.05);border-left:2px solid var(--gold-dim);">• ${p}</div>`).join('')}
         `:''}
       </div>`;
   }
@@ -286,6 +286,10 @@ function confirmSubclass(subclassId){
   }
   // Tag new subclass skills so the skill bar can highlight them
   const newIds=CLASSES[G.classId].skills.filter(s=>s.subclassOnly&&(!s.subclassId||s.subclassId===subclassId)).map(s=>s.id);
+  // Add subclass skills to the loadout so the loadout filter doesn't hide them
+  if(G.skillLoadout && newIds.length){
+    newIds.forEach(id=>{ if(!G.skillLoadout.includes(id)) G.skillLoadout.push(id); });
+  }
   G._newSkills=(G._newSkills||[]).concat(newIds);
   showScreen('game');
   if(G._pendingTalentAfterSubclass){
@@ -430,6 +434,9 @@ function addCondition(cond,turns=2){
     log('🔥 Elemental immunity blocks '+cond+'!','s');
     return;
   }
+  // Aura of Protection (Devotion): immune to Frightened and Restrained for 3 turns
+  if(cond==='Frightened'&&G.sx&&G.sx.immuneFrightened>0){log('😇 Aura of Protection blocks Frightened!','s');return;}
+  if(cond==='Restrained'&&G.sx&&G.sx.immuneRestrained>0){log('😇 Aura of Protection blocks Restrained!','s');return;}
   if(!G.conditions.includes(cond)){
     G.conditions.push(cond);
     if(!G.conditionTurns)G.conditionTurns={};
@@ -2732,7 +2739,7 @@ function renderInlineCharSheet(){
       <div class="csi-col">
         ${section('CORE')}
         ${row('Class',cls.name)}
-        ${row('Subclass',G.subclassUnlocked?cls.subclass.name:'(Lv3)')}
+        ${row('Subclass',G.subclassId&&typeof SUBCLASSES!=='undefined'&&SUBCLASSES[G.subclassId]?SUBCLASSES[G.subclassId].name:'(Lv3)')}
         ${row('Level',G.level)}
         ${row('Prof','+'+G.profBonus)}
         ${row('HP',Math.ceil(G.hp)+'/'+G.maxHp,'var(--green2)')}
@@ -2792,7 +2799,7 @@ function renderInlineCharSheet(){
         ${section('TALENTS')}
         ${G.talents.length?G.talents.map(t=>{const td=(TALENT_POOLS[G.classId]||[]).find(p=>p.name===t);return`<div class="csi-talent"><div class="csi-talent-name">${td?td.icon:''} ${t}</div><div class="csi-talent-desc">${td?td.desc:''}</div></div>`;}).join(''):'<div style="color:var(--dim);font-size:12px;padding:4px;">None yet.</div>'}
         ${section('CLASS SKILLS')}
-        ${cls.skills.filter(sk=>(!sk.subclassOnly||G.subclassUnlocked)&&(!sk.ultimateOnly||G.ultimateUnlocked)).map(sk=>`<div class="csi-talent"><div class="csi-talent-name">${sk.icon} ${sk.name} <span style="color:var(--dim);font-size:5px;">[${sk.type.toUpperCase()}]</span></div><div class="csi-talent-desc">${sk.desc}</div></div>`).join('')}
+        ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`<div class="csi-talent"><div class="csi-talent-name">${sk.icon} ${sk.name} <span style="color:var(--dim);font-size:5px;">[${sk.type.toUpperCase()}]</span></div><div class="csi-talent-desc">${sk.desc}</div></div>`).join('')}
         ${(()=>{
           if(typeof getEquippedGraces!=='function') return '';
           const graces = getEquippedGraces(G.classId).filter(Boolean);
@@ -2825,7 +2832,7 @@ function renderCharSheet(){
         const isCaster=casters.includes(G.classId);
         const isHybrid=G.classId==='paladin';
         const splVal=typeof getSpellPower==='function'?getSpellPower():(G.spellPower||0)+(G.magBonus||0)+G.profBonus;
-        const rows=[['Class',cls.name],['Subclass',G.subclassUnlocked?cls.subclass.name:'(Unlocks Lv3)'],['Level',G.level],['Proficiency','+'+G.profBonus],['HP',Math.ceil(G.hp)+'/'+G.maxHp]];
+        const rows=[['Class',cls.name],['Subclass',G.subclassId&&typeof SUBCLASSES!=='undefined'&&SUBCLASSES[G.subclassId]?SUBCLASSES[G.subclassId].name:'(Unlocks Lv3)'],['Level',G.level],['Proficiency','+'+G.profBonus],['HP',Math.ceil(G.hp)+'/'+G.maxHp]];
         if(isCaster){ rows.push(['SPL',splVal]); }
         else if(isHybrid){ rows.push(['ATK',G.atk]); rows.push(['SPL',splVal]); }
         else { rows.push(['ATK',G.atk]); }
@@ -2847,7 +2854,7 @@ function renderCharSheet(){
       <div class="panel-title">TALENTS</div>
       ${G.talents.length?G.talents.map(t=>{const td=(TALENT_POOLS[G.classId]||[]).find(p=>p.name===t);return`<div class="talent-entry"><div class="te-name">${td?td.icon:''} ${t}</div><div class="te-desc">${td?td.desc:''}</div></div>`;}).join(''):'<div class="talent-entry"><div class="te-desc" style="color:var(--dim)">No talents yet. Gain one at every 3rd level.</div></div>'}
       <div class="panel-title" style="margin-top:6px;">CLASS SKILLS</div>
-      ${cls.skills.filter(sk=>(!sk.subclassOnly||G.subclassUnlocked)&&(!sk.ultimateOnly||G.ultimateUnlocked)).map(sk=>`<div class="talent-entry"><div class="te-name">${sk.icon} ${sk.name}</div><div class="te-desc">${sk.desc} [${sk.type}]</div></div>`).join('')}
+      ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`<div class="talent-entry"><div class="te-name">${sk.icon} ${sk.name}</div><div class="te-desc">${sk.desc} [${sk.type}]</div></div>`).join('')}
     </div>
   `;
 }

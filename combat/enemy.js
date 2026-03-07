@@ -53,7 +53,7 @@ function doEnemyTurn(){
       AUDIO.sfx.poison();
       log('☠ Poison: '+poisonDmg+' damage!','c');
     }
-    if(G.conditions.includes('Burning')){
+    if(G.conditions.includes('Burning')&&!(G.sx&&G.sx.immuneConditions)){
       const burnDmg=G._crimsonBrand?12:5+G.zoneIdx*2;
       if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=burnDmg;spawnFloater(burnDmg,'dmg',false);}
       AUDIO.sfx.burn();
@@ -112,6 +112,8 @@ function doEnemyTurn(){
     if(enemyBurning){const bd=5+G.zoneIdx*2;e.hp-=bd;updateEnemyBar();log('🔥 '+e.name+' burns: '+bd+' fire damage!','c');if(e.hp<=0){onEnemyDied();return;}}
     if(enemyPoisoned){const pd=3+G.zoneIdx*2;e.hp-=pd;updateEnemyBar();log('☠ '+e.name+' is poisoned: '+pd+' damage!','c');if(e.hp<=0){onEnemyDied();return;}}
     if(enemyBleeding){e.hp-=5;updateEnemyBar();log('🩸 '+e.name+' bleeds: 5 damage!','c');if(e.hp<=0){onEnemyDied();return;}}
+    // Consecrate (Paladin): radiant damage each turn
+    if(e._consecrateTurns>0){e.hp-=e._consecrateHit;e._consecrateTurns--;updateEnemyBar();log('✝️ Consecrate: '+e._consecrateHit+' radiant damage on '+e.name+'! ('+e._consecrateTurns+'t left)','s');if(e.hp<=0){onEnemyDied();return;}}
     // Cyclone: 1d6 per turn while Restrained
     const enemyRestrained=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
     if(enemyRestrained&&e._cycloneDmg){const cd=roll(6);e.hp-=cd;updateEnemyBar();log('🌀 Cyclone: '+cd+' nature damage while Restrained!','c');if(e.hp<=0){onEnemyDied();return;}}
@@ -250,7 +252,7 @@ function doEnemyTurn(){
     if(cls){
       G._nethrixShuffleOrder={};
       ['action','bonus','reaction'].forEach(type=>{
-        const typeSkills=cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||G.subclassUnlocked)&&(!s.ultimateOnly||G.ultimateUnlocked));
+        const typeSkills=cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||(G.level>=3&&G.subclassId&&s.subclassId===G.subclassId))&&(!s.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(s.id)||s.ultimateOnly));
         if(typeSkills.length>1){
           const ids=typeSkills.map(s=>s.id);
           for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
@@ -372,7 +374,12 @@ function doEnemyTurn(){
 
 function showReactionPrompt(title, onReact, onSkip){
   const cls=CLASSES[G.classId];
-  const reactions=cls.skills.filter(s=>s.type==='reaction');
+  const reactions=cls.skills.filter(s=>
+    s.type==='reaction' &&
+    (!s.subclassOnly || (G.level>=3 && G.subclassId && s.subclassId===G.subclassId)) &&
+    (!s.ultimateOnly || G.ultimateUnlocked) &&
+    (!G.skillLoadout || G.skillLoadout.includes(s.id) || s.ultimateOnly)
+  );
   const now=Date.now();
 
   // Determine if this is a boss special prompt (title contains BOSS SPECIAL)
@@ -794,7 +801,9 @@ function doEnemyAttack(e){
       if(G.currentEnemy.hp<=0){onEnemyDied();return;}
     }
   }
-  if(G.sx.evasion){dmg=0;delete G.sx.evasion;AUDIO.sfx.miss();log('Evaded the attack!','s');
+  if(G.sx.evasion){dmg=0;AUDIO.sfx.miss();log('Evaded the attack!','s');
+    // evasionStacks: Eagle totem supports multiple dodges
+    if(G.sx.evasionStacks>1){G.sx.evasionStacks--;} else {delete G.sx.evasion;delete G.sx.evasionStacks;}
     // Opportunist: gain 1 Combo Point when enemy misses
     if(G.classId==='rogue'&&G._opportunist){G.res=Math.min(G.resMax,G.res+1);log('🕵️ Opportunist: +1 Combo!','s');}
     // Evasion Focus: gain 1 Focus when dodging

@@ -74,18 +74,6 @@ function _renderSkillKit(){
     }
   }
 
-  // Subclass skills row (only if subclass chosen)
-  if(G.subclassUnlocked&&G.subclassId){
-    const scSkills = cls.skills.filter(s=>s.subclassOnly&&s.subclassId===G.subclassId&&!s.ultimateOnly);
-    if(scSkills.length>=2){
-      for(let i=0;i<scSkills.length-1;i+=2){
-        const skA=scSkills[i], skB=scSkills[i+1];
-        const aSelected=!G.skillLoadout||G.skillLoadout.includes(skA.id);
-        rows.push({type:'subclass',base:skA,alt:skB,isAltSelected:G.skillLoadout&&G.skillLoadout.includes(skB.id)&&!G.skillLoadout.includes(skA.id)});
-      }
-    }
-  }
-
   if(rows.length===0){kitEl.style.display='none';return;}
   kitEl.style.display='block';
 
@@ -108,11 +96,12 @@ function _renderSkillKit(){
 
 function prepSelectSkill(selectId, deselectId){
   if(!G) return;
-  // Initialize loadout from current non-gated non-ultimate skills if null
+  // Initialize loadout to default (non-alt, non-subclass) kit if null
   if(!G.skillLoadout){
     const cls = CLASSES[G.classId];
     G.skillLoadout = cls.skills
-      .filter(s=>!s.ultimateOnly&&(!s.subclassOnly||G.subclassUnlocked))
+      .filter(s=>!s.ultimateOnly && !s.alt &&
+        (!s.subclassOnly || (G.level>=3 && G.subclassId && s.subclassId===G.subclassId)))
       .map(s=>s.id);
   }
   // Remove deselected, add selected
@@ -129,7 +118,14 @@ function _renderPrepareScreen(){
   const stashCount = document.getElementById('prepareStashCount');
   if(stashCount) stashCount.textContent = '('+stash.length+')';
 
-  // Skill Kit section
+  // Skill Kit section — initialize loadout to default (non-alt, non-subclass) kit if not yet set
+  if(!G.skillLoadout && typeof CLASSES!=='undefined' && CLASSES[G.classId]){
+    const cls = CLASSES[G.classId];
+    G.skillLoadout = cls.skills
+      .filter(s=>!s.ultimateOnly && !s.alt &&
+        (!s.subclassOnly || (G.level>=3 && G.subclassId && s.subclassId===G.subclassId)))
+      .map(s=>s.id);
+  }
   _renderSkillKit();
 
   // Loadout count (excluding the locked starter weapon)

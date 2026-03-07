@@ -464,7 +464,7 @@ function renderHUD(){
   document.getElementById('txtXp').textContent=Math.floor(G.xp)+'/'+G.xpNeeded;
 
   document.getElementById('heroLvl').textContent='LVL '+G.level;
-  document.getElementById('heroSub').textContent=G.subclassUnlocked?CLASSES[G.classId].subclass.name:'';
+  document.getElementById('heroSub').textContent=G.subclassId&&typeof SUBCLASSES!=='undefined'&&SUBCLASSES[G.subclassId]?SUBCLASSES[G.subclassId].name:'';
   document.getElementById('goldVal').textContent=G.gold;
   document.getElementById('profVal').textContent='+'+G.profBonus;
 
@@ -509,7 +509,7 @@ function renderHUD(){
   if(plName) plName.textContent=G.name||'HERO';
   if(plClass){
     const cls=CLASSES[G.classId];
-    const sub=G.subclassUnlocked?(' · '+cls.subclass.name):'';
+    const sub=G.subclassId&&typeof SUBCLASSES!=='undefined'&&SUBCLASSES[G.subclassId]?(' · '+SUBCLASSES[G.subclassId].name):'';
     plClass.textContent='LVL '+G.level+' '+cls.name.toUpperCase()+sub;
   }
 }
@@ -574,8 +574,13 @@ function renderLeftPanel(){
     }
   });
 
-  // Skill charges
-  const chargeSkills=cls.skills.filter(sk=>sk.charges);
+  // Skill charges — apply same filters as renderSkillButtons (loadout + subclass gate)
+  const chargeSkills=cls.skills.filter(sk=>
+    sk.charges &&
+    (!sk.subclassOnly || (G.level>=3 && G.subclassId && sk.subclassId===G.subclassId)) &&
+    (!sk.ultimateOnly || G.ultimateUnlocked) &&
+    (!G.skillLoadout || G.skillLoadout.includes(sk.id) || sk.ultimateOnly)
+  );
   if(chargeSkills.length){
     html+=`<div class="pl-section">CHARGES</div>`;
     chargeSkills.forEach(sk=>{
@@ -646,7 +651,7 @@ function renderSkillButtons(){
     // Final skill filter — System 1 (subclassId), System 3 (loadout), ultimates always shown
     let skills=cls.skills.filter(s=>
       s.type===type &&
-      (!s.subclassOnly || (G.subclassUnlocked && (!s.subclassId || s.subclassId===G.subclassId))) &&
+      (!s.subclassOnly || (G.level>=3 && G.subclassId && s.subclassId===G.subclassId)) &&
       (!s.ultimateOnly || G.ultimateUnlocked) &&
       (!G.skillLoadout || G.skillLoadout.includes(s.id) || s.ultimateOnly)
     );
@@ -654,7 +659,7 @@ function renderSkillButtons(){
     if(G._nethrixShuffleOrder&&G._nethrixShuffleOrder[type]){
       const order=G._nethrixShuffleOrder[type];
       skills=order.map(id=>skills.find(s=>s.id===id)).filter(Boolean);
-      skills=skills.concat(cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||(G.subclassUnlocked&&(!s.subclassId||s.subclassId===G.subclassId)))&&(!s.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(s.id)||s.ultimateOnly)&&!order.includes(s.id)));
+      skills=skills.concat(cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||(G.level>=3&&G.subclassId&&s.subclassId===G.subclassId))&&(!s.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(s.id)||s.ultimateOnly)&&!order.includes(s.id)));
     }
     container.innerHTML=skills.map(sk=>{
       const cdRaw=G.skillCooldowns[sk.id];

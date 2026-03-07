@@ -52,6 +52,26 @@ function setPlayerTurn(isPlayer){
       G._starryFormTurns--;
       if(G._starryFormTurns<=0){G._starryFormActive=false;log('⭐ Starry Form fades.','s');}
     }
+    // Arcane Familiar (Illusionist Wizard): fires damage each turn
+    if(G._familiarActive&&G._familiarTurns>0&&G.currentEnemy&&G.currentEnemy.hp>0){
+      const famDmg=roll(6)+Math.floor(Math.max(0,md(G.stats&&G.stats.int?G.stats.int:10))/2);
+      dealToEnemy(famDmg,false,'Arcane Familiar 🦉');
+      G._familiarTurns--;
+      if(G._familiarTurns<=0){G._familiarActive=false;log('🦉 Arcane Familiar departs.','s');}
+    }
+    // Aura of Protection (Devotion): tick immunity counters
+    if(G.sx&&G.sx.immuneFrightened>0){G.sx.immuneFrightened--;if(G.sx.immuneFrightened<=0)delete G.sx.immuneFrightened;}
+    if(G.sx&&G.sx.immuneRestrained>0){G.sx.immuneRestrained--;if(G.sx.immuneRestrained<=0)delete G.sx.immuneRestrained;}
+    // Spirit Surge Wolf (Wild Heart): expire ATK bonus after 3 turns
+    if(G.sx&&G.sx.spiritSurgeTurns>0){
+      G.sx.spiritSurgeTurns--;
+      if(G.sx.spiritSurgeTurns<=0){
+        G.atk=Math.max(0,G.atk-(G._spiritSurgeAtkBonus||0));
+        delete G._spiritSurgeAtkBonus;
+        delete G.sx.spiritSurgeTurns;
+        log('🐺 Spirit Surge (Wolf) expires.','s');
+      }
+    }
     // Per-turn subclass resets
     G._fortressUsedThisTurn=false;
     G._warPriestUsed=false;

@@ -812,6 +812,7 @@ function townEnterDungeon(){
     const classId      = G.classId;
     const savedGold    = G.gold || 0;
     const bossDefeated = G.bossDefeated ? [...G.bossDefeated] : [];
+    const savedLoadout = G.skillLoadout ? [...G.skillLoadout] : null;
 
     // ── Capture town buffs before reset ──
     const townBuffs = [];
@@ -826,6 +827,7 @@ function townEnterDungeon(){
     // Restore persistent values
     G.gold         = savedGold;
     G.bossDefeated = bossDefeated;
+    if(savedLoadout) G.skillLoadout = savedLoadout;
 
     // Seed bossDefeated from slot data in case it's more up to date
     if(typeof activeSaveSlot!=='undefined'&&activeSaveSlot&&typeof loadSlotData==='function'){

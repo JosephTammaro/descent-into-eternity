@@ -54,6 +54,8 @@ function calcPlayerDmg(){
   if(G._blessAttacks>0){G._blessAttacks--;base+=3;log('🙏 Bless: +3 attack!','s');}
   // Camouflage (Gloom Stalker): +1d8 bonus on first attack this fight
   if(G._camouflageActive){G._camouflageActive=false;base+=roll(8);log('🌿 Camouflage: +1d8 bonus strike!','s');}
+  // Cosmic Omen (Stars Druid): +1d6 to next attack roll
+  if(G._cosmicOmenActive){G._cosmicOmenActive=false;const co=roll(6);base+=co;log('🌟 Cosmic Omen: +'+co+' bonus!','s');}
   // Marked for Death (Assassin): +25% damage vs marked target
   if(G._markedForDeath){base=Math.ceil(base*1.25);log('🎯 Marked for Death: +25%!','s');}
   // Starry Form — Archer (Stars Druid): +1d8+WIS radiant per attack
@@ -138,6 +140,12 @@ function dealToEnemy(dmg,crit,source){
     if(hasSoldiers){dmg=Math.ceil(dmg*0.5);log('❄ Frozen Bulwark shields Valdris! (-50% dmg)','c');}
   }
   G.currentEnemy.hp-=dmg;
+  // Shadow Dive (Gloom Stalker): next attack applies Frightened(2)
+  if(G._shadowDiveActive&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){
+    G._shadowDiveActive=false;
+    if(typeof addConditionEnemy==='function') addConditionEnemy('Frightened',2);
+    log('🌑 Shadow Dive: Frightened(2)!','s');
+  }
   // Envenom stacks (Assassin): on hit, apply Poisoned
   if(G._envenomStacks>0&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){
     G._envenomStacks--;
@@ -227,6 +235,8 @@ function processAoeDeaths(){
 }
 
 function heal(amount,source){
+  // Cosmic Omen (Stars Druid): +1d6 to next heal roll
+  if(G._cosmicOmenActive){G._cosmicOmenActive=false;const co=roll(6);amount+=co;log('🌟 Cosmic Omen: +'+co+' healing!','s');}
   // Sacred Aura — Lay on Hands heals 50% more
   if(G._sacredAuraLoH&&source&&source.includes('Lay on Hands'))amount=Math.ceil(amount*1.5);
   // Cleric capstone — Vessel of the Divine: all healing doubled
