@@ -377,6 +377,43 @@ function onEnemyDied(){
     }
   }
 
+  // ── Tutorial fight completion ─────────────────────────────
+  if(G._isTutorialFight){
+    G._isTutorialFight = false;
+
+    // ── Full restore: HP, resource, spell slots, charges, cooldowns ──
+    G.hp = G.maxHp;
+
+    // Restore class resource and spell slots
+    if(G.spellSlots && G.spellSlotsMax){
+      // Wizard: restore all spell slots, then recalculate G.res from them
+      G.spellSlots = Object.assign({}, G.spellSlotsMax);
+      G.res = Object.values(G.spellSlots).reduce(function(a,b){return a+b;}, 0);
+    } else {
+      G.res = G.resMax != null ? G.resMax : G.res;
+    }
+
+    // Clear skill cooldowns and reset all charges to class defaults
+    G.skillCooldowns = {};
+    G.skillCharges   = {};
+    var _cls = CLASSES && CLASSES[G.classId];
+    if(_cls && _cls.skills){
+      _cls.skills.forEach(function(sk){
+        if(sk.charges) G.skillCharges[sk.id] = sk.charges;
+      });
+    }
+
+    log('✅ Tutorial complete! Your HP and resources have been fully restored. The real descent begins now.','s');
+    G.currentEnemy  = null;
+    G.currentEnemies = [];
+    renderAll();
+    const neb = document.getElementById('nextEnemyBtn');
+    const etb = document.getElementById('endTurnBtn');
+    if(neb){ neb.textContent = '⚔ BEGIN DESCENT ▶'; neb.style.display = 'block'; }
+    if(etb) etb.style.display = 'none';
+    return;
+  }
+
   // Room fully cleared — now count it as one kill toward zone progress
   G.zoneKills++;
   if(G.zoneKills>=ZONES[G.zoneIdx].kills&&!G.bossReady&&!G.runBossDefeated[G.zoneIdx]){
