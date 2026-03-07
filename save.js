@@ -46,6 +46,8 @@ function emptySlotData(){
     lifetimePoisonsDruid: 0,
     // Death history — newest first, max 20 entries
     deathHistory: [],
+    // Tutorial flags
+    _dungeonTutorialShown: false,
   };
 }
 
@@ -98,6 +100,7 @@ function loadSlotData(slot){
     if(d.lifetimeWildShapeTurnsDruid===undefined) d.lifetimeWildShapeTurnsDruid = 0;
     if(d.lifetimePoisonsDruid===undefined)       d.lifetimePoisonsDruid = 0;
     if(!d.deathHistory)                          d.deathHistory = [];
+    if(d._dungeonTutorialShown===undefined)      d._dungeonTutorialShown = false;
     return d;
   } catch(e){ return null; }
 }
