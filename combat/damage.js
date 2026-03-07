@@ -29,7 +29,7 @@ function calcPlayerDmg(){
   // Deadeye: guaranteed crit when enemy is Marked (ATK already applied from apply())
   // Deadeye: first attack this turn is a crit while Hunter's Mark is active
   if(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed){/* crit forced below, consume below */}
-  if(G.classId==='paladin'&&G.subclassUnlocked)base+=md(G.stats.cha); // Sacred Weapon: +CHA to attacks
+  if(G.classId==='paladin'&&G.subclassId==='devotion')base+=md(G.stats.cha); // Sacred Weapon: +CHA to attacks (Devotion only)
   if(G.classId==='barbarian'&&G.talents.includes('Blood Fury')&&G.hp<G.maxHp*0.4)base=Math.ceil(base*1.15);
   if(G.classId==='fighter'&&G.talents.includes('Weapon Master'))base=Math.ceil(base*1.1);
   if(G.classId==='fighter'&&G.talents.includes('War Gods Blessing'))base=Math.ceil(base*1.10);
@@ -46,6 +46,20 @@ function calcPlayerDmg(){
   }
   // Deathblow: +15% damage vs enemies below 50% HP
   if(G.classId==='fighter'&&G._deathblow&&G.currentEnemy&&G.currentEnemy.hp<G.currentEnemy.maxHp*0.5)base=Math.ceil(base*1.15);
+  // Battle Master: Know Your Enemy — +2 ATK this fight
+  if(G._knowEnemyBonus)base+=2;
+  // Guided Strike (War Domain): +10 ATK on next attack
+  if(G._guidedStrikeBonus){G._guidedStrikeBonus=false;base+=10;log('✨ Guided Strike: +10 ATK!','s');}
+  // Bless: +3 to next 2 attack rolls
+  if(G._blessAttacks>0){G._blessAttacks--;base+=3;log('🙏 Bless: +3 attack!','s');}
+  // Camouflage (Gloom Stalker): +1d8 bonus on first attack this fight
+  if(G._camouflageActive){G._camouflageActive=false;base+=roll(8);log('🌿 Camouflage: +1d8 bonus strike!','s');}
+  // Marked for Death (Assassin): +25% damage vs marked target
+  if(G._markedForDeath){base=Math.ceil(base*1.25);log('🎯 Marked for Death: +25%!','s');}
+  // Starry Form — Archer (Stars Druid): +1d8+WIS radiant per attack
+  if(G._starryFormActive){const sf=roll(8)+Math.max(0,md(G.stats&&G.stats.wis?G.stats.wis:10));base+=sf;log('⭐ Starry Form: +'+sf+' radiant!','s');}
+  // Rampage keystone: +3 bonus damage per kill stack (max 5)
+  if(G._keystoneRampage&&G._rampageStacks>0){const r=G._rampageStacks*3;base+=r;log('🔥 Rampage: +'+r+' damage!','s');}
   const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)):0;
   let dmg=Math.max(1,base-Math.floor(def/2)+roll(4)-2);
   let crit=false;
@@ -66,7 +80,7 @@ function calcPlayerDmg(){
   // Fighter capstone: advantage (roll twice take higher)
   let roll20=roll(20);
   if(G._capstone&&G.classId==='fighter'){const r2=roll(20);if(r2>roll20)roll20=r2;}
-  if(ghostStep||vanishCrit||shadowStep||unbreakableCrit||roll20>=critThresh||(G.subclassUnlocked&&G.classId==='fighter'&&G.level>=3&&roll20>=19)||(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed)){
+  if(ghostStep||vanishCrit||shadowStep||unbreakableCrit||roll20>=critThresh||(G.subclassId==='champion'&&G.classId==='fighter'&&G.level>=3&&roll20>=19)||(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed)){
     if(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed){G._deadeyeUsed=true;log('🎯 Deadeye: first strike crits while Marked!','s');}
     dmg=Math.ceil(dmg*(G.critMult||2));crit=true;
     // Explosive Arrow: once per fight, first crit deals double damage
@@ -124,6 +138,12 @@ function dealToEnemy(dmg,crit,source){
     if(hasSoldiers){dmg=Math.ceil(dmg*0.5);log('❄ Frozen Bulwark shields Valdris! (-50% dmg)','c');}
   }
   G.currentEnemy.hp-=dmg;
+  // Envenom stacks (Assassin): on hit, apply Poisoned
+  if(G._envenomStacks>0&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){
+    G._envenomStacks--;
+    if(typeof addConditionEnemy==='function') addConditionEnemy('Poisoned',3);
+    log('☠ Envenom: target poisoned!','s');
+  }
   // Run summary tracking
   G.totalDmgDealt=(G.totalDmgDealt||0)+dmg;
   G._dmgThisFight=(G._dmgThisFight||0)+dmg;

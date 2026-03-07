@@ -193,6 +193,11 @@
         <button class="prepare-close" onclick="closePrepareScreen()">✕ CANCEL</button>
       </div>
       <div class="prepare-zone-label" id="prepareZoneLabel"></div>
+      <!-- SKILL KIT section — shown when class has alt skills or subclass is chosen -->
+      <div id="prepareSkillKit" style="display:none;padding:8px 12px 4px;border-bottom:1px solid #2a2040;">
+        <div class="prepare-panel-title" style="margin-bottom:6px;">SKILL KIT</div>
+        <div id="prepareSkillKitRows" style="font-family:'Press Start 2P',monospace;font-size:7px;"></div>
+      </div>
       <div class="prepare-panels">
         <div class="prepare-panel">
           <div class="prepare-panel-title">STASH <span id="prepareStashCount" class="prepare-count"></span></div>
@@ -295,13 +300,35 @@
 
 <!-- SUBCLASS SCREEN (also used for Ultimate/Capstone reveals) -->
 <div id="screen-subclass" class="screen">
-  <div class="sc-box">
+  <!-- Single-card mode: Ultimate / Capstone reveals -->
+  <div class="sc-box" id="scSingleBox">
     <div class="sc-eyebrow" id="scEyebrow">LEVEL 3 — YOUR PATH IS CHOSEN</div>
     <div class="sc-headline" id="scHeadline">A NEW POWER<br>AWAKENS</div>
     <div class="sc-subname" id="scSubname">Champion</div>
     <div class="sc-desc" id="scDesc">Description here.</div>
     <div class="sc-perks" id="scPerks"></div>
     <button class="btn btn-red" id="scConfirmBtn" style="font-size:9px;padding:12px 28px;" onclick="confirmSubclass()">EMBRACE YOUR DESTINY</button>
+  </div>
+  <!-- Two-card mode: Subclass choice -->
+  <div id="scChoiceBox" style="display:none;width:100%;max-width:780px;margin:0 auto;padding:24px 16px;">
+    <div class="sc-eyebrow" style="text-align:center;margin-bottom:6px;" id="scChoiceEyebrow">LEVEL 3 — CHOOSE YOUR PATH</div>
+    <div class="sc-headline" style="text-align:center;margin-bottom:18px;">YOUR DESTINY<br>AWAITS</div>
+    <div style="display:flex;gap:16px;justify-content:center;align-items:stretch;" id="scOptionRow">
+      <!-- Option A -->
+      <div class="sc-option" id="scOptionA" style="flex:1;max-width:340px;background:#0d0d1a;border:2px solid #3a2d50;padding:20px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#3a2d50'">
+        <div class="sc-subname" id="scNameA" style="font-size:11px;margin-bottom:6px;"></div>
+        <div class="sc-desc" id="scDescA" style="font-size:8px;color:#aaa;margin-bottom:10px;"></div>
+        <div id="scPerksA" style="margin-bottom:14px;"></div>
+        <button class="btn btn-red" id="scBtnA" style="font-size:8px;padding:10px 20px;width:100%;" onclick="">CHOOSE THIS PATH</button>
+      </div>
+      <!-- Option B -->
+      <div class="sc-option" id="scOptionB" style="flex:1;max-width:340px;background:#0d0d1a;border:2px solid #3a2d50;padding:20px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#3a2d50'">
+        <div class="sc-subname" id="scNameB" style="font-size:11px;margin-bottom:6px;"></div>
+        <div class="sc-desc" id="scDescB" style="font-size:8px;color:#aaa;margin-bottom:10px;"></div>
+        <div id="scPerksB" style="margin-bottom:14px;"></div>
+        <button class="btn btn-red" id="scBtnB" style="font-size:8px;padding:10px 20px;width:100%;" onclick="">CHOOSE THIS PATH</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1195,6 +1222,7 @@ function switchHelpTab(id, btn) {
   <!-- data -->
   <script src="data/constants.js"></script>
   <script src="data/art.js"></script>
+  <script src="data/subclasses.js"></script>
   <script src="data/classes.js"></script>
   <script src="data/lore.js"></script>
   <script src="data/zones.js"></script>

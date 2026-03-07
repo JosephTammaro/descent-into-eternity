@@ -40,6 +40,87 @@ function changeClassFromPrepare(){
   if(typeof showScreen==='function') showScreen('class');
 }
 
+function _renderSkillKit(){
+  const kitEl = document.getElementById('prepareSkillKit');
+  const rowsEl = document.getElementById('prepareSkillKitRows');
+  if(!kitEl||!rowsEl||!G||typeof CLASSES==='undefined') return;
+  const cls = CLASSES[G.classId];
+  if(!cls) return;
+
+  // Build slot groups: for each action/bonus/reaction, find skills with alt counterparts
+  const types = ['action','bonus','reaction'];
+  let rows = [];
+
+  for(const type of types){
+    // All non-gated, non-ultimate skills of this type
+    const base = cls.skills.filter(s=>s.type===type&&!s.ultimateOnly&&!s.subclassOnly);
+    // Pair up: skills with alt:true are swap candidates
+    const nonAlt = base.filter(s=>!s.alt);
+    const altSkills = base.filter(s=>s.alt);
+    if(altSkills.length===0) continue; // no swap cards for this type
+
+    // For each non-alt, check if there's an alt of the same type
+    for(const sk of nonAlt){
+      if(sk.id==='attack') continue; // basic attack always pinned
+      const alt = altSkills[0]; // simple 1-for-1 swap per slot type
+      if(!alt) continue;
+      const isAltSelected = G.skillLoadout && G.skillLoadout.includes(alt.id) && !G.skillLoadout.includes(sk.id);
+      rows.push({type, base:sk, alt, isAltSelected});
+      altSkills.shift(); // consume the alt
+    }
+    // If more alts than non-alts, add them as standalone swaps
+    for(const alt of altSkills){
+      rows.push({type, base:null, alt, isAltSelected: G.skillLoadout&&G.skillLoadout.includes(alt.id)});
+    }
+  }
+
+  // Subclass skills row (only if subclass chosen)
+  if(G.subclassUnlocked&&G.subclassId){
+    const scSkills = cls.skills.filter(s=>s.subclassOnly&&s.subclassId===G.subclassId&&!s.ultimateOnly);
+    if(scSkills.length>=2){
+      for(let i=0;i<scSkills.length-1;i+=2){
+        const skA=scSkills[i], skB=scSkills[i+1];
+        const aSelected=!G.skillLoadout||G.skillLoadout.includes(skA.id);
+        rows.push({type:'subclass',base:skA,alt:skB,isAltSelected:G.skillLoadout&&G.skillLoadout.includes(skB.id)&&!G.skillLoadout.includes(skA.id)});
+      }
+    }
+  }
+
+  if(rows.length===0){kitEl.style.display='none';return;}
+  kitEl.style.display='block';
+
+  rowsEl.innerHTML = rows.map(row=>{
+    const typeLabel = row.type.toUpperCase();
+    const bColor = row.isAltSelected ? '#555' : 'var(--gold)';
+    const aColor = row.isAltSelected ? 'var(--gold)' : '#555';
+    const baseName = row.base?row.base.icon+' '+row.base.name:'—';
+    const altName = row.alt?row.alt.icon+' '+row.alt.name:'—';
+    const baseClick = row.base?`onclick="prepSelectSkill('${row.base.id}','${row.alt?row.alt.id:''}')"`:'';
+    const altClick = row.alt?`onclick="prepSelectSkill('${row.alt.id}','${row.base?row.base.id:''}')"` :'';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span style="color:var(--dim);width:52px;">${typeLabel}</span>
+      <span style="color:${bColor};cursor:pointer;padding:2px 6px;background:#1a1430;border:1px solid ${row.isAltSelected?'#333':'#a78bfa'};" ${baseClick}>${baseName}</span>
+      <span style="color:var(--dim);">vs</span>
+      <span style="color:${aColor};cursor:pointer;padding:2px 6px;background:#1a1430;border:1px solid ${row.isAltSelected?'#a78bfa':'#333'};" ${altClick}>${altName}</span>
+    </div>`;
+  }).join('');
+}
+
+function prepSelectSkill(selectId, deselectId){
+  if(!G) return;
+  // Initialize loadout from current non-gated non-ultimate skills if null
+  if(!G.skillLoadout){
+    const cls = CLASSES[G.classId];
+    G.skillLoadout = cls.skills
+      .filter(s=>!s.ultimateOnly&&(!s.subclassOnly||G.subclassUnlocked))
+      .map(s=>s.id);
+  }
+  // Remove deselected, add selected
+  if(deselectId) G.skillLoadout = G.skillLoadout.filter(id=>id!==deselectId);
+  if(selectId && !G.skillLoadout.includes(selectId)) G.skillLoadout.push(selectId);
+  _renderSkillKit();
+}
+
 function _renderPrepareScreen(){
   const rc = {common:'#9a8868',uncommon:'var(--green2)',rare:'var(--blue2)',epic:'#9b54bd',legendary:'var(--gold)'};
   const stash = typeof getStash==='function' ? getStash() : [];
@@ -47,6 +128,9 @@ function _renderPrepareScreen(){
   // Stash count
   const stashCount = document.getElementById('prepareStashCount');
   if(stashCount) stashCount.textContent = '('+stash.length+')';
+
+  // Skill Kit section
+  _renderSkillKit();
 
   // Loadout count (excluding the locked starter weapon)
   const loadoutCount = document.getElementById('prepareLoadoutCount');

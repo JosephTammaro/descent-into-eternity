@@ -380,6 +380,11 @@ function slotContinue(slot){
   activeSaveSlot = slot;
   G = data.state;
   if(G.lives === undefined) G.lives = 3; // migrate old saves
+  // Migrate: if subclassUnlocked but no subclassId, default to first subclass
+  if(G.subclassUnlocked && !G.subclassId && typeof CLASSES!=='undefined' && CLASSES[G.classId]){
+    const ids = CLASSES[G.classId].subclassIds;
+    if(ids && ids.length) G.subclassId = ids[0];
+  }
   // Migrate old saves missing new equipment slots
   if(!G.equipped) G.equipped = {};
   if(G.equipped.helmet  === undefined) G.equipped.helmet  = null;

@@ -107,6 +107,63 @@ function newState(classId){
     _droppedBelow25: false,    // Cleric: set true if HP ever < 25% maxHP
     _primalAvatarTripleKill: false, // Druid: set true if 3 kills during one avatar
     _usedSpellSlotThisFight: false, // Wizard: track if slot spells used (for cantrip-only check)
+
+    // ── System 1: Multiple Subclasses ──
+    subclassId: null,              // chosen subclass id string (e.g. 'champion')
+
+    // ── System 2: Talent Keystones (persistent run flags) ──
+    _keystoneWarMachine:false, _keystoneRampage:false, _keystoneFortress:false,
+    _keystoneArcaneOverload:false, _keystoneFontOfMagic:false, _keystoneArcaneVirtuoso:false,
+    _keystoneOneShot:false, _keystonePhantom:false, _keystoneFortuneFavor:false,
+    _keystoneAvatarJustice:false, _keystoneHolyBastion:false, _keystoneBeaconLight:false,
+    _keystoneTrueShot:false, _keystoneAlpha:false, _keystoneFieldControl:false,
+    _keystoneBerserkerEcstasy:false, _keystoneUnkillable:false, _keystoneLivingSiegeEngine:false,
+    _keystoneVoiceDivine:false, _keystoneMiracleHealer:false, _keystoneHolyAegis:false,
+    _keystonePrimalAscendant:false, _keystoneStormcaller:false, _keystoneHeartForest:false,
+
+    // ── System 3: Skill Kit Loadout ──
+    skillLoadout: null,            // array of skill IDs, or null (show all)
+
+    // ── Subclass run flags (set once in apply()) ──
+    _championInit: false,          // Champion: WIS to initiative
+    _useMagicDevice: false,        // Thief: equip wizard offhands
+    _vengeancePaladin: false,      // Vengeance Paladin
+    _gloomStalker: false,          // Gloom Stalker ranger
+    _warDomain: false,             // War Domain cleric
+    _starsDruid: false,            // Stars Druid
+    _totemSpirit: 'bear',          // Wild Heart totem: 'bear'|'eagle'|'wolf'
+
+    // ── Per-fight state (reset in spawnEnemy()) ──
+    _vengeanceMarked: -1,          // Vengeance: index of marked enemy
+    _dreadAmbushUsed: false,       // Gloom Stalker: Dread Ambush one-use
+    _dreadfulStrikesLeft: 0,       // Gloom Stalker: remaining psychic strikes
+    _changeTotemUsed: false,       // Wild Heart: Change Totem one-use (also tracked via charges)
+    _illusoryUsed: false,          // Illusionist: Illusory Self one-use
+    _unkillableUsed: false,        // Unkillable keystone: one-use per fight
+    _rampageStacks: 0,             // Rampage keystone: 0-5 kill stacks
+    _virtuosoElement: 0,           // Arcane Virtuoso: 0=fire, 1=ice, 2=lightning
+    _phantomFirstHit: true,        // Phantom keystone: true until first hit auto-dodged
+    _familiarActive: false,        // Wizard: Arcane Familiar active
+    _familiarTurns: 0,             // Wizard: familiar turns remaining
+    _knowEnemyBonus: false,        // Battle Master: +2 ATK rounds 1-2
+    _relentlessRogueUsed: false,   // Battle Master: free Superiority Die once/rest
+    _thiefUnseen: true,            // Thief: Supreme Sneak - crit if not yet hit
+    _starryFormActive: false,      // Stars Druid: Starry Form stance active
+    _starryFormTurns: 0,           // Stars Druid: turns remaining
+    _shadowDiveActive: false,      // Gloom Stalker: untargetable + next attack frightens
+    _envenomStacks: 0,             // Assassin: remaining envenomed attacks
+    _markedForDeath: false,        // Assassin: next sneak attack maximized
+    _blessAttacks: 0,              // War Cleric: remaining blessed attacks
+    _guidedStrikeBonus: false,     // War Cleric: next attack +10 ATK + 2d8 divine
+    _cosmicOmenActive: false,      // Stars: next roll gets +1d6
+    _camouflageActive: false,      // Ranger: hidden — enemy misses + next attack +1d8
+    _phantasmalTarget: -1,         // Illusionist: enemy index under phantasmal force
+
+    // ── Per-turn state (reset in setPlayerTurn() or enemy turn) ──
+    _fortressUsedThisTurn: false,  // Fortress keystone: one Parry per enemy turn
+    _phantomTargetedBy: -1,        // Phantom keystone: enemy index that targeted you
+    _warPriestUsed: false,         // War Domain: per-turn War Priest free attack
+    _beastReactionUsed: false,     // Beast Master: independent beast reaction
   };
 }
 

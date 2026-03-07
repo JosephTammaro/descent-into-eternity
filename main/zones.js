@@ -17,7 +17,7 @@ function setPlayerTurn(isPlayer){
     // Smite Chain: reset once per turn
     if(G.classId==='paladin'&&G._smiteChain)G._smiteChainUsed=false;
     // Pack Tactics: beast companion attacks automatically each turn
-    if(G.classId==='ranger'&&G._packTactics&&G.subclassUnlocked&&G.currentEnemy&&G.currentEnemy.hp>0){
+    if(G.classId==='ranger'&&G._packTactics&&G.subclassId==='beast_master'&&G.currentEnemy&&G.currentEnemy.hp>0){
       const ptDmg=roll(6)+Math.floor(G.level/2);
       if(typeof dealToEnemy==='function'){dealToEnemy(ptDmg,false,'Pack Tactics 🐺 auto-attack');}
     }
@@ -43,10 +43,19 @@ function setPlayerTurn(isPlayer){
     // Rogue gets extra combo regen on top (builds faster)
     if(G.classId==='rogue') G.res=Math.min(G.resMax,G.res+0.5);
     // Champion Survivor
-    if(G.classId==='fighter'&&G.subclassUnlocked&&G.hp<G.maxHp/2){
+    if(G.classId==='fighter'&&G.subclassId==='champion'&&G.hp<G.maxHp/2){
       const srv=5+md(G.stats.con);G.hp=Math.min(G.maxHp,G.hp+srv);
       if(srv>0)log(`Survivor: +${srv} HP`,'s');
     }
+    // Starry Form tick (Stars Druid)
+    if(G._starryFormActive&&G._starryFormTurns>0){
+      G._starryFormTurns--;
+      if(G._starryFormTurns<=0){G._starryFormActive=false;log('⭐ Starry Form fades.','s');}
+    }
+    // Per-turn subclass resets
+    G._fortressUsedThisTurn=false;
+    G._warPriestUsed=false;
+    G._beastReactionUsed=false;
     G.roundNum++;
     // ── Roll intent for all living enemies this round ──
     (G.currentEnemies||[]).forEach(en=>{if(!en.dead&&en.hp>0)_rollIntentForEnemy(en);});
@@ -453,6 +462,59 @@ function spawnEnemy(){
   if(etb)etb.style.display='block';
   if(G._branchBattleHardened){G.hp=Math.min(G.maxHp,G.hp+10);log('🛡 Battle Hardened: +10 HP!','s');}
   if(G._dawnBlessing){G.dawnBlessingShield=30;G._dawnBlessing=false;log('🌅 Dawn Blessing: 30 HP divine barrier active!','s');renderShieldBar();}
+
+  // ── Subclass per-fight resets ──────────────────────────────
+  G._dreadAmbushUsed=false;
+  G._changeTotemUsed=false;
+  G._illusoryUsed=false;
+  G._unkillableUsed=false;
+  G._rampageStacks=0;
+  G._phantomFirstHit=true;
+  G._beastReactionUsed=false;
+  G._warPriestUsed=false;
+  G._familiarTurns=0;
+  G._thiefUnseen=true;
+  G._starryFormActive=false; G._starryFormTurns=0;
+  G._shadowDiveActive=false;
+  G._envenomStacks=0;
+  G._markedForDeath=false;
+  G._blessAttacks=0;
+  G._guidedStrikeBonus=false;
+  G._cosmicOmenActive=false;
+  G._camouflageActive=false;
+  G._phantasmalTarget=-1;
+  G._virtuosoElement=0;
+  G._fortressUsedThisTurn=false;
+  G._warPriestUsed=false;
+
+  // ── Subclass startup effects ──────────────────────────────
+  // Vengeance Paladin: auto-mark highest-HP enemy at fight start
+  if(G.subclassId==='vengeance'&&G.currentEnemies&&G.currentEnemies.length>0){
+    const maxHpEnemy=G.currentEnemies.reduce((a,b)=>(!a||b.hp>a.hp)?b:a,null);
+    G._vengeanceMarked=maxHpEnemy?G.currentEnemies.indexOf(maxHpEnemy):-1;
+    if(maxHpEnemy) log('⚔️ Vengeance: '+maxHpEnemy.name+' is marked!','s');
+  }
+  // Gloom Stalker: Dreadful Strikes charges (WIS-mod psychic attacks)
+  if(G.subclassId==='gloom_stalker'){
+    G._dreadfulStrikesLeft=Math.max(1,md(G.stats&&G.stats.wis?G.stats.wis:10));
+    log('🌑 Dreadful Strikes: '+G._dreadfulStrikesLeft+' psychic charges!','s');
+  }
+  // Battle Master: Know Your Enemy — +2 ATK bonus this fight
+  if(G.subclassId==='battle_master'){G._knowEnemyBonus=true;log('📖 Know Your Enemy: +2 ATK!','s');}
+  // Illusionist: conjure 2 Mirror Images at fight start (if none active)
+  if(G.subclassId==='illusionist'&&!G.mirrorImages){
+    G.mirrorImages=2;
+    log('🪞 Illusionist: Mirror Image conjured (2 images)!','s');
+  }
+  // War Machine keystone (Fighter): start each fight with +50 Momentum
+  if(G._keystoneWarMachine&&G.classId==='fighter'){
+    G.res=Math.min(G.resMax,(G.res||0)+50);
+    log('⚙️ War Machine: +50 Momentum!','s');
+  }
+  // Font of Magic keystone (Wizard): +1 spell slot at fight start
+  if(G._keystoneFontOfMagic&&G.classId==='wizard'){
+    if(typeof restoreSpellSlot==='function'){const sl=restoreSpellSlot();if(sl)log('🔮 Font of Magic: +1 LVL'+sl+' slot!','s');}
+  }
 
   // ── Rare Event per-fight flags ──────────────────────────────
   const ref=G._rareEventFlags;

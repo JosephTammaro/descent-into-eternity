@@ -918,5 +918,345 @@ function doSkillEffect(effect, sk){
       const _paKills=_paAliveCount-(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0).length;
       if(_paKills>=3) G._primalAvatarTripleKill=true;
       break;}
+
+    // ══════════════════════════════════════════════════════════
+    //  NEW SUBCLASS SKILLS
+    // ══════════════════════════════════════════════════════════
+
+    // Champion — Survivor's Strike (reaction: on first drop below 50% HP)
+    case 'survivor_strike':{
+      const {dmg:sdmg,crit:scrit}=calcPlayerDmg();
+      const finalDmg=Math.ceil(sdmg*1.5);
+      dealToEnemy(finalDmg,scrit,"Survivor's Strike 💀");
+      G.skillCharges.parry=Math.min((G.skillCharges.parry||0)+1,3);
+      log("💀 Survivor's Strike: 1.5× counter + 1 Parry charge restored!",'s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Battle Master — Maneuver Strike
+    case 'maneuver_strike':{
+      const {dmg:mdmg,crit:mcrit}=calcPlayerDmg();
+      const bonusDice=roll(8);
+      const totalMdmg=mdmg+bonusDice;
+      dealToEnemy(totalMdmg,mcrit,'Maneuver Strike 🎯');
+      addConditionEnemy('Restrained',1);
+      if(G.currentEnemy){G.currentEnemy._defBoost=(G.currentEnemy._defBoost||0)-3;log('🎯 Maneuver Strike: Restrained(1) + ATK -3!','s');}
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Battle Master — Rally
+    case 'rally':{
+      const rallyHeal=roll(6)+G.level;
+      heal(rallyHeal,'Rally 🛡');
+      if(G.skillCharges.second_wind!==undefined) G.skillCharges.second_wind=Math.min((G.skillCharges.second_wind||0)+1,3);
+      log('🛡 Rally: +'+rallyHeal+' HP + 1 Second Wind charge!','s');
+      break;}
+
+    // Evoker — Overchannel
+    case 'overchannel':{
+      G._overchannelActive=true;
+      log('⚡ Overchannel: next spell maximized!','s');
+      break;}
+
+    // Illusionist — Phantasmal Force
+    case 'phantasmal_force':{
+      addConditionEnemy('Frightened',2);
+      G._phantasmalTarget=G.targetIdx;
+      log('😱 Phantasmal Force: enemy Frightened(2)! Takes 2d6 psychic/turn while Frightened.','s');
+      break;}
+
+    // Illusionist — Mirage
+    case 'mirage':{
+      const aliveEn=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
+      aliveEn.forEach(e=>{e._blindedAtk=(e._blindedAtk||0)+3; e._blindedTurns=2;});
+      log('🌫️ Mirage: all enemies Blinded! -3 ATK for 2 turns.','s');
+      break;}
+
+    // Thief — Fast Hands (use consumable as bonus action)
+    case 'fast_hands':{
+      // Find first usable consumable in inventory
+      const consumableIdx=G.inventory.findIndex(it=>it&&it.type==='consumable');
+      if(consumableIdx===-1){log('No consumables in inventory!','e');break;}
+      const consumable=G.inventory[consumableIdx];
+      G.inventory[consumableIdx]=null;
+      // Apply consumable effect
+      if(consumable.stats&&consumable.stats.heal){
+        const hAmt=consumable.stats.heal+(consumable.stats.heal2?roll(consumable.stats.heal2):0);
+        heal(hAmt,'Fast Hands 🤲 '+consumable.name);
+      } else {
+        log('🤲 Fast Hands: used '+consumable.name,'s');
+      }
+      break;}
+
+    // Assassin — Envenom
+    case 'envenom':{
+      G._envenomStacks=2;
+      log('🐍 Envenom: next 2 attacks apply Poisoned(3) + 1d6 poison!','s');
+      break;}
+
+    // Assassin — Marked for Death
+    case 'marked_for_death':{
+      G._markedForDeath=true;
+      log('☠️ Marked for Death: next Sneak Attack uses maximized dice!','s');
+      break;}
+
+    // Devotion — Aura of Protection
+    case 'aura_of_protection':{
+      G.sx.immuneFrightened=3;G.sx.immuneRestrained=3;
+      const aliveEnemies=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
+      aliveEnemies.forEach(e=>e._defBoost=(e._defBoost||0)-2);
+      log('😇 Aura of Protection: immune Frightened+Restrained 3 turns, enemies -2 ATK!','s');
+      break;}
+
+    // Vengeance — Vow Strike
+    case 'vow_strike':{
+      let vsDmg=roll(8)+md(G.stats.str);
+      const isMarked=G._vengeanceMarked>=0&&G.targetIdx===G._vengeanceMarked;
+      if(isMarked)vsDmg+=roll(8);
+      dealToEnemy(vsDmg,false,'Vow Strike ⚔️'+(isMarked?' [MARKED]':''));
+      addConditionEnemy('Frightened',2);
+      if(isMarked){G.res=Math.min(G.resMax,G.res+1);log('⚔️ Vow Strike: +1d8 vs marked + Frightened(2) + 1 Holy Power!','s');}
+      else{log('⚔️ Vow Strike: 1d8 radiant + Frightened(2)!','s');}
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Vengeance — Relentless Pursuit (reaction)
+    case 'relentless_pursuit':{
+      const rpDmg=roll(8)+md(G.stats.str);
+      dealToEnemy(rpDmg,false,'Relentless Pursuit 🔒');
+      log('🔒 Relentless Pursuit: counter for '+rpDmg+'!','s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Gloom Stalker — Shadow Dive
+    case 'shadow_dive':{
+      G.sx.evasion=true; // untargetable until end of turn
+      G._shadowDiveActive=true; // next attack applies Frightened(2)
+      log('🌑 Shadow Dive: untargetable! Next attack applies Frightened(2).','s');
+      break;}
+
+    // Gloom Stalker — Dread Ambush (round 1 only)
+    case 'dread_ambush':{
+      if(G.roundNum!==1||G._dreadAmbushUsed){log('Dread Ambush only usable in round 1!','e');break;}
+      G._dreadAmbushUsed=true;
+      const {dmg:dadmg,crit:dacrit}=calcPlayerDmg();
+      dealToEnemy(dadmg,dacrit,'Dread Ambush 💀');
+      addConditionEnemy('Frightened',2);
+      addConditionEnemy('Restrained',1);
+      log('💀 DREAD AMBUSH! Frightened(2) + Restrained(1)!','s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Wild Heart — Spirit Surge
+    case 'spirit_surge':{
+      const totem=G._totemSpirit||'bear';
+      const doubling=G.raging&&G.subclassId==='wild_heart';
+      if(totem==='bear'){
+        const ssHeal=(15+md(G.stats.con))*(doubling?2:1);
+        heal(ssHeal,'Spirit Surge 🐻 (Bear)');
+      } else if(totem==='eagle'){
+        const ssDodge=doubling?4:2;
+        G.sx.evasion=true; G.sx.evasionStacks=(G.sx.evasionStacks||0)+ssDodge;
+        log('🦅 Spirit Surge (Eagle): dodge next '+ssDodge+' hits!','s');
+      } else if(totem==='wolf'){
+        const ssAtk=(4+(doubling?4:0));
+        G.atk+=ssAtk; G._spiritSurgeAtkBonus=(G._spiritSurgeAtkBonus||0)+ssAtk;
+        G.sx.spiritSurgeTurns=3;
+        log('🐺 Spirit Surge (Wolf): +'+ssAtk+' ATK for 3 turns!','s');
+      }
+      break;}
+
+    // Wild Heart — Change Totem
+    case 'change_totem':{
+      const totems=['bear','eagle','wolf'];
+      const curIdx=totems.indexOf(G._totemSpirit||'bear');
+      G._totemSpirit=totems[(curIdx+1)%3];
+      G._changeTotemUsed=true;
+      log('🔄 Change Totem: '+G._totemSpirit.toUpperCase()+' spirit active!','s');
+      break;}
+
+    // Berserker — Intimidating Presence
+    case 'intimidating_presence':{
+      addConditionEnemy('Frightened',3);
+      const aliveI=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
+      aliveI.forEach(e=>e._defBoost=(e._defBoost||0)-3);
+      log('😤 Intimidating Presence: Frightened(3) + ATK -3!','s');
+      break;}
+
+    // Life Domain — Supreme Healing
+    case 'supreme_healing':{
+      const shHeal=24+md(G.stats.wis); // maximized 3d8 = 24
+      heal(shHeal,'Supreme Healing 💖');
+      log('💖 Supreme Healing: maximized 3d8+WIS = '+shHeal+' HP!','s');
+      break;}
+
+    // War Domain — Guided Strike
+    case 'guided_strike':{
+      G._guidedStrikeBonus=true;
+      log('🎯 Guided Strike: +10 ATK + 2d8 divine on next attack!','s');
+      break;}
+
+    // War Domain — War Priest Strike
+    case 'war_priest_strike':{
+      const {dmg:wpdmg,crit:wpcrit}=calcPlayerDmg();
+      const wpDivine=roll(8);
+      dealToEnemy(wpdmg+wpDivine,wpcrit,'War Priest Strike ⚔️');
+      log('⚔️ War Priest Strike: '+wpdmg+'+'+wpDivine+' divine!','s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Stars Druid — Starry Form
+    case 'starry_form':{
+      G._starryFormActive=true; G._starryFormTurns=3;
+      log('⭐ Starry Form: Archer stance! +1d8+WIS radiant each turn for 3 turns.','s');
+      break;}
+
+    // Stars Druid — Cosmic Omen
+    case 'cosmic_omen':{
+      G._cosmicOmenActive=true;
+      log('🌟 Cosmic Omen: +1d6 to your next attack or heal roll!','s');
+      break;}
+
+    // ══════════════════════════════════════════════════════════
+    //  NEW ALT BASE SKILLS
+    // ══════════════════════════════════════════════════════════
+
+    // Fighter — Rend
+    case 'rend':{
+      const {dmg:rdmg,crit:rcrit}=calcPlayerDmg();
+      const rendDmg=Math.ceil(rdmg*1.5);
+      dealToEnemy(rendDmg,rcrit,'Rend 🗡');
+      addConditionEnemy('Bleeding',3);
+      if(G.currentEnemy){G.currentEnemy._defBoost=(G.currentEnemy._defBoost||0)-3;G.currentEnemy._rendTurns=2;}
+      log('🗡 Rend: Bleeding(3) + enemy DEF -3 for 2 turns!','s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Fighter — Counter Stance (reaction)
+    case 'counter_stance':{
+      // Absorbs the incoming hit and reflects 50% back — must be triggered as reaction
+      // The actual reflection is handled in doEnemyAttack; this sets the sx flag
+      G.sx.counterStance=true;
+      log('⚡ Counter Stance: absorbing and reflecting 50% back!','s');
+      break;}
+
+    // Wizard — Frost Nova
+    case 'frost_nova':{
+      let fnDmg=roll(6)+roll(6)+getSpellPower();
+      if(G._overchannelActive){fnDmg=6+6+getSpellPower();G._overchannelActive=false;log('⚡ Overchannel: Frost Nova maximized!','s');}
+      dealToAllEnemies(fnDmg,false,'Frost Nova ❄️');
+      addConditionAllEnemies('Restrained',1);
+      log('❄️ Frost Nova: '+fnDmg+' ice to all + Restrained(1)!','s');
+      processAoeDeaths();
+      break;}
+
+    // Wizard — Arcane Familiar
+    case 'arcane_familiar':{
+      G._familiarActive=true; G._familiarTurns=3;
+      log('🦉 Arcane Familiar summoned! Fires 1d6+half INT each turn for 3 turns.','s');
+      break;}
+
+    // Rogue — Cheap Shot
+    case 'cheap_shot':{
+      const {dmg:csdmg,crit:cscrit}=calcPlayerDmg();
+      dealToEnemy(csdmg,cscrit,'Cheap Shot 👊');
+      if(Math.random()<0.5){addConditionEnemy('Stunned',1);log('👊 Cheap Shot: STUNNED!','s');}
+      else{log('👊 Cheap Shot: hit!','s');}
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Rogue — Smoke Bomb
+    case 'smoke_bomb':{
+      if(G.currentEnemy){G.currentEnemy._blindedAtk=(G.currentEnemy._blindedAtk||0)+4;G.currentEnemy._blindedTurns=2;}
+      G.sx.evasion=true;
+      log('💨 Smoke Bomb: enemy Blinded -4 ATK for 2 turns + dodge next hit!','s');
+      break;}
+
+    // Paladin — Aura Strike
+    case 'aura_strike':{
+      const {dmg:asdmg,crit:ascrit}=calcPlayerDmg();
+      const chaHeal=Math.max(1,md(G.stats.cha));
+      const asDmgFinal=Math.ceil(asdmg*0.7)+roll(8)+md(G.stats.cha);
+      dealToEnemy(asDmgFinal,ascrit,'Aura Strike 💛');
+      heal(chaHeal+(md(G.stats.wis)||0),'Aura Strike 💛');
+      log('💛 Aura Strike: '+asDmgFinal+' radiant + healed '+chaHeal+' HP!','s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Paladin — Consecrate
+    case 'consecrate':{
+      const aliveC=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
+      aliveC.forEach(e=>{e._consecrateTurns=3;e._consecrateHit=5;});
+      log('✝️ Consecrate: all enemies take 5 radiant/turn for 3 turns!','s');
+      break;}
+
+    // Ranger — Crippling Shot
+    case 'crippling_shot':{
+      addConditionEnemy('Restrained',2);
+      if(G.currentEnemy){G.currentEnemy._defBoost=(G.currentEnemy._defBoost||0)-4;G.currentEnemy._crippledTurns=2;}
+      log('🎯 Crippling Shot: Restrained(2) + ATK -4 for 2 turns!','s');
+      break;}
+
+    // Ranger — Camouflage
+    case 'camouflage':{
+      G.sx.evasion=true;
+      G._camouflageActive=true;
+      log('🌿 Camouflage: hidden — enemy misses next attack + your next attack +1d8!','s');
+      break;}
+
+    // Barbarian — Ground Slam
+    case 'ground_slam':{
+      let gsDmg=roll(8)+md(G.stats.str);
+      if(G.raging)gsDmg+=2+Math.floor(G.level/4);
+      dealToAllEnemies(gsDmg,false,'Ground Slam 💢');
+      const aliveGS=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
+      aliveGS.forEach(e=>{if(Math.random()<0.5)addConditionEnemy('Restrained',1);G.currentEnemy=e;});
+      log('💢 Ground Slam: '+gsDmg+' AoE + 50% Restrain each!','s');
+      processAoeDeaths();
+      break;}
+
+    // Barbarian — Adrenaline Rush
+    case 'adrenaline_rush':{
+      if(G.skillCharges.rage!==undefined)G.skillCharges.rage=Math.min((G.skillCharges.rage||0)+2,3);
+      log('💉 Adrenaline Rush: +2 Rage charges!','s');
+      break;}
+
+    // Cleric — Smite Evil
+    case 'smite_evil':{
+      let seDmg=roll(6)+roll(6)+roll(6)+getSpellPower();
+      const isEvil=G.currentEnemy&&(G.currentEnemy.isUndead||G.currentEnemy.isFiend);
+      if(isEvil)seDmg*=2;
+      dealToEnemy(seDmg,false,'Smite Evil ⚡'+(isEvil?' [DOUBLED]':''));
+      log('⚡ Smite Evil: '+seDmg+(isEvil?' (double vs undead/fiend!)':''),'s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
+      break;}
+
+    // Cleric — Bless
+    case 'bless':{
+      G._blessAttacks=2;
+      log('✨ Bless: +3 ATK on next 2 attack rolls!','s');
+      break;}
+
+    // Druid — Thorns (reaction)
+    case 'thorns':{
+      // Applied when player is hit — sets the sx flag; damage reflected in doEnemyAttack
+      G.sx.thornsReady=true;
+      log('🌵 Thorns: ready to retaliate on next hit!','s');
+      break;}
+
+    // Druid — Nature's Grasp
+    case 'natures_grasp':{
+      // Target highest-ATK living enemy
+      const living=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
+      const target=living.reduce((best,e)=>(e.atk>best.atk?e:best),living[0]||G.currentEnemy);
+      if(target){
+        const saved=G.currentEnemy;
+        G.currentEnemy=target;
+        addConditionEnemy('Restrained',3);
+        target._defBoost=(target._defBoost||0)-2;
+        G.currentEnemy=saved;
+        log("🌿 Nature's Grasp: "+target.name+' Restrained(3) + DEF -2!','s');
+      }
+      break;}
   }
 }

@@ -238,5 +238,54 @@ const TALENT_POOLS = {
   ],
 };
 
+// ── TALENT SYNERGY KEYSTONES ──────────────────────────────
+// Each class has 3 archetypes of 6 talents each. Picking 3+ from the same
+// archetype auto-fires a powerful keystone passive. apply() sets the permanent
+// flag; per-fight runtime state is initialized in spawnEnemy().
+// Note: apply() in a data file is a deliberate deviation from the data/no-logic
+// rule. Justified: trivial flag-setting only.
+const TALENT_ARCHETYPES = {
+  fighter: {
+    'Momentum': { talents:['Relentless','Bloody Momentum','Relentless Advance','Blade Dancer','Battle Rhythm',"War Gods Blessing"], keystone:{ name:'War Machine', icon:'⚙️', desc:'Start every fight at 50 Momentum; all Momentum costs -10', apply(G){ G._keystoneWarMachine=true; } } },
+    'Offense':  { talents:['Execute','Flurry','Burning Blade','Deathblow','Precision Strikes','Weapon Master'], keystone:{ name:'Rampage', icon:'🔥', desc:'Each kill grants +4% damage this fight (max 5 stacks)', apply(G){ G._keystoneRampage=true; } } },
+    'Defense':  { talents:['Iron Hide','Bulwark','Hardened','Ironclad Will',"Veteran's Grit",'Combat Awareness'], keystone:{ name:'Fortress', icon:'🏰', desc:'Taking damage below 50% HP grants a free Parry charge (once per enemy turn)', apply(G){ G._keystoneFortress=true; } } },
+  },
+  wizard: {
+    'Destruction': { talents:['Spell Power','Overload','Tidal Surge','Arcane Surge','Flash Freeze','Chain Lightning'], keystone:{ name:'Arcane Overload', icon:'🌋', desc:'15% chance any damaging spell fires a free Fire Bolt at 75% power', apply(G){ G._keystoneArcaneOverload=true; } } },
+    'Mastery':     { talents:['Arcane Memory','Quick Study','Prepared Caster','Recycled Magic','Void Tap','Mage Armor'], keystone:{ name:'Font of Magic', icon:'✨', desc:'Start each fight with +1 LVL1 slot; regain 1 slot on any enemy death', apply(G){ G._keystoneFontOfMagic=true; } } },
+    'Versatility': { talents:['Metamagic: Twin','Elemental Shift','Spell Weaver','Counterspell Mastery','Overcharged','Brilliant Focus'], keystone:{ name:'Arcane Virtuoso', icon:'🌈', desc:'Damaging spells cycle Fire→Ice→Lightning. Fire=Burning(2), Ice=Restrained(1), Lightning=30% Stunned(1)', apply(G){ G._keystoneArcaneVirtuoso=true; } } },
+  },
+  rogue: {
+    'Assassination': { talents:['Death Mark','Throat Cut','Hemorrhage','Anatomy','Exploit Weakness','Hair Trigger'], keystone:{ name:'One-Shot', icon:'☠️', desc:'Sneak Attack kill refunds action + 2 Combo Points', apply(G){ G._keystoneOneShot=true; } } },
+    'Mobility':      { talents:['Ghost Step','Shadow Step','Blur','Electric Reflexes','Shadow Form','Phantasm'], keystone:{ name:'Phantom', icon:'👻', desc:'First hit each fight auto-dodges; same enemy cannot target you twice per turn', apply(G){ G._keystonePhantom=true; } } },
+    'Economy':       { talents:['Luck','Master Thief','Loaded Dice','Fence Network','Opportunist','Venomous'], keystone:{ name:"Fortune's Favor", icon:'🎰', desc:'+1 Combo per attack; gold drops +30%', apply(G){ G._keystoneFortuneFavor=true; G.goldMult=(G.goldMult||1)+0.3; } } },
+  },
+  paladin: {
+    'Holy':       { talents:['Radiance','Avenging Angel','Smite Chain','Righteous Fury','Blessed Arms','Holy Reservoir'], keystone:{ name:'Avatar of Justice', icon:'😇', desc:'Divine Smite always crits on enemies below 30% HP', apply(G){ G._keystoneAvatarJustice=true; } } },
+    'Protection': { talents:['Impenetrable Aegis','Bulwark of Faith',"Dawn's Shield",'Unbreakable Vow','Divine Armor','Grace'], keystone:{ name:'Holy Bastion', icon:'🛡', desc:'Divine Shield block deals blocked amount as radiant back (up to 15)', apply(G){ G._keystoneHolyBastion=true; } } },
+    'Support':    { talents:['Lay on Hands+','Restorative Aura','Sacred Aura','Sovereign','Holy Momentum','Consecrated Ground'], keystone:{ name:'Beacon of Light', icon:'💛', desc:'Healing yourself restores 1 Holy Power; heals cannot be reduced below 5', apply(G){ G._keystoneBeaconLight=true; } } },
+  },
+  ranger: {
+    'Precision': { talents:['Deadeye','Eagle Eye','Hawk Eye','Long Shot','Marked Prey','Binding Mark'], keystone:{ name:'True Shot', icon:'🎯', desc:"Hunter's Mark crits on 18-20; marked targets cannot heal", apply(G){ G._keystoneTrueShot=true; } } },
+    'Beast':     { talents:['Beast Bond','Pack Tactics','Apex Companion','Swift Tracker','Woodland Stride','Seasoned Hunter'], keystone:{ name:'Alpha', icon:'🐺', desc:'Beast attacks for free on any skill use (not just basic attack)', apply(G){ G._keystoneAlpha=true; } } },
+    'Control':   { talents:['Volley Mastery','Pinning Shot','Favored Terrain','Evasion','Viper Arrows','Explosive Arrow'], keystone:{ name:'Field Control', icon:'🌿', desc:'Volley applies Restrained(1) to every enemy hit; Restrained enemies -3 ATK', apply(G){ G._keystoneFieldControl=true; } } },
+  },
+  barbarian: {
+    'Savagery':  { talents:['Brutal','Blood Fury','Bloodlust','Rupture','Thunder Clap','Battle Trance'], keystone:{ name:"Berserker's Ecstasy", icon:'🩸', desc:'Below 50% HP while raging: +20% damage + heal 3 HP per attack', apply(G){ G._keystoneBerserkerEcstasy=true; } } },
+    'Endurance': { talents:['Undying Fury','Stone Skin','Indomitable',"Death's Door",'Juggernaut',"Mountain's Weight"], keystone:{ name:'Unkillable', icon:'💀', desc:'Survive 1 killing blow per fight at 1 HP; gain 10 DR for 2 turns after', apply(G){ G._keystoneUnkillable=true; } } },
+    'Force':     { talents:['Endless Rage','Feral Charge','Unstoppable','Volcanic Rage','War Cry','Tidal Force'], keystone:{ name:'Living Siege Engine', icon:'🌋', desc:'World Breaker recharges every 5 rounds while raging; Reckless Attack ×2.0', apply(G){ G._keystoneLivingSiegeEngine=true; } } },
+  },
+  cleric: {
+    'Holy Power': { talents:['Radiant Soul','Wrath of God','Wrath of the Righteous','Eternal Flame','Undying Light','All-Seeing'], keystone:{ name:'Voice of the Divine', icon:'☀️', desc:'Sacred Flame applies Vulnerable(1); Channel Divinity heals 50% of damage dealt', apply(G){ G._keystoneVoiceDivine=true; } } },
+    'Healing':    { talents:['Blessed Healing','Divine Armor','Tidal Grace','Overflowing Font','Devotion Engine','Life Surge'], keystone:{ name:'Miracle Healer', icon:'💚', desc:'Heals have 20% chance to fully restore Devotion; Healing Word cannot be reduced below 5', apply(G){ G._keystoneMiracleHealer=true; } } },
+    'Support':    { talents:['Sanctuary','Holy Ward','Spiritual Armor','Devoted Soul','Sunrise','Divine Intervention'], keystone:{ name:'Holy Aegis', icon:'🛡', desc:'While Spiritual Weapon active: 30% chance incoming attacks deal 0 damage', apply(G){ G._keystoneHolyAegis=true; } } },
+  },
+  druid: {
+    'Wild':   { talents:['Beast Mastery','Apex Predator','Wild Surge',"Bear's Endurance",'Nature Bond','Regrowth'], keystone:{ name:'Primal Ascendant', icon:'🐻', desc:'Wild Shape HP buffer doubled; Claw Strike applies Bleeding(2)', apply(G){ G._keystonePrimalAscendant=true; } } },
+    'Magic':  { talents:['Lunar Magic','Waxing Moon','Dark Moon','Wildfire','Living Lightning','Storm Call'], keystone:{ name:'Stormcaller', icon:'⚡', desc:'Moonbeam hits all enemies at 70% dmg; each cast 20% chance Stunned(1)', apply(G){ G._keystoneStormcaller=true; } } },
+    'Nature': { talents:['Overgrowth','Verdant Growth','Tidal Roots','Ancient Bark','Cyclone','Primal Force'], keystone:{ name:'Heart of the Forest', icon:'🌿', desc:'Entangle costs 0 charge; Restrained enemies take +2d4 from all your attacks', apply(G){ G._keystoneHeartForest=true; } } },
+  },
+};
+
 // Helper: pick a random item from the ITEMS array by rarity
 

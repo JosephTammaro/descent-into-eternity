@@ -772,16 +772,45 @@ function doEnemyAttack(e){
       log('🏰 Bulwark: '+bulwarkDmg+' counter-damage!','s');
     }
   }
+  // Counter Stance (Fighter alt reaction): absorb hit, reflect 50% back
+  if(G.sx.counterStance&&dmg>0){
+    delete G.sx.counterStance;
+    const reflectDmg=Math.ceil(dmg*0.5);
+    log('⚡ Counter Stance: absorbed '+dmg+' — reflected '+reflectDmg+'!','s');
+    if(G.currentEnemy&&G.currentEnemy.hp>0){
+      dealToEnemy(reflectDmg,false,'Counter Stance ⚡');
+      if(G.currentEnemy.hp<=0){onEnemyDied();return;}
+    }
+    dmg=0;
+  }
+  // Thorns (Druid alt reaction): when hit, deal 1d6+WIS + Bleeding(2) to attacker
+  if(G.sx.thornsReady&&dmg>0){
+    delete G.sx.thornsReady;
+    const thornsDmg=roll(6)+Math.max(0,md(G.stats&&G.stats.wis?G.stats.wis:10));
+    log('🌵 Thorns: '+thornsDmg+' piercing + Bleeding(2) reflected!','s');
+    if(G.currentEnemy&&G.currentEnemy.hp>0){
+      dealToEnemy(thornsDmg,false,'Thorns 🌵');
+      addConditionEnemy('Bleeding',2);
+      if(G.currentEnemy.hp<=0){onEnemyDied();return;}
+    }
+  }
   if(G.sx.evasion){dmg=0;delete G.sx.evasion;AUDIO.sfx.miss();log('Evaded the attack!','s');
     // Opportunist: gain 1 Combo Point when enemy misses
     if(G.classId==='rogue'&&G._opportunist){G.res=Math.min(G.resMax,G.res+1);log('🕵️ Opportunist: +1 Combo!','s');}
     // Evasion Focus: gain 1 Focus when dodging
     if(G.classId==='ranger'&&G._evasionFocus){G.res=Math.min(G.resMax,G.res+1);log('🌀 Evasion: +1 Focus!','s');}
   }
+  // Illusory Self (Illusionist): once per fight, negate one attack
+  if(G.subclassId==='illusionist'&&!G._illusoryUsed&&dmg>0){
+    G._illusoryUsed=true;
+    AUDIO.sfx.miss();
+    log('🔮 Illusory Self: the attack passes through your illusion — you were never there!','s');
+    afterEnemyActs(); return;
+  }
   // Frightened amplifies incoming damage — apply before Wild Shape absorbs it
   if(G.conditions.includes('Frightened'))dmg=Math.ceil(dmg*1.15);
   // Berserker subclass: Mindless Rage — immune to Frightened while raging
-  if(G.classId==='barbarian'&&G.subclassUnlocked&&G.raging&&G.conditions.includes('Frightened')){
+  if(G.classId==='barbarian'&&G.subclassId==='berserker'&&G.raging&&G.conditions.includes('Frightened')){
     dmg=Math.ceil(dmg/1.15); // undo the penalty
     log('Mindless Rage: Frightened has no effect while raging!','s');
   }
@@ -854,8 +883,8 @@ function doEnemyAttack(e){
         }
       }
     }
-    // Paladin: Holy Nimbus (subclass) = 2 reflect; Radiance (talent) = +2 reflect standalone
-    const nimbusDmg=G.classId==='paladin'&&G.subclassUnlocked?2:0;
+    // Paladin: Holy Nimbus (Devotion subclass) = 2 reflect; Radiance (talent) = +2 reflect standalone
+    const nimbusDmg=G.classId==='paladin'&&G.subclassId==='devotion'?2:0;
     const radianceDmg=G.classId==='paladin'&&G.talents.includes('Radiance')?2:0;
     const reflectDmg=nimbusDmg+radianceDmg;
     if(reflectDmg>0&&G.currentEnemy){
@@ -911,6 +940,12 @@ function dealDamageToPlayer(dmg, sourceName){
   if(G.classId==='paladin'&&G._unbreakableVow&&G.hp<G.maxHp*0.3)dmg=Math.ceil(dmg*0.7);
   // Impenetrable Aegis damage mitigation
   if(G._damageMitigation)dmg=Math.ceil(dmg*(1-G._damageMitigation));
+  // Illusory Self (Illusionist): once per fight, negate one special attack
+  if(G.subclassId==='illusionist'&&!G._illusoryUsed&&dmg>0){
+    G._illusoryUsed=true;
+    log('🔮 Illusory Self: '+sourceName+' passes through your illusion!','s');
+    return;
+  }
   if(G.wildShapeHp>0){
     const absorbed=Math.min(G.wildShapeHp,dmg);
     G.wildShapeHp-=absorbed;
@@ -947,6 +982,12 @@ function dealDamageToPlayer(dmg, sourceName){
       G.res=Math.min(G.resMax,G.res+6);
       G.actionUsed=false;G.bonusUsed=false;
       log('☠️ Death\'s Shadow: you refuse to die! 1 HP, +6 Combo, next action free!','s');
+    }
+    // Fortress keystone: taking damage below 50% HP grants 1 free Parry charge (once per enemy turn)
+    if(G._keystoneFortress&&G.hp>0&&G.hp<G.maxHp*0.5&&!G._fortressUsedThisTurn&&G.skillCharges&&G.skillCharges.parry!==undefined){
+      G._fortressUsedThisTurn=true;
+      G.skillCharges.parry=Math.min((G.skillCharges.parry||0)+1,3);
+      log('🏰 Fortress: free Parry charge granted!','s');
     }
   }
 }

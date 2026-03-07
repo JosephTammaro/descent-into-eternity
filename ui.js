@@ -232,21 +232,60 @@ function closeLevelUp(){
 // ══════════════════════════════════════════════════════════
 function showSubclassScreen(){
   const cls=CLASSES[G.classId];
-  const sc=cls.subclass;
-  document.getElementById('scEyebrow').textContent='LEVEL 3 — YOUR PATH IS CHOSEN';
-  document.getElementById('scHeadline').innerHTML='A NEW POWER<br>AWAKENS';
-  document.getElementById('scSubname').textContent=sc.name;
-  document.getElementById('scDesc').textContent=sc.desc;
-  document.getElementById('scPerks').innerHTML=sc.perks.map(p=>`<div class="sc-perk">${p}</div>`).join('');
-  document.getElementById('scConfirmBtn').textContent='EMBRACE YOUR DESTINY';
-  document.getElementById('scConfirmBtn').setAttribute('onclick','confirmSubclass()');
+  const ids=cls.subclassIds||[];
+  const singleBox=document.getElementById('scSingleBox');
+  const choiceBox=document.getElementById('scChoiceBox');
+  if(ids.length>=2 && typeof SUBCLASSES!=='undefined'){
+    // Two-card choice layout
+    if(singleBox) singleBox.style.display='none';
+    if(choiceBox) choiceBox.style.display='block';
+    const scA=SUBCLASSES[ids[0]];
+    const scB=SUBCLASSES[ids[1]];
+    if(scA){
+      document.getElementById('scNameA').textContent=scA.name;
+      document.getElementById('scDescA').textContent=scA.desc;
+      document.getElementById('scPerksA').innerHTML=(scA.perks||[]).map(p=>`<div class="sc-perk">${p}</div>`).join('');
+      document.getElementById('scBtnA').setAttribute('onclick',`confirmSubclass('${ids[0]}')`);
+    }
+    if(scB){
+      document.getElementById('scNameB').textContent=scB.name;
+      document.getElementById('scDescB').textContent=scB.desc;
+      document.getElementById('scPerksB').innerHTML=(scB.perks||[]).map(p=>`<div class="sc-perk">${p}</div>`).join('');
+      document.getElementById('scBtnB').setAttribute('onclick',`confirmSubclass('${ids[1]}')`);
+    }
+  } else {
+    // Fallback: single-card (legacy path)
+    if(singleBox) singleBox.style.display='';
+    if(choiceBox) choiceBox.style.display='none';
+    const scId=ids[0]||(typeof SUBCLASSES!=='undefined'&&Object.keys(SUBCLASSES).find(k=>SUBCLASSES[k].classId===G.classId));
+    const sc=(scId&&typeof SUBCLASSES!=='undefined')?SUBCLASSES[scId]:{name:'',desc:'',perks:[]};
+    document.getElementById('scEyebrow').textContent='LEVEL 3 — YOUR PATH IS CHOSEN';
+    document.getElementById('scHeadline').innerHTML='A NEW POWER<br>AWAKENS';
+    document.getElementById('scSubname').textContent=sc.name;
+    document.getElementById('scDesc').textContent=sc.desc;
+    document.getElementById('scPerks').innerHTML=(sc.perks||[]).map(p=>`<div class="sc-perk">${p}</div>`).join('');
+    document.getElementById('scConfirmBtn').textContent='EMBRACE YOUR DESTINY';
+    document.getElementById('scConfirmBtn').setAttribute('onclick',scId?`confirmSubclass('${scId}')`:'confirmSubclass()');
+  }
   showScreen('subclass');
 }
-function confirmSubclass(){
+function confirmSubclass(subclassId){
+  // If no subclassId (legacy or fallback), use first subclass for the class
+  if(!subclassId){
+    const ids=CLASSES[G.classId].subclassIds||[];
+    subclassId=ids[0]||(Object.keys(SUBCLASSES||{}).find(k=>SUBCLASSES[k].classId===G.classId));
+  }
+  G.subclassId=subclassId;
   G.subclassUnlocked=true;
-  log('⭐ Subclass: '+CLASSES[G.classId].subclass.name+' unlocked!','s');
+  const sc=typeof SUBCLASSES!=='undefined'?SUBCLASSES[subclassId]:null;
+  if(sc){
+    if(typeof sc.apply==='function') sc.apply(G);
+    log('⭐ Subclass: '+sc.name+' unlocked!','s');
+  } else {
+    log('⭐ Subclass unlocked!','s');
+  }
   // Tag new subclass skills so the skill bar can highlight them
-  const newIds=CLASSES[G.classId].skills.filter(s=>s.subclassOnly).map(s=>s.id);
+  const newIds=CLASSES[G.classId].skills.filter(s=>s.subclassOnly&&(!s.subclassId||s.subclassId===subclassId)).map(s=>s.id);
   G._newSkills=(G._newSkills||[]).concat(newIds);
   showScreen('game');
   if(G._pendingTalentAfterSubclass){
@@ -266,6 +305,11 @@ function showUltimateScreen(type){
   const isCapstone = type==='capstone';
   const data = isCapstone ? ult.capstone : ult.ultimate1;
 
+  // Show single-card box, hide two-card choice box
+  const _sb=document.getElementById('scSingleBox');
+  const _cb=document.getElementById('scChoiceBox');
+  if(_sb) _sb.style.display='';
+  if(_cb) _cb.style.display='none';
   document.getElementById('scEyebrow').textContent = isCapstone ? 'LEVEL 20 — THE PINNACLE' : 'LEVEL 10 — POWER AWAKENED';
   document.getElementById('scHeadline').innerHTML = isCapstone ? 'CAPSTONE<br>UNLEASHED' : 'ULTIMATE<br>POWER';
   document.getElementById('scSubname').textContent = data.name + ' ' + data.icon;
@@ -355,9 +399,26 @@ function pickTalent(name){
   log('🌟 Talent: ' + name, 's');
   // Apply the talent's effect
   if(entry && entry.apply) entry.apply(G);
+  // Check for keystone synergy unlocks
+  checkKeystoneUnlocks(G);
   document.getElementById('talent-overlay').classList.remove('open');
   renderAll();
   showNextLevelUp();
+}
+
+function checkKeystoneUnlocks(G){
+  if(typeof TALENT_ARCHETYPES==='undefined') return;
+  const archetypes=TALENT_ARCHETYPES[G.classId];
+  if(!archetypes) return;
+  for(const [archName,arch] of Object.entries(archetypes)){
+    const picked=arch.talents.filter(t=>G.talents.includes(t)).length;
+    const keystoneId='_keystone_'+G.classId+'_'+archName.replace(/\s/g,'_');
+    if(picked>=3&&!G[keystoneId]){
+      G[keystoneId]=true;
+      if(typeof arch.keystone.apply==='function') arch.keystone.apply(G);
+      log('🔮 Synergy: '+arch.keystone.icon+' '+arch.keystone.name+' — '+arch.keystone.desc,'s');
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════════

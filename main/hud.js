@@ -643,13 +643,18 @@ function renderSkillButtons(){
   ['action','bonus','reaction'].forEach(type=>{
     const container=document.getElementById(type+'Skills');
     if(!container) return;
-    let skills=cls.skills.filter(s=>s.type===type && (!s.subclassOnly || G.subclassUnlocked) && (!s.ultimateOnly || G.ultimateUnlocked));
+    // Final skill filter — System 1 (subclassId), System 3 (loadout), ultimates always shown
+    let skills=cls.skills.filter(s=>
+      s.type===type &&
+      (!s.subclassOnly || (G.subclassUnlocked && (!s.subclassId || s.subclassId===G.subclassId))) &&
+      (!s.ultimateOnly || G.ultimateUnlocked) &&
+      (!G.skillLoadout || G.skillLoadout.includes(s.id) || s.ultimateOnly)
+    );
     // ── Nethrix Memory Flood: reorder skills array before render ──
     if(G._nethrixShuffleOrder&&G._nethrixShuffleOrder[type]){
       const order=G._nethrixShuffleOrder[type];
       skills=order.map(id=>skills.find(s=>s.id===id)).filter(Boolean);
-      // append any skills not in the order at the end (safety net)
-      skills=skills.concat(cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||G.subclassUnlocked)&&(!s.ultimateOnly||G.ultimateUnlocked)&&!order.includes(s.id)));
+      skills=skills.concat(cls.skills.filter(s=>s.type===type&&(!s.subclassOnly||(G.subclassUnlocked&&(!s.subclassId||s.subclassId===G.subclassId)))&&(!s.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(s.id)||s.ultimateOnly)&&!order.includes(s.id)));
     }
     container.innerHTML=skills.map(sk=>{
       const cdRaw=G.skillCooldowns[sk.id];
@@ -668,7 +673,8 @@ function renderSkillButtons(){
       const rageRequired = sk.rageReq && !G.raging;
       const bearRequired = sk.bearReq && (!G.wildShapeHp || G.wildShapeHp <= 0);
       const formLocked = (sk.id==='elemental_wild_shape' && G.wildShapeHp>0) || (sk.id==='wild_shape' && G._elementalForm && G.wildShapeHp>0);
-      const disabled=typeUsed||noRes||noSlot||noCombo||noCharges||cdLeft>0||(!G.isPlayerTurn&&type!=='reaction')||paused||reactionOnYourTurn||bearLocked||clawLocked||rageRequired||bearRequired||formLocked;
+      const roundLocked = sk.roundReq && (G.roundNum!==sk.roundReq || G._dreadAmbushUsed);
+      const disabled=typeUsed||noRes||noSlot||noCombo||noCharges||cdLeft>0||(!G.isPlayerTurn&&type!=='reaction')||paused||reactionOnYourTurn||bearLocked||clawLocked||rageRequired||bearRequired||formLocked||roundLocked;
       const pipHtml=sk.charges?`<span class="sk-charges">${Array.from({length:sk.charges},(_,i)=>i<chargesLeft?'●':'○').join('')}</span>`:'';
       // Cost label (bottom-left badge)
       let costLabel='';

@@ -90,6 +90,20 @@ function onEnemyDied(){
   // Spiritual weapon unlocks when done (cleric only)
   if(G.classId==='cleric'&&!G.spiritualWeaponActive){delete G.skillCooldowns['spiritual_weapon'];}
 
+  // Vengeance: on kill, transfer mark to next living enemy
+  if(G.classId==='paladin'&&G.subclassId==='vengeance'){
+    const nextMark=(G.currentEnemies||[]).find(en=>!en.dead&&en.hp>0);
+    if(nextMark){G._vengeanceMarked=G.currentEnemies.indexOf(nextMark);log('⚔️ Vengeance: mark transfers to '+nextMark.name+'!','s');}
+    else G._vengeanceMarked=-1;
+  }
+  // Rampage keystone: +1 kill stack per enemy slain (max 5)
+  if(G._keystoneRampage){G._rampageStacks=Math.min(5,(G._rampageStacks||0)+1);log('🔥 Rampage: +1 stack! ('+G._rampageStacks+'×3 bonus dmg)','s');}
+  // One-Shot keystone (Rogue): kill refunds action + 2 Combo Points
+  if(G._keystoneOneShot&&G.classId==='rogue'){
+    if(G.actionUsed)G.actionUsed=false;
+    G.res=Math.min(G.resMax,(G.res||0)+2);
+    log('💀 One-Shot: kill refunds action + 2 Combo!','s');
+  }
   // Bloody Momentum: killing blow restores 30 Momentum
   if(G.classId==='fighter'&&G._bloodyMomentum){
     G.res=Math.min(G.resMax,G.res+30);
