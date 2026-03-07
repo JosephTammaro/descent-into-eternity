@@ -46,7 +46,7 @@ function calcPlayerDmg(){
   }
   // Deathblow: +15% damage vs enemies below 50% HP
   if(G.classId==='fighter'&&G._deathblow&&G.currentEnemy&&G.currentEnemy.hp<G.currentEnemy.maxHp*0.5)base=Math.ceil(base*1.15);
-  const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:G.currentEnemy.def):0;
+  const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)):0;
   let dmg=Math.max(1,base-Math.floor(def/2)+roll(4)-2);
   let crit=false;
   // Ghost Step: first attack of each fight is a guaranteed crit
