@@ -691,6 +691,26 @@ function renderSkillButtons(){
 
   // End turn button
   document.getElementById('endTurnBtn').disabled=!G.isPlayerTurn||paused;
+
+  // ── Nethrix: apply shuffle order ──
+  if(G&&G._nethrixShuffleOrder){
+    Object.entries(G._nethrixShuffleOrder).forEach(([panelId,order])=>{
+      const panel=document.getElementById(panelId);
+      if(!panel)return;
+      const btns=Array.from(panel.children);
+      order.forEach(origIdx=>{if(btns[origIdx])panel.appendChild(btns[origIdx]);});
+    });
+  }
+  // ── Auranthos: apply blindness ──
+  if(G&&G._auranthosBlindedBtns){
+    const allBtns=Array.from(document.querySelectorAll('.skill-btn'));
+    G._auranthosBlindedBtns.forEach(idx=>{
+      const btn=allBtns[idx];
+      if(!btn)return;
+      btn.setAttribute('data-blind-orig',btn.innerHTML);
+      btn.innerHTML='<span style="font-family:\'Press Start 2P\',monospace;font-size:9px;color:#555;display:block;text-align:center;padding:8px 0">???</span>';
+    });
+  }
 }
 
 function renderConditions(){
