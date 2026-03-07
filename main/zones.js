@@ -48,6 +48,10 @@ function setPlayerTurn(isPlayer){
       if(srv>0)log(`Survivor: +${srv} HP`,'s');
     }
     G.roundNum++;
+    // Restore Nethrix shuffle at start of player turn
+    if(G._nethrixShuffleOrder)delete G._nethrixShuffleOrder;
+    // Restore Auranthos blindness at start of player turn
+    if(G._auranthosBlindedBtns)delete G._auranthosBlindedBtns;
     // ── Roll intent for all living enemies this round ──
     (G.currentEnemies||[]).forEach(en=>{if(!en.dead&&en.hp>0)_rollIntentForEnemy(en);});
 
@@ -558,6 +562,7 @@ function renderEnemyArea(){
 
     const card = document.createElement('div');
     card.className='enemy-card'+(isTarget?' targeted':'')+(isDead?' dead':'');
+    if(e._isRealEmpress)card.style.outline='2px solid rgba(200,168,75,0.7)';
     card.onclick = isDead ? null : ()=>{ selectTarget(i); };
 
     // Build sprite canvas
@@ -617,6 +622,8 @@ function _getIntentDisplay(e){
   if(!e)return null;
   const isRestrained=e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
   if(isRestrained)return{icon:'🔗',label:'RESTRAINED',cls:'intent-blocked'};
+  // Zareth charging override — show charging intent during wind-up
+  if(e._chargingBlast>0)return{icon:'⚡',label:'CHARGING...',cls:'intent-special'};
   if(e.isBoss&&G.roundNum>0){
     const interval=e.phaseTriggered?2:3;
     if(G.roundNum%interval===0){
