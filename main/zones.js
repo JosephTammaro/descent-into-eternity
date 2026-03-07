@@ -48,10 +48,6 @@ function setPlayerTurn(isPlayer){
       if(srv>0)log(`Survivor: +${srv} HP`,'s');
     }
     G.roundNum++;
-    // Restore Nethrix shuffle at start of player turn
-    if(G._nethrixShuffleOrder)delete G._nethrixShuffleOrder;
-    // Restore Auranthos blindness at start of player turn
-    if(G._auranthosBlindedBtns)delete G._auranthosBlindedBtns;
     // ── Roll intent for all living enemies this round ──
     (G.currentEnemies||[]).forEach(en=>{if(!en.dead&&en.hp>0)_rollIntentForEnemy(en);});
 
@@ -562,14 +558,14 @@ function renderEnemyArea(){
 
     const card = document.createElement('div');
     card.className='enemy-card'+(isTarget?' targeted':'')+(isDead?' dead':'');
-    if(e._isRealEmpress)card.style.outline='2px solid rgba(200,168,75,0.7)';
+    if(e._isRealEmpress){card.style.outline='2px solid rgba(200,168,75,0.9)';card.style.boxShadow='0 0 10px rgba(200,168,75,0.4)';}
     card.onclick = isDead ? null : ()=>{ selectTarget(i); };
 
     // Build sprite canvas
     const spriteCanvas = document.createElement('div');
     spriteCanvas.className='enemy-card-sprite';
     const spriteEl = document.createElement('div');
-    const spriteData = e.isBoss ? BOSS_SPRITES[e.sprite] : ENEMY_SPRITES[e.sprite];
+    const spriteData = (e.isBoss||e._usesBossSprite) ? BOSS_SPRITES[e.sprite] : ENEMY_SPRITES[e.sprite];
     if(spriteData) renderSprite(spriteData, 7, spriteEl);
     spriteEl.style.filter=`drop-shadow(0 0 3px ${e.color||'#888'})`;
     spriteCanvas.appendChild(spriteEl);
@@ -625,6 +621,30 @@ function _getIntentDisplay(e){
   // Zareth charging override — show charging intent during wind-up
   if(e._chargingBlast>0)return{icon:'⚡',label:'CHARGING...',cls:'intent-special'};
   if(e.isBoss&&G.roundNum>0){
+    // ── Per-boss mechanic overrides (highest priority) ──
+    // Vexara — Crimson Brand fires on brandRound
+    if(e.id==='vexara'&&e.brandRound&&G.roundNum===e.brandRound&&!e._brandApplied)
+      return{icon:'🔥',label:'CRIMSON BRAND',cls:'intent-special'};
+    // Grakthar — Rally fires next enemy turn if HP already below threshold
+    if(e.id==='grakthar'&&!e._rallyUsed&&e.hp<=e.maxHp*0.6)
+      return{icon:'⚔',label:'RALLYING GARRISON',cls:'intent-special'};
+    // Valdris — Last Stand (check 30% first, then 65% bulwark)
+    if(e.id==='valdris'&&!e._lastStand&&e.hp<=e.maxHp*0.3)
+      return{icon:'💢',label:'LAST STAND',cls:'intent-special'};
+    if(e.id==='valdris'&&!e._bulwarkUsed&&e.hp<=e.maxHp*0.65)
+      return{icon:'❄',label:'SUMMON SOLDIERS',cls:'intent-special'};
+    // Auranthos — Divine Blindness on its interval
+    if(e.id==='auranthos'){
+      const bInterval=e.phaseTriggered?2:3;
+      if(G.roundNum%bInterval===0) return{icon:'👁',label:'DIVINE BLINDNESS',cls:'intent-special'};
+    }
+    // Malvaris — specific trigger overrides, then always show Grief Aura
+    if(e.id==='malvaris'){
+      if(!e._soulDrainUsed&&e.hp<=e.maxHp*0.25)return{icon:'🌑',label:'SOUL DRAIN',cls:'intent-special'};
+      if(!e._splitUsed&&e.hp<=e.maxHp*0.5)return{icon:'🌑',label:'SHADOW SPLIT',cls:'intent-special'};
+      return{icon:'🌑',label:'GRIEF AURA + STRIKE',cls:'intent-special'};
+    }
+    // ── Generic boss special interval ──
     const interval=e.phaseTriggered?2:3;
     if(G.roundNum%interval===0){
       const sp=e.phaseTriggered&&e.phase2?e.phase2:e.special;
