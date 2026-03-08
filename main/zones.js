@@ -565,8 +565,11 @@ function spawnEnemy(){
     G._warReadiness=false;
     log('⚔️ War Readiness: Second Wind cooldown cleared!','s');
   }
-  // Battle Master: Know Your Enemy — +2 ATK bonus this fight
-  if(G.subclassId==='battle_master'){G._knowEnemyBonus=true;log('📖 Know Your Enemy: +2 ATK!','s');}
+  // Battle Master: Know Your Enemy — +2 ATK for rounds 1-2 only
+  if(G.subclassId==='battle_master'){
+    if(G.roundNum<=2){if(!G._knowEnemyBonus){G._knowEnemyBonus=true;log('📖 Know Your Enemy: +2 ATK (rounds 1-2)!','s');}}
+    else if(G._knowEnemyBonus){G._knowEnemyBonus=false;log('📖 Know Your Enemy fades — enemy style read.','s');}
+  }
   // Illusionist: conjure 2 Mirror Images at fight start (if none active)
   if(G.subclassId==='illusionist'&&!G.mirrorImages){
     G.mirrorImages=2;

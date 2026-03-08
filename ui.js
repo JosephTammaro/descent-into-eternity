@@ -22,6 +22,8 @@ function addCondition(cond,turns=2){
     log('🔥 Elemental immunity blocks '+cond+'!','s');
     return;
   }
+  // Berserker Mindless Rage: immune to Charmed and Frightened while raging
+  if((cond==='Charmed'||cond==='Frightened')&&G.classId==='barbarian'&&G.subclassId==='berserker'&&G.raging){log('💢 Mindless Rage: '+cond+' has no effect while raging!','s');return;}
   // Aura of Protection (Devotion): immune to Frightened and Restrained for 3 turns
   if(cond==='Frightened'&&G.sx&&G.sx.immuneFrightened>0){log('😇 Aura of Protection blocks Frightened!','s');return;}
   if(cond==='Restrained'&&G.sx&&G.sx.immuneRestrained>0){log('😇 Aura of Protection blocks Restrained!','s');return;}
