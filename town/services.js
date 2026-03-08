@@ -47,51 +47,66 @@ function _renderSkillKit(){
   const cls = CLASSES[G.classId];
   if(!cls) return;
 
-  // Build slot groups: for each action/bonus/reaction, find skills with alt counterparts
+  // Helper: build a full info card for one skill
+  function _kitCard(sk, state){
+    // state: 'selected' | 'unselected' | 'locked'
+    const costStr = sk.cost>0 ? sk.cost+cls.res.charAt(0) : sk.comboReq ? sk.comboReq+'CP' : sk.slotCost ? 'L'+sk.slotCost : '—';
+    const cdStr = sk.cd>0 ? 'CD '+sk.cd : sk.charges ? '×'+sk.charges : '—';
+    const typeColor = sk.type==='action'?'var(--gold)':sk.type==='bonus'?'#4a9e5c':'#5577cc';
+    const clickAttr = state==='locked' ? '' :
+      state==='selected' ? `onclick="prepSelectSkill('${sk.id}','')"` :
+      `onclick="prepSelectSkill('${sk.id}','')"`;
+    return `<div class="prep-kit-card prep-kit-${state}" ${clickAttr}>
+      <span class="prep-kit-icon">${sk.icon}</span>
+      <span class="prep-kit-name">${sk.name}</span>
+      <span class="prep-kit-desc">${sk.desc}</span>
+      <div class="prep-kit-tags">
+        <span class="prep-kit-tag" style="color:${typeColor};border-color:${typeColor}33;">${sk.type.toUpperCase()}</span>
+        ${costStr!=='—'?`<span class="prep-kit-tag">${costStr}</span>`:''}
+        ${cdStr!=='—'?`<span class="prep-kit-tag">${cdStr}</span>`:''}
+      </div>
+      ${state==='locked'?'<span class="prep-kit-lock-label">ALWAYS IN KIT</span>':''}
+    </div>`;
+  }
+
   const types = ['action','bonus','reaction'];
   let rows = [];
 
   for(const type of types){
-    // All non-gated, non-ultimate skills of this type
-    const base = cls.skills.filter(s=>s.type===type&&!s.ultimateOnly&&!s.subclassOnly);
-    // Pair up: skills with alt:true are swap candidates
-    const nonAlt = base.filter(s=>!s.alt);
-    const altSkills = base.filter(s=>s.alt);
-    if(altSkills.length===0) continue; // no swap cards for this type
-
-    // For each non-alt, check if there's an alt of the same type
+    const allOfType = cls.skills.filter(s=>s.type===type&&!s.ultimateOnly&&!s.subclassOnly);
+    const nonAlt = allOfType.filter(s=>!s.alt&&s.id!=='attack');
+    const altPool = allOfType.filter(s=>s.alt).slice();
+    // Only show pairs where both a base and an alt exist
     for(const sk of nonAlt){
-      if(sk.id==='attack') continue; // basic attack always pinned
-      const alt = altSkills[0]; // simple 1-for-1 swap per slot type
+      const alt = altPool.shift();
       if(!alt) continue;
       const isAltSelected = G.skillLoadout && G.skillLoadout.includes(alt.id) && !G.skillLoadout.includes(sk.id);
-      rows.push({type, base:sk, alt, isAltSelected});
-      altSkills.shift(); // consume the alt
-    }
-    // If more alts than non-alts, add them as standalone swaps
-    for(const alt of altSkills){
-      rows.push({type, base:null, alt, isAltSelected: G.skillLoadout&&G.skillLoadout.includes(alt.id)});
+      const baseState = isAltSelected ? 'unselected' : 'selected';
+      const altState  = isAltSelected ? 'selected'   : 'unselected';
+      const typeColor = type==='action'?'var(--gold)':type==='bonus'?'#4a9e5c':'#5577cc';
+      const typeBorder = type==='action'?'rgba(200,168,75,0.3)':type==='bonus'?'rgba(74,158,92,0.3)':'rgba(85,119,204,0.3)';
+      function tagRow(s){ return `<div class="prep-kit-tags"><span class="prep-kit-tag" style="color:${typeColor};border-color:${typeBorder};">${type.toUpperCase()}</span>${s.cost>0?`<span class="prep-kit-tag">${s.cost}${cls.res.charAt(0)}</span>`:''}${s.cd>0?`<span class="prep-kit-tag">CD ${s.cd}</span>`:s.charges?`<span class="prep-kit-tag">×${s.charges}</span>`:''}</div>`; }
+      rows.push(`<div class="prep-kit-row">
+        <div class="prep-kit-card prep-kit-${baseState}" onclick="prepSelectSkill('${sk.id}','${alt.id}')">
+          <span class="prep-kit-icon">${sk.icon}</span>
+          <span class="prep-kit-name">${sk.name}</span>
+          <span class="prep-kit-desc">${sk.desc}</span>
+          ${tagRow(sk)}
+        </div>
+        <div class="prep-kit-vs">VS</div>
+        <div class="prep-kit-card prep-kit-${altState}" onclick="prepSelectSkill('${alt.id}','${sk.id}')">
+          <span class="prep-kit-icon">${alt.icon}</span>
+          <span class="prep-kit-name">${alt.name}</span>
+          <span class="prep-kit-desc">${alt.desc}</span>
+          ${tagRow(alt)}
+        </div>
+      </div>`);
     }
   }
 
-  if(rows.length===0){kitEl.style.display='none';return;}
+  if(!rows.length){kitEl.style.display='none';return;}
   kitEl.style.display='block';
-
-  rowsEl.innerHTML = rows.map(row=>{
-    const typeLabel = row.type.toUpperCase();
-    const bColor = row.isAltSelected ? '#555' : 'var(--gold)';
-    const aColor = row.isAltSelected ? 'var(--gold)' : '#555';
-    const baseName = row.base?row.base.icon+' '+row.base.name:'—';
-    const altName = row.alt?row.alt.icon+' '+row.alt.name:'—';
-    const baseClick = row.base?`onclick="prepSelectSkill('${row.base.id}','${row.alt?row.alt.id:''}')"`:'';
-    const altClick = row.alt?`onclick="prepSelectSkill('${row.alt.id}','${row.base?row.base.id:''}')"` :'';
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-      <span style="color:var(--dim);width:52px;">${typeLabel}</span>
-      <span style="color:${bColor};cursor:pointer;padding:2px 6px;background:#1a1430;border:1px solid ${row.isAltSelected?'#333':'#a78bfa'};" ${baseClick}>${baseName}</span>
-      <span style="color:var(--dim);">vs</span>
-      <span style="color:${aColor};cursor:pointer;padding:2px 6px;background:#1a1430;border:1px solid ${row.isAltSelected?'#a78bfa':'#333'};" ${altClick}>${altName}</span>
-    </div>`;
-  }).join('');
+  rowsEl.innerHTML = rows.join('');
 }
 
 function prepSelectSkill(selectId, deselectId){

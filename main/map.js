@@ -326,16 +326,9 @@ function doConfirmClass(){
     if(graceGold > 0){ G.gold += graceGold; log('✨ Grace gold: +'+graceGold+'🪙 carried into this run.','l'); }
   }
   autoSave();
-  // If triggered from prepare screen, go back there instead of straight into dungeon
-  if(window._returnToPrepareAfterClass){
-    window._returnToPrepareAfterClass = false;
-    if(typeof openPrepareScreen==='function') openPrepareScreen();
-    return;
-  }
-  // Class picked at gate — enter dungeon immediately
-  G.zoneIdx = 0;
-  if(typeof townEnterDungeon==='function') townEnterDungeon();
-  else if(typeof travelToZone==='function') travelToZone(0);
+  window._returnToPrepareAfterClass = false;
+  if(typeof showScreen==='function') showScreen('town');
+  if(typeof openPrepareScreen==='function') openPrepareScreen();
 }
 
 // ══════════════════════════════════════════════════════════

@@ -781,7 +781,7 @@
 
 /* ── PREPARE FOR DESCENT OVERLAY ─────────────────────────── */
 .prepare-overlay{
-  display:none;position:absolute;inset:0;z-index:600;
+  display:none;position:fixed;inset:0;z-index:600;
   background:rgba(0,0,0,0.88);align-items:center;justify-content:center;
 }
 .prepare-overlay.open{ display:flex; }
@@ -862,6 +862,37 @@
 .prepare-descend-btn:hover{
   background:linear-gradient(135deg,#2a1400,#3a1800);
   box-shadow:0 0 16px rgba(200,168,75,0.35);
+}
+
+/* ── SKILL KIT CARDS ─────────────────────────────────────── */
+.prep-kit-section{ margin-bottom:10px; }
+.prep-kit-row{ display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:8px; }
+.prep-kit-vs{
+  font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);
+  align-self:center;flex-shrink:0;
+}
+.prep-kit-card{
+  width:160px;padding:10px 10px 8px;
+  display:flex;flex-direction:column;gap:5px;
+  background:#0e0b18;border:2px solid #2a2040;
+  transition:border-color .15s,opacity .15s;
+}
+.prep-kit-card.prep-kit-selected{ border-color:var(--gold);opacity:1;cursor:pointer; }
+.prep-kit-card.prep-kit-unselected{ border-color:#2a2040;opacity:.42;cursor:pointer; }
+.prep-kit-card.prep-kit-locked{ border-color:#2a2040;opacity:1;cursor:default; }
+.prep-kit-card.prep-kit-selected:hover{ box-shadow:0 0 10px rgba(200,168,75,0.2); }
+.prep-kit-card.prep-kit-unselected:hover{ opacity:.65;border-color:#3a3060; }
+.prep-kit-icon{ font-size:22px;line-height:1; }
+.prep-kit-name{ font-family:'Press Start 2P',monospace;font-size:7px;color:var(--white);line-height:1.5; }
+.prep-kit-desc{ font-family:'Press Start 2P',monospace;font-size:6px;color:var(--dim);line-height:1.7; }
+.prep-kit-tags{ display:flex;gap:4px;flex-wrap:wrap;margin-top:2px; }
+.prep-kit-tag{
+  font-family:'Press Start 2P',monospace;font-size:5px;color:var(--dim);
+  background:#1a1430;border:1px solid #2a2040;padding:2px 4px;
+}
+.prep-kit-lock-label{
+  font-family:'Press Start 2P',monospace;font-size:5px;
+  color:#4a4060;margin-top:2px;letter-spacing:1px;
 }
 
 /* ── SALVAGE OVERLAY ─────────────────────────────────────── */

@@ -194,38 +194,39 @@
     <span class="farewell-narrator-continue">▼ continue</span>
   </div>
 
-  <!-- Prepare for Descent overlay -->
-  <div id="prepareOverlay" class="prepare-overlay">
-    <div class="prepare-box">
-      <div class="prepare-titlebar">
-        <span class="prepare-title">⚔ PREPARE FOR DESCENT</span>
-        <button class="prepare-close" onclick="closePrepareScreen()">✕ CANCEL</button>
+</div>
+
+<!-- Prepare for Descent overlay — lives outside all screens so position:fixed works from any screen -->
+<div id="prepareOverlay" class="prepare-overlay">
+  <div class="prepare-box">
+    <div class="prepare-titlebar">
+      <span class="prepare-title">⚔ PREPARE FOR DESCENT</span>
+      <button class="prepare-close" onclick="closePrepareScreen()">✕ CANCEL</button>
+    </div>
+    <div class="prepare-zone-label" id="prepareZoneLabel"></div>
+    <!-- SKILL KIT section — shown when class has alt skills or subclass is chosen -->
+    <div id="prepareSkillKit" style="display:none;padding:8px 12px 4px;border-bottom:1px solid #2a2040;">
+      <div class="prepare-panel-title" style="margin-bottom:6px;">SKILL KIT</div>
+      <div id="prepareSkillKitRows"></div>
+    </div>
+    <div class="prepare-panels">
+      <div class="prepare-panel">
+        <div class="prepare-panel-title">STASH <span id="prepareStashCount" class="prepare-count"></span></div>
+        <div id="prepareStashGrid" class="prepare-grid"></div>
       </div>
-      <div class="prepare-zone-label" id="prepareZoneLabel"></div>
-      <!-- SKILL KIT section — shown when class has alt skills or subclass is chosen -->
-      <div id="prepareSkillKit" style="display:none;padding:8px 12px 4px;border-bottom:1px solid #2a2040;">
-        <div class="prepare-panel-title" style="margin-bottom:6px;">SKILL KIT</div>
-        <div id="prepareSkillKitRows" style="font-family:'Press Start 2P',monospace;font-size:7px;"></div>
+      <div class="prepare-arrows">
+        <div class="prepare-arrow-hint">← drag to loadout</div>
+        <div class="prepare-arrow-hint">drag to stash →</div>
       </div>
-      <div class="prepare-panels">
-        <div class="prepare-panel">
-          <div class="prepare-panel-title">STASH <span id="prepareStashCount" class="prepare-count"></span></div>
-          <div id="prepareStashGrid" class="prepare-grid"></div>
-        </div>
-        <div class="prepare-arrows">
-          <div class="prepare-arrow-hint">← drag to loadout</div>
-          <div class="prepare-arrow-hint">drag to stash →</div>
-        </div>
-        <div class="prepare-panel">
-          <div class="prepare-panel-title">STARTING LOADOUT <span id="prepareLoadoutCount" class="prepare-count"></span></div>
-          <div id="prepareLoadoutGrid" class="prepare-grid"></div>
-        </div>
+      <div class="prepare-panel">
+        <div class="prepare-panel-title">STARTING LOADOUT <span id="prepareLoadoutCount" class="prepare-count"></span></div>
+        <div id="prepareLoadoutGrid" class="prepare-grid"></div>
       </div>
-      <div class="prepare-footer">
-        <button class="prepare-change-class-btn" onclick="changeClassFromPrepare()">↺ CHANGE CLASS</button>
-        <div class="prepare-footer-tip">Click items to move between stash and loadout. Starter weapon is locked in.</div>
-        <button class="prepare-descend-btn" onclick="doDescend()">⚔ DESCEND</button>
-      </div>
+    </div>
+    <div class="prepare-footer">
+      <button class="prepare-change-class-btn" onclick="changeClassFromPrepare()">↺ CHANGE CLASS</button>
+      <div class="prepare-footer-tip">Click items to move between stash and loadout. Starter weapon is locked in.</div>
+      <button class="prepare-descend-btn" onclick="doDescend()">⚔ DESCEND</button>
     </div>
   </div>
 </div>
