@@ -178,7 +178,7 @@ function doSkillEffect(effect, sk){
       }
       // Fix 5: Spiritual Weapon fires alongside attack on same turn
       if(G.spiritualWeaponActive&&G.currentEnemy&&G.currentEnemy.hp>0){
-        fireSpiritalWeapon();
+        fireSpiritualWeapon();
       }
       // Rare Event: Frozen Soldier auto-attacks
       if(G._rareEventFlags.frozenSoldier&&G._rareEventFlags.frozenSoldier.zoneIdx===G.zoneIdx&&G._rareEventFlags.frozenSoldier.hp>0&&G.currentEnemy&&G.currentEnemy.hp>0){
@@ -525,12 +525,6 @@ function doSkillEffect(effect, sk){
         heal(hw2,'Overflowing Font 💫 second word');
         log('💫 Overflowing Font: second Healing Word!','s');
       }
-      break;}
-    case 'divine_intervention':{
-      if(G._divineInterventionUsed){log('Divine Intervention already used this rest!','s');break;}
-      G.hp=G.maxHp;G._divineInterventionUsed=true;
-      log('☀️ Divine Intervention! Fully healed!','s');
-      spawnFloater('DIVINE!','s',false);
       break;}
     case 'channel_divinity':{
       // ── Chroma tracking: lifetime channels ──

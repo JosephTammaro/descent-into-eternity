@@ -9,7 +9,7 @@ const CLASSES = {
     subclassIds:['champion','battle_master'],
     skills:[
       {id:'attack',name:'Attack',type:'action',icon:'⚔️',desc:'1d8+STR weapon strike',cd:0,cost:0,effect:'basic_attack'},
-      {id:'power_strike',name:'Power Strike',type:'action',icon:'💪',desc:'Heavy strike ×2 + target Vulnerable(1)',cd:4,cost:50,effect:'power_strike'},
+      {id:'power_strike',name:'Power Strike',type:'action',icon:'💪',desc:'Heavy strike ×2.2 + target Vulnerable(1)',cd:4,cost:50,effect:'power_strike'},
       {id:'rend',name:'Rend',type:'action',icon:'🗡',desc:'Slashing strike + Bleeding(3) + DEF-3(2t)',cd:3,cost:20,alt:true,effect:'rend'},
       {id:'second_wind',name:'Second Wind',type:'bonus',icon:'🫀',desc:'1d10+LVL heal',cd:0,cost:0,charges:3,effect:'second_wind'},
       {id:'parry',name:'Parry',type:'reaction',icon:'🛡',desc:'Halve next incoming damage',cd:0,cost:0,charges:3,effect:'parry'},

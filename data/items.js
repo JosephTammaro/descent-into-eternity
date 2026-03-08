@@ -33,7 +33,7 @@ const ITEMS = [
   {id:'ring',name:'Ring of Fortitude',icon:'💍',type:'accessory',slot:'ring',rarity:'uncommon',stats:{hp:20,def:2},value:55},
   {id:'ringAtk',name:'Ring of Striking',icon:'💍',type:'accessory',slot:'ring',rarity:'uncommon',stats:{atk:6},value:50},
   {id:'ringMag',name:'Ring of Arcana',icon:'💍',type:'accessory',slot:'ring',rarity:'rare',stats:{magAtk:10,hp:10},value:130},
-  {id:'amulet',name:'Amulet of Warding',icon:'📿',type:'accessory',slot:'ring',rarity:'rare',stats:{def:8,hp:20},value:145},
+  {id:'amulet',name:'Amulet of Warding',icon:'📿',type:'accessory',slot:'amulet',rarity:'rare',stats:{def:8,hp:20},value:145},
   // ── HELMETS ──────────────────────────────────────────────
   {id:'leatherCap',        name:'Leather Cap',          icon:'🎩',type:'helmet',   slot:'helmet', rarity:'common',   stats:{def:2,hp:4},            value:14, townOnly:true},
   {id:'ironCoif',          name:'Iron Coif',             icon:'⛑️',type:'helmet',   slot:'helmet', rarity:'common',   stats:{def:3},                  value:16},

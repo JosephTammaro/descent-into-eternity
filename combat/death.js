@@ -658,7 +658,7 @@ function showDeathScreen(){
   AUDIO.stopBGM();
 }
 
-function fireSpiritalWeapon(){
+function fireSpiritualWeapon(){
   if(!G.spiritualWeaponActive||!G.currentEnemy||G.currentEnemy.hp<=0)return;
   AUDIO.sfx.spiritualWeapon();
   const swDie=G.level>=5?10:8;
