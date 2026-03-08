@@ -300,7 +300,7 @@ function spawnEnemy(){
   // ── Scaling ───────────────────────────────────────────────
   const lvlScale    =1+(G.level-1)*0.09;
   const zoneProgress=1+Math.min(0.10,Math.floor((G.zoneKills||0)/3)*0.03);
-  const zoneLvl     =[1,5,8,12,16][G.zoneIdx]||1;
+  const zoneLvl     =[1,5,8,12,16,20,24,28][G.zoneIdx]||1;
   const overLvl     =Math.max(0,G.level-(zoneLvl+6));
   const catchUp     =Math.min(1.6,1+overLvl*0.08);
   const bossBonus   =isBoss?1.5:1;

@@ -593,7 +593,7 @@ function _talkToWanderer(w){
 function _showNPCLine(n){
   const zi=_townState(_townBossCount());
   const zLines=NPC_LINES[zi]||NPC_LINES[0];
-  let lines=n.lines||[];
+  let lines=typeof n.getLines==='function' ? n.getLines() : (n.lines||[]);
   if(typeof lines[0]==='string' && lines[0].startsWith('z_')){
     const key=lines[0]; lines=(zLines[key]||['...']).slice();
   }

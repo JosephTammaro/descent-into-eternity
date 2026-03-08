@@ -588,11 +588,11 @@ const PERMANENT_UPGRADES = [
   {id:'fighter_mastery',  name:'Fighter Mastery',  icon:'⚔️', desc:'+3 ATK, +10 HP',    category:'class', forClass:'fighter',  maxLvl:1, baseCost:100, costScale:1},
   {id:'wizard_mastery',   name:'Wizard Mastery',   icon:'📖', desc:'+5 MAG, +1 slot',   category:'class', forClass:'wizard',   maxLvl:1, baseCost:100, costScale:1},
   {id:'rogue_mastery',    name:'Rogue Mastery',    icon:'🗡️', desc:'+3 ATK, +2 crit',   category:'class', forClass:'rogue',    maxLvl:1, baseCost:100, costScale:1},
-  {id:'paladin_mastery',  name:'Paladin Mastery',  icon:'✝',  desc:'+2 ATK, +15 HP',    category:'class', forClass:'paladin',  maxLvl:1, baseCost:100, costScale:1},
-  {id:'ranger_mastery',   name:'Ranger Mastery',   icon:'🏹', desc:'+3 ATK, +1 crit',   category:'class', forClass:'ranger',   maxLvl:1, baseCost:100, costScale:1},
-  {id:'barbarian_mastery',name:'Barbarian Mastery', icon:'🪓', desc:'+4 ATK, +20 HP',   category:'class', forClass:'barbarian',maxLvl:1, baseCost:100, costScale:1},
-  {id:'cleric_mastery',   name:'Cleric Mastery',   icon:'☀',  desc:'+3 MAG, +15 HP',    category:'class', forClass:'cleric',   maxLvl:1, baseCost:100, costScale:1},
-  {id:'druid_mastery',    name:'Druid Mastery',    icon:'🌿', desc:'+3 MAG, +20 WS HP', category:'class', forClass:'druid',    maxLvl:1, baseCost:100, costScale:1},
+  {id:'paladin_mastery',  name:'Paladin Mastery',  icon:'✝',  desc:'+2 ATK, +2 DEF, +10 HP', category:'class', forClass:'paladin',  maxLvl:1, baseCost:100, costScale:1},
+  {id:'ranger_mastery',   name:'Ranger Mastery',   icon:'🏹', desc:'+3 ATK, +1 crit, +5 HP', category:'class', forClass:'ranger',   maxLvl:1, baseCost:100, costScale:1},
+  {id:'barbarian_mastery',name:'Barbarian Mastery', icon:'🪓', desc:'+4 ATK, +15 HP',        category:'class', forClass:'barbarian',maxLvl:1, baseCost:100, costScale:1},
+  {id:'cleric_mastery',   name:'Cleric Mastery',   icon:'☀',  desc:'+4 MAG, +15 HP',         category:'class', forClass:'cleric',   maxLvl:1, baseCost:100, costScale:1},
+  {id:'druid_mastery',    name:'Druid Mastery',    icon:'🌿', desc:'+3 MAG, +2 DEF, +10 HP', category:'class', forClass:'druid',    maxLvl:1, baseCost:100, costScale:1},
 ];
 
 function getPermanentUpgrades(slot){

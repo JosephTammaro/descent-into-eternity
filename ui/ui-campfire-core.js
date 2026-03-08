@@ -240,13 +240,6 @@ function cfDoRest(){
     if(el){el.textContent='✗ Already rested at this campfire!';el.style.color='var(--red2)';el.style.display='block';}
     return;
   }
-  // Check rest limit — only one long rest per campfire visit
-  const restLimit = null;
-  if(restLimit !== null && (G.restsThisZone||0) >= restLimit){
-    const el=document.getElementById('restResult');
-    if(el){el.textContent='✗ No rests remaining this zone!';el.style.color='var(--red2)';el.style.display='block';}
-    return;
-  }
   G._longRestUsed=true;
   G._noRestStreak=0; // Reset no-rest achievement streak
   // Rare Event: Last Campfire weakens this rest to 50%

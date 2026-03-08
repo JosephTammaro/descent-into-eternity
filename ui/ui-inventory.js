@@ -125,7 +125,6 @@ function renderEquipSlots(){
   document.getElementById('equipSlots').innerHTML=slotsHTML+(setBonusHTML?`<div style="grid-column:1/-1;">${setBonusHTML}</div>`:'');
 }
 
-function renderUpgrades(){ /* removed — upgrades panel replaced by status panel */ }
 
 function openItemModal(idx){
   selectedItemIdx=idx;
