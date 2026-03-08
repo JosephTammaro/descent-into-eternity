@@ -148,7 +148,7 @@ function dealToEnemy(dmg,crit,source){
   // Predator: +15% damage vs enemies below 50% HP
   if(G._branchPredator&&G.currentEnemy.hp<=G.currentEnemy.maxHp*0.5) dmg=Math.ceil(dmg*1.15);
   // Legendary Grace — God-Slayer's Core: +20% damage vs bosses
-  if(G._graceGodslayer&&G.currentEnemy.isBoss) dmg=Math.ceil(dmg*1.12);
+  if(G._graceGodslayer&&G.currentEnemy.isBoss) dmg=Math.ceil(dmg*1.20);
   // Rare Event: Empress's Lullaby — +25% damage vs Malvaris
   if(G._rareEventFlags.empressBossBonus&&G.currentEnemy.isBoss&&G.currentEnemy.name==='Malvaris, The Hollow Empress') dmg=Math.ceil(dmg*1.25);
   // Legendary Grace — The First Blade: first attack each fight deals double damage

@@ -177,8 +177,7 @@ function updateSlotData(slot, fn){
 // ── Serialize: strip mid-combat transient fields ──────────
 
 function serializeState(g){
-  const OMIT = new Set(['currentEnemy','reactionPending','_metamagicTwinUsed',
-    '_overflowingFontUsed','_longRestUsed','_dyingFlag']);
+  const OMIT = new Set(['currentEnemy','reactionPending','_longRestUsed','_dyingFlag']);
   const copy = {};
   for(const [k,v] of Object.entries(g)){
     if(OMIT.has(k)) continue;

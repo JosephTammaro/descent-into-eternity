@@ -1,6 +1,7 @@
 // ================================================================
-// combat.js — Combat System
-// Skill use, enemy AI, reactions, damage, death, rewards
+// helpers.js — Combat Helpers
+// getSpellPower, addOffensiveStat, CASTER_CLASSES, DEX_CLASSES,
+// spell slot restore, proficiency bonus helpers
 // Descent into Eternity
 // ================================================================
 

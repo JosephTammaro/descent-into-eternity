@@ -94,7 +94,7 @@ function _getRecentLog(n) {
   try {
     const logEl = document.getElementById('battleLog');
     if (!logEl) return [];
-    const entries = logEl.querySelectorAll('.log-entry, div, p, span');
+    const entries = logEl.querySelectorAll('.bl-p,.bl-e,.bl-s,.bl-l,.bl-c,.bl-up,.log-telegraph');
     const lines = [];
     entries.forEach(el => { if (el.textContent.trim()) lines.push(el.textContent.trim()); });
     return lines.slice(-n);

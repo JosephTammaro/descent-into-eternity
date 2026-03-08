@@ -302,7 +302,7 @@ function updateSetBonuses(){
 }
 
 function dropLoot(enemy){
-  // ── CLASS SET ITEM DROP (zone 3+, ~8% chance) ────────────
+  // ── CLASS SET ITEM DROP (zone 3+, 5% chance) ────────────
   if(G.zoneIdx>=3&&Math.random()<0.05){
     const classSetItems=ITEMS.filter(i=>i.forClass===G.classId&&i.set);
     // Don't drop duplicates already in inventory or equipped

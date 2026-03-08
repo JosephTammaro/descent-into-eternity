@@ -254,7 +254,7 @@ function cfDoRest(){
   // Permanent upgrade: Restful adds +10% per level to rest heal
   const restPct=Math.min(1.0, baseRestPct + (G._campfireHealBonus || 0));
   if(G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken) delete G._rareEventFlags.lastCampfireWeaken;
-  G.hp=Math.min(G.maxHp, Math.max(G.hp, Math.floor(G.maxHp*restPct))); // Restore to 60% HP (or 40% if weakened)
+  G.hp=Math.min(G.maxHp, Math.max(G.hp, Math.floor(G.maxHp*restPct))); // Restore to 75% HP (or 40% if weakened by Last Campfire event); won't reduce HP if already above threshold
   G.conditions=[];G.conditionTurns={};
   // Restore all skill charges on long rest
   G.skillCharges={};

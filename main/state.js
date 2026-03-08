@@ -1,7 +1,7 @@
 // ================================================================
-// main.js — Game State, Core Logic, Game Flow
-// Initializes G, handles screens, class select, zone flow,
-// HUD rendering, companions, enemy spawning
+// state.js — Global State
+// Defines G, newState(), roll(), md(), profFor(), xpFor(),
+// applyPermanentUpgrades()
 // Descent into Eternity
 // ================================================================
 

@@ -372,7 +372,7 @@ const Anim = {
     const cid = classId || (G && G.classId);
     if(!cid) return;
     if(cid === 'druid' && G && G.wildShapeHp > 0) return;
-    // Image sprite classes are animated by ui.js startPlayerAnim()
+    // Image sprite classes are animated by ui-campfire-core.js startPlayerAnim()
     if(window.hasImageSprite && window.hasImageSprite(cid)){
       _frameClassId = cid; // track for attack/hit pause/resume
       _addIdleClass(cid);

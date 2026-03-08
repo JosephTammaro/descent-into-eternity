@@ -1,5 +1,5 @@
 // ================================================================
-// sprites.js — PNG Image Sprite System
+// sprite-engine.js — PNG Image Sprite System
 // Self-contained: preloads, renders, and animates image sprites.
 // Falls back to pixel-grid renderSprite() for classes without PNGs.
 // Descent into Eternity
