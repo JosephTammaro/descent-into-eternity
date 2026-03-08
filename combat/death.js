@@ -161,7 +161,9 @@ function onEnemyDied(){
   const xp=Math.floor((e.xp||0)*G.xpMult);
   const packSize=G.currentEnemies?G.currentEnemies.length:1;
   const packGoldMult=packSize<=1?1:packSize===2?0.6:packSize===3?0.4:0.3;
-  const gold=Math.floor(e.gold*(G.classId==='rogue'&&G.talents.includes('Luck')?G.goldMult*1.10:G.goldMult)*packGoldMult);
+  // keepersMantle: all gold drops +50%
+  const _keepersMult=(typeof hasEquippedItem==='function'&&hasEquippedItem('keepersMantle'))?1.5:1;
+  const gold=Math.floor(e.gold*(G.classId==='rogue'&&G.talents.includes('Luck')?G.goldMult*1.10:G.goldMult)*packGoldMult*_keepersMult);
   G.xp+=xp; G.gold+=gold; G.totalGold+=gold; G.totalKills++;
   G._fightGoldEarned=(G._fightGoldEarned||0)+gold;
   if(G.classId==='rogue') G._lifetimeGoldRogue=(G._lifetimeGoldRogue||0)+gold;
@@ -759,6 +761,33 @@ function onPlayerDied(){
   if(G.classId==='cleric'&&G._undyingLight&&!G._undyingLightUsed){
     G._undyingLightUsed=true;G.hp=1;G._dyingFlag=false;
     log('✝️ Undying Light: stabilized at 1 HP! (once per rest)','s');return;
+  }
+  // Branch: Death Defiant — survive one killing blow at 1 HP (once per branch run, flag consumed)
+  if(G._branchDeathDefiant){
+    G._branchDeathDefiant=false;
+    G.hp=1;
+    log('💀 Death Defiant: survived a killing blow at 1 HP!','s');
+    if(typeof renderAll==='function') renderAll();
+    return;
+  }
+  // Phoenix Feather: revive once at 30% HP (item consumed on use)
+  if(typeof hasEquippedPassive==='function'&&hasEquippedPassive('phoenixRevive')){
+    // Find and remove the feather from equipped slots
+    for(const slot of Object.keys(G.equipped)){
+      if(G.equipped[slot]&&G.equipped[slot].passive&&G.equipped[slot].passive.id==='phoenixRevive'){
+        if(typeof removeItemStats==='function') removeItemStats(G.equipped[slot]);
+        G.equipped[slot]=null;
+        break;
+      }
+    }
+    G.hp=Math.max(1,Math.floor(G.maxHp*0.3));
+    G._fightDamageTaken=true;
+    if(typeof updateUnlockStats==='function') updateUnlockStats('phoenix_revive');
+    if(typeof checkUnlocks==='function') checkUnlocks();
+    AUDIO.sfx.secondWind();
+    log('🪶 Phoenix Feather: risen from the ashes at 30% HP! (consumed)','s');
+    if(typeof renderAll==='function') renderAll();
+    return; // death cancelled
   }
   G._dyingFlag=true;
   if(enemyTurnTimeout){clearTimeout(enemyTurnTimeout);enemyTurnTimeout=null;}

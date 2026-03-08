@@ -22,7 +22,12 @@ function useSkill(skillId){
   if(sk.type==='bonus'&&G.bonusUsed){log('Bonus action already used!','s');return;}
   if(sk.type==='reaction'&&G.reactionUsed){log('Reaction already used!','s');return;}
   // Charge check for bonus/reaction skills
-  if(sk.charges&&(G.skillCharges[sk.id]||0)<=0){log(sk.name+' has no charges left — rest at campfire to restore!','s');return;}
+  if(sk.charges&&(G.skillCharges[sk.id]||0)<=0){
+    // Battle Master Relentless: once per rest, Maneuver Strike or Rally can be used with 0 charges
+    if(!(G.subclassId==='battle_master'&&G._battleMasterRelentless&&(sk.id==='maneuver_strike'||sk.id==='rally'))){
+      log(sk.name+' has no charges left — rest at campfire to restore!','s');return;
+    }
+  }
   const now=Date.now();
   const cdRaw=G.skillCooldowns[sk.id];
   // Cleric capstone — Vessel of the Divine: Sacred Flame and Channel Divinity have no cooldowns
@@ -69,7 +74,11 @@ function useSkill(skillId){
   if(G.classId==='fighter'&&G._battleRhythm&&sk.effect==='power_strike'&&G.skillCooldowns['power_strike']){
     G.skillCooldowns['power_strike']-=1000;
   }
-  if(sk.charges&&G.skillCharges[sk.id]>0) G.skillCharges[sk.id]--;
+  if(sk.charges){
+    const isRelentlessFree=G.subclassId==='battle_master'&&G._battleMasterRelentless&&(sk.id==='maneuver_strike'||sk.id==='rally');
+    if(isRelentlessFree){G._battleMasterRelentless=false;log('⚔ Relentless: free '+sk.name+' (charge preserved)!','s');}
+    else if(G.skillCharges[sk.id]>0) G.skillCharges[sk.id]--;
+  }
   if(sk.type==='action') G.actionUsed=true;
   if(sk.type==='bonus') G.bonusUsed=true;
   if(sk.type==='reaction') G.reactionUsed=true;
@@ -144,6 +153,10 @@ function doSkillEffect(effect, sk){
         r.dmg+=roll(6)+(G._apexCompanion?roll(6):0);
       }
       dealToEnemy(r.dmg,r.crit,'Attack');
+      // Vengeance Relentless Avenger: hitting marked target restores 1 Holy Power
+      if(G.classId==='paladin'&&G.subclassId==='vengeance'&&G._vengeanceMarked>=0&&G.targetIdx===G._vengeanceMarked&&G.currentEnemy&&G.currentEnemy.hp>0){
+        G.res=Math.min(G.resMax,G.res+1);log('⚔️ Relentless Avenger: +1 Holy Power!','s');
+      }
       // ── Dual Attack (Level 10+ martials) ──
       if(G.level>=10&&['fighter','barbarian','paladin','ranger'].includes(G.classId)&&G.currentEnemy&&G.currentEnemy.hp>0){
         log('⚔⚔ Dual Strike!','s');
@@ -214,6 +227,7 @@ function doSkillEffect(effect, sk){
           log('⚔ Iron Legion: second strike fires!','l');
         },380);
       }
+      setCooldown('power_strike',4);
       break;}
     case 'second_wind':{AUDIO.sfx.secondWind();const h=roll(10)+md(G.stats.con);heal(h,'Second Wind (1d10+CON)');
       // Relentless Advance: Second Wind also removes one negative condition
@@ -228,6 +242,8 @@ function doSkillEffect(effect, sk){
     case 'fire_bolt':{AUDIO.sfx.burn();
       let fbd=roll(10)+roll(10)+getSpellPower()+(G.subclassId==='evoker'?roll(6):0);
       if(G._overchannelActive){fbd=10+10+getSpellPower()+(G.subclassId==='evoker'?6:0);G._overchannelActive=false;log('⚡ Overchannel: Fire Bolt maximized!','s');}
+      // ashprinceMantle: +25% fire damage
+      if(typeof hasEquippedItem==='function'&&hasEquippedItem('ashprinceMantle'))fbd=Math.ceil(fbd*1.25);
       // Brilliant Focus: +INT mod to spell damage
       if(G.classId==='wizard'&&G._brilliantFocus)fbd+=Math.max(0,md(G.stats.int));
       // Overload: spells penetrate 30% of enemy DEF
@@ -319,6 +335,8 @@ function doSkillEffect(effect, sk){
       break;
     case 'sneak_attack':{
       AUDIO.sfx.sneak();const r=calcPlayerDmg();
+      // Thief Supreme Sneak: if unhit this fight, auto-crit
+      if(G.subclassId==='thief'&&G._thiefUnseen){r.crit=true;G._thiefUnseen=false;log('🗡️ Supreme Sneak: unhit — guaranteed crit!','s');}
       const sneakDice=2+Math.floor(G.level/5)+(G.talents.includes('Death Mark')?1:0);
       for(let i=0;i<sneakDice;i++)r.dmg+=roll(6);
       // Exploit Weakness: +50% damage vs Poisoned or Bleeding enemies

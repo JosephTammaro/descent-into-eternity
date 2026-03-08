@@ -232,8 +232,9 @@ function useConsumable(){
   if(G.currentEnemy&&G.bonusUsed){log('Bonus action already used this turn!','s');closeItemModal();return;}
   const item=G.inventory[selectedItemIdx];
   if(!item)return;
-  if(item.stats.heal){heal(item.stats.heal,item.name+' 🧪');}
-  if(item.id==='antidote'){removeCondition('Poisoned');log('Poison cleared!','s');}
+  if(item.stats.heal){const healAmt=G._branchSwiftHands?Math.ceil(item.stats.heal*1.5):item.stats.heal;heal(healAmt,item.name+' 🧪');}
+  if(item.id==='antidote'||item.stats.clearPoison){removeCondition('Poisoned');log('Poison cleared!','s');}
+  if(item.stats.clearBurn){removeCondition('Burning');log('Burning cleared!','s');}
   item.qty=(item.qty||1)-1;
   if(item.qty<=0)G.inventory[selectedItemIdx]=null;
   if(G.currentEnemy)G.bonusUsed=true; // costs bonus action in combat only
@@ -248,12 +249,25 @@ function sellItem(){
   log('Sold '+item.name,'l'); closeItemModal(); renderAll();
 }
 
+// ── Equipped item helpers (used by combat code for passive effects) ──────────
+function hasEquippedItem(id){
+  return Object.values(G.equipped||{}).some(i=>i&&i.id===id);
+}
+function hasEquippedPassive(passiveId){
+  return Object.values(G.equipped||{}).some(i=>i&&i.passive&&i.passive.id===passiveId);
+}
+function getEquippedPassive(passiveId){
+  return Object.values(G.equipped||{}).find(i=>i&&i.passive&&i.passive.id===passiveId)||null;
+}
+
 function _applyStats(stats,sign){
   if(stats.atk)G.atk+=stats.atk*sign;
   if(stats.def)G.def+=stats.def*sign;
   if(stats.hp){G.maxHp+=stats.hp*sign;if(sign>0)G.hp=Math.min(G.maxHp,G.hp+stats.hp);else G.hp=Math.min(G.hp,G.maxHp);}
   if(stats.magAtk){G.magBonus=Math.max(0,(G.magBonus||0)+stats.magAtk*sign);}
   if(stats.crit)G.critBonus=Math.max(0,(G.critBonus||0)+stats.crit*sign);
+  // goldMult: additive bonus on top of base 1.0 (e.g. merchantLedger +0.15)
+  if(stats.goldMult)G.goldMult=Math.max(0.1,(G.goldMult||1)+stats.goldMult*sign);
 }
 function applyItemStats(item){_applyStats(item.stats,1);updateSetBonuses();}
 function removeItemStats(item){_applyStats(item.stats,-1);updateSetBonuses();}

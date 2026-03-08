@@ -48,16 +48,26 @@ function doEnemyTurn(){
     if(!G.conditionTurns)G.conditionTurns={};
     // Apply tick damage before ticking down
     if(G.conditions.includes('Poisoned')){
-      const poisonDmg=roll(4)+G.zoneIdx;
-      if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=poisonDmg;spawnFloater(poisonDmg,'dmg',false);}
-      AUDIO.sfx.poison();
-      log('☠ Poison: '+poisonDmg+' (1d4+zone)!','c');
+      // sporecloak: immune to Poison — condition can't be added, but guard the tick too
+      if(typeof hasEquippedItem==='function'&&hasEquippedItem('sporecloak')){
+        removeCondition('Poisoned');log('🍄 Sporecloak: Poison cleansed!','s');
+      } else {
+        const poisonDmg=roll(4)+G.zoneIdx;
+        if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=poisonDmg;spawnFloater(poisonDmg,'dmg',false);}
+        AUDIO.sfx.poison();
+        log('☠ Poison: '+poisonDmg+' (1d4+zone)!','c');
+      }
     }
     if(G.conditions.includes('Burning')&&!(G.sx&&G.sx.immuneConditions)){
-      const burnDmg=G._crimsonBrand?12:roll(6)+G.zoneIdx;
-      if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=burnDmg;spawnFloater(burnDmg,'dmg',false);}
-      AUDIO.sfx.burn();
-      log('🔥 Burning: '+burnDmg+' (1d6+zone)!','c');
+      // ashprinceMantle: immune to Burning — guard the tick too
+      if(typeof hasEquippedItem==='function'&&hasEquippedItem('ashprinceMantle')){
+        removeCondition('Burning');log("🔥 Ash Prince's Mantle: Burning cleansed!",'s');
+      } else {
+        const burnDmg=G._crimsonBrand?12:roll(6)+G.zoneIdx;
+        if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=burnDmg;spawnFloater(burnDmg,'dmg',false);}
+        AUDIO.sfx.burn();
+        log('🔥 Burning: '+burnDmg+' (1d6+zone)!','c');
+      }
     }
     if(G.hp<=0){onPlayerDied();return;}
     if(G.hp>0 && G.hp<Math.floor(G.maxHp*0.5)) G._ironmanFlag=false;
@@ -864,6 +874,7 @@ function doEnemyAttack(e){
     if(typeof _dev_godMode==='undefined'||!_dev_godMode){
     G.hp-=dmg;
     G._fightDamageTaken=true;
+    if(G._thiefUnseen) G._thiefUnseen=false; // Supreme Sneak: no longer unhit
     if(G.hp>0 && G.hp<Math.floor(G.maxHp*0.5)) G._ironmanFlag=false;
     // ── Chroma tracking: cleric below 25% HP ──
     if(G.classId==='cleric'&&G.hp>0&&G.hp<Math.floor(G.maxHp*0.25)) G._droppedBelow25=true;
@@ -943,6 +954,15 @@ function doEnemyAttack(e){
 
 // Routes damage through Wild Shape bear HP buffer before hitting player HP
 function dealDamageToPlayer(dmg, sourceName){
+  // tombwardenSeal: Undead enemies deal 15% less damage
+  if(G.currentEnemy&&G.currentEnemy.isUndead&&typeof hasEquippedItem==='function'&&hasEquippedItem('tombwardenSeal'))
+    dmg=Math.ceil(dmg*0.85);
+  // veilOfShadows: 10% chance to dodge the first hit each fight
+  if(G._firstDodgeAvailable&&typeof hasEquippedPassive==='function'&&hasEquippedPassive('firstDodge')){
+    const fdPassive=getEquippedPassive('firstDodge');
+    G._firstDodgeAvailable=false;
+    if(fdPassive&&Math.random()<fdPassive.passive.pct){AUDIO.sfx.miss();log('🌑 Veil of Shadows: dodged the first attack!','s');return;}
+  }
   // War Domain subclass: take 3 less damage from all sources
   if(G.subclassId==='war') dmg=Math.max(1,dmg-3);
   // Avenging Angel (Vengeance Paladin): below 30% HP, 5 DR

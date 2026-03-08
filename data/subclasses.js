@@ -30,7 +30,7 @@ const SUBCLASSES = {
       'Know Your Enemy: +2 ATK for rounds 1-2 as you read their style',
       'Relentless: once per rest, one Maneuver Strike or Rally costs 0 charges',
     ],
-    apply(G){},
+    apply(G){ G._battleMasterRelentless=true; },
   },
 
   // ── WIZARD ───────────────────────────────────────────────

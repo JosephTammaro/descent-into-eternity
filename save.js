@@ -48,6 +48,8 @@ function emptySlotData(){
     deathHistory: [],
     // Tutorial flags
     _dungeonTutorialShown: false,
+    // Unlock system stats (track cross-run milestones for UNLOCKS conditions)
+    unlocks: { stats: {} },
   };
 }
 
@@ -101,6 +103,9 @@ function loadSlotData(slot){
     if(d.lifetimePoisonsDruid===undefined)       d.lifetimePoisonsDruid = 0;
     if(!d.deathHistory)                          d.deathHistory = [];
     if(d._dungeonTutorialShown===undefined)      d._dungeonTutorialShown = false;
+    // Unlock system migration
+    if(!d.unlocks)                               d.unlocks = { stats: {} };
+    if(!d.unlocks.stats)                         d.unlocks.stats = {};
     return d;
   } catch(e){ return null; }
 }
@@ -165,6 +170,122 @@ function autoSave(){
   saveGame(activeSaveSlot);
 }
 
+// ══════════════════════════════════════════════════════════
+//  UNLOCK STAT TRACKING — feeds UNLOCKS conditions in unlocks.js
+//  Called from throughout the codebase with typeof guards.
+//  Events: boss_kill, zone_clear, zone5_reached, zone8_reached,
+//          boss8_beaten, flawless, campfire, death, salvage,
+//          level_up, rare_event, farewell, phoenix_revive
+// ══════════════════════════════════════════════════════════
+
+function updateUnlockStats(event, data){
+  if(!activeSaveSlot) return;
+  updateSlotData(activeSaveSlot, d=>{
+    if(!d.unlocks) d.unlocks = { stats:{} };
+    if(!d.unlocks.stats) d.unlocks.stats = {};
+    const s = d.unlocks.stats;
+    // Ensure all array stats exist
+    if(!s.classesReachedZone5)   s.classesReachedZone5  = [];
+    if(!s.classesReachedZone8)   s.classesReachedZone8  = [];
+    if(!s.classesBeatenBoss8)    s.classesBeatenBoss8   = [];
+    if(!s.uniqueModifiersCleared)s.uniqueModifiersCleared= [];
+    // Ensure all counter stats exist
+    if(!s.totalRareEvents)       s.totalRareEvents       = 0;
+    if(!s.highestLevel)          s.highestLevel          = 0;
+    if(!s.zonesWithoutRest)      s.zonesWithoutRest      = 0;
+    if(!s.famineZonesCleared)    s.famineZonesCleared    = 0;
+    if(!s.totalDeaths)           s.totalDeaths           = 0;
+    if(!s.totalSalvages)         s.totalSalvages         = 0;
+    if(!s.totalCampfires)        s.totalCampfires        = 0;
+    if(s.fastestBossKill===undefined) s.fastestBossKill  = 9999;
+    if(!s.mythicZonesCleared)    s.mythicZonesCleared    = 0;
+    if(!s.ironmanZones)          s.ironmanZones          = 0;
+    if(!s.phoenixRevives)        s.phoenixRevives        = 0;
+    if(!s.farewellSeen)          s.farewellSeen          = false;
+
+    switch(event){
+      case 'boss_kill':{
+        const rounds=(data&&data.rounds)||999;
+        if(rounds < s.fastestBossKill) s.fastestBossKill=rounds;
+        // Track per-zone modifier info at moment of boss kill (not zone_clear, to avoid double-count)
+        if(typeof G!=='undefined'&&G){
+          if(G._activeModifier&&G._activeModifier.id){
+            if(!s.uniqueModifiersCleared.includes(G._activeModifier.id))
+              s.uniqueModifiersCleared.push(G._activeModifier.id);
+            // Mythic modifier zone clear
+            if(G._activeModifier.id==='mythic') s.mythicZonesCleared++;
+            // Famine modifier: any modifier with noGold effect
+            if(G._activeModifier.effects&&G._activeModifier.effects.noGold) s.famineZonesCleared++;
+          }
+          // Zone cleared without resting (G._longRestUsed is reset by showCampfire each visit)
+          if(!G._longRestUsed) s.zonesWithoutRest++;
+        }
+        break;
+      }
+      case 'zone5_reached':
+        if(typeof G!=='undefined'&&G&&G.classId&&!s.classesReachedZone5.includes(G.classId))
+          s.classesReachedZone5.push(G.classId);
+        break;
+      case 'zone8_reached':
+        if(typeof G!=='undefined'&&G&&G.classId&&!s.classesReachedZone8.includes(G.classId))
+          s.classesReachedZone8.push(G.classId);
+        break;
+      case 'boss8_beaten':
+        if(typeof G!=='undefined'&&G&&G.classId&&!s.classesBeatenBoss8.includes(G.classId))
+          s.classesBeatenBoss8.push(G.classId);
+        break;
+      case 'flawless':
+        s.ironmanZones++;
+        break;
+      case 'campfire':
+        s.totalCampfires++;
+        break;
+      case 'death':
+        s.totalDeaths++;
+        break;
+      case 'salvage':
+        s.totalSalvages++;
+        break;
+      case 'level_up':
+        if(typeof G!=='undefined'&&G&&(G.level||0)>s.highestLevel) s.highestLevel=G.level;
+        break;
+      case 'rare_event':
+        s.totalRareEvents++;
+        break;
+      case 'farewell':
+        s.farewellSeen=true;
+        break;
+      case 'phoenix_revive':
+        s.phoenixRevives++;
+        break;
+    }
+  });
+}
+
+// ── Check all UNLOCKS conditions; push newly met IDs into slot.achievements ──
+function checkUnlocks(){
+  if(!activeSaveSlot||typeof UNLOCKS==='undefined') return;
+  const d = loadSlotData(activeSaveSlot);
+  if(!d) return;
+  if(!d.achievements) d.achievements=[];
+  let changed=false;
+  for(const ul of UNLOCKS){
+    if(d.achievements.includes(ul.id)) continue;
+    try{
+      if(ul.check(d, typeof G!=='undefined'?G:null)){
+        d.achievements.push(ul.id);
+        changed=true;
+        if(typeof log==='function') log('🔓 Unlocked: '+ul.name+'!','s');
+      }
+    }catch(e){}
+  }
+  if(changed){
+    try{ localStorage.setItem(getSaveKey(activeSaveSlot), JSON.stringify(d)); }catch(e){}
+    // Sync into G so map.js modifier gating sees the new unlocks immediately
+    if(typeof G!=='undefined'&&G) G.unlockedAchievements=d.achievements.slice();
+  }
+}
+
 function updateSlotData(slot, fn){
   slot = slot || activeSaveSlot;
   if(!slot) return;
@@ -177,7 +298,15 @@ function updateSlotData(slot, fn){
 // ── Serialize: strip mid-combat transient fields ──────────
 
 function serializeState(g){
-  const OMIT = new Set(['currentEnemy','reactionPending','_longRestUsed','_dyingFlag']);
+  // currentEnemy: reference, reconstructed on load
+  // _afterLevelUpCallback: function reference — cannot serialize
+  // _nethrixShuffleOrder / _auranthosBlindedBtns: render-ephemeral boss flags
+  // _dyingFlag: transient death-in-progress sentinel
+  const OMIT = new Set([
+    'currentEnemy','_dyingFlag',
+    '_afterLevelUpCallback',
+    '_nethrixShuffleOrder','_auranthosBlindedBtns',
+  ]);
   const copy = {};
   for(const [k,v] of Object.entries(g)){
     if(OMIT.has(k)) continue;
@@ -188,9 +317,6 @@ function serializeState(g){
   copy.actionUsed   = false;
   copy.bonusUsed    = false;
   copy.reactionUsed = false;
-  // Render-ephemeral boss flags — only valid during the exact turn they were set
-  delete copy._nethrixShuffleOrder;
-  delete copy._auranthosBlindedBtns;
   return copy;
 }
 

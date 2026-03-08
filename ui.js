@@ -27,6 +27,12 @@ function addCondition(cond,turns=2){
   if(cond==='Restrained'&&G.sx&&G.sx.immuneRestrained>0){log('😇 Aura of Protection blocks Restrained!','s');return;}
   // Aura of Devotion (Devotion Paladin): permanent immunity to Charmed
   if(cond==='Charmed'&&G.classId==='paladin'&&G.subclassId==='devotion'){log('😇 Aura of Devotion: Charmed immunity!','s');return;}
+  // sporecloak: immune to Poisoned
+  if(cond==='Poisoned'&&typeof hasEquippedItem==='function'&&hasEquippedItem('sporecloak')){log('🍄 Sporecloak: immune to Poison!','s');return;}
+  // ashprinceMantle: immune to Burning
+  if(cond==='Burning'&&typeof hasEquippedItem==='function'&&hasEquippedItem('ashprinceMantle')){log('🔥 Ash Prince\'s Mantle: immune to Burning!','s');return;}
+  // ironCrown: immune to Frightened
+  if(cond==='Frightened'&&typeof hasEquippedPassive==='function'&&hasEquippedPassive('fearImmune')){log('👑 Iron Crown: immune to Frightened!','s');return;}
   if(!G.conditions.includes(cond)){
     G.conditions.push(cond);
     if(!G.conditionTurns)G.conditionTurns={};

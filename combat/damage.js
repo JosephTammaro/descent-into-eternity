@@ -75,6 +75,11 @@ function calcPlayerDmg(){
   if(G._starryFormActive){const sf=roll(8)+Math.max(0,md(G.stats&&G.stats.wis?G.stats.wis:10));base+=sf;log('⭐ Starry Form: +'+sf+' radiant!','s');}
   // Rampage keystone: +3 bonus damage per kill stack (max 5)
   if(G._keystoneRampage&&G._rampageStacks>0){const r=G._rampageStacks*3;base+=r;log('🔥 Rampage: +'+r+' damage!','s');}
+  // namelessBlade (berserkerBlade): +1% damage per 1% HP missing
+  if(typeof hasEquippedPassive==='function'&&hasEquippedPassive('berserkerBlade')&&G.maxHp>0){
+    const missingPct=Math.max(0,1-(G.hp/G.maxHp));
+    if(missingPct>0)base=Math.ceil(base*(1+missingPct));
+  }
   const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)-(G.currentEnemy._defDebuff||0)):0;
   const _wd={fighter:10,barbarian:12,paladin:8,cleric:8,druid:6,rogue:6,ranger:8,wizard:6}[G.classId]||6;
   let dmg=Math.max(1,base-Math.floor(def/2)+roll(_wd)-Math.floor(_wd/2));
@@ -153,6 +158,11 @@ function dealToEnemy(dmg,crit,source){
   if(G._rareEventFlags.empressBossBonus&&G.currentEnemy.isBoss&&G.currentEnemy.name==='Malvaris, The Hollow Empress') dmg=Math.ceil(dmg*1.25);
   // Legendary Grace — The First Blade: first attack each fight deals double damage
   if(G._graceFirstBlade&&!G._graceFirstBladeUsed){G._graceFirstBladeUsed=true;dmg=Math.ceil(dmg*1.5);log('🗡️ The First Blade: +50% DAMAGE!','s');}
+  // crimsonBrandAmulet: first attack each fight deals +50% damage
+  if(!G._crimsonBrandUsed&&typeof hasEquippedItem==='function'&&hasEquippedItem('crimsonBrandAmulet')){G._crimsonBrandUsed=true;dmg=Math.ceil(dmg*1.5);log("📿 Vexara's Brand: first strike +50%!",'s');}
+  // sporecloak: Poisoned enemies take +20% damage from you
+  if(G.currentEnemy&&G.currentEnemy.conditions&&G.currentEnemy.conditions.find(c=>c.name==='Poisoned')&&typeof hasEquippedItem==='function'&&hasEquippedItem('sporecloak'))
+    dmg=Math.ceil(dmg*1.20);
   // Tutorial: cap per-hit damage so the Training Dummy survives long enough to practice on
   if(G.currentEnemy.isTutorial) dmg=Math.min(dmg,10);
   // ── Valdris — Frozen Bulwark: 50% dmg reduction while Frozen Soldiers are alive ──
@@ -208,6 +218,24 @@ function dealToEnemy(dmg,crit,source){
     }
   }
   checkObjectiveProgress('damage_dealt',dmg);
+  // ── Unlockable item passives ───────────────────────────────────────────────
+  if(typeof hasEquippedPassive==='function'){
+    // bloodhunterFang: lifesteal 8% of damage dealt
+    const lsPassive=getEquippedPassive('lifesteal');
+    if(lsPassive&&dmg>0){const lsHeal=Math.max(1,Math.ceil(dmg*lsPassive.passive.pct));heal(lsHeal,'🦷 Lifesteal');}
+    // ringOfEchoes: 5% chance to repeat this damage
+    const echoPassive=getEquippedPassive('echo');
+    if(echoPassive&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0&&Math.random()<echoPassive.passive.pct){
+      const echoDmg=dmg;G.currentEnemy.hp-=echoDmg;
+      spawnFloater(echoDmg,'dmg',true);log('🔔 Ring of Echoes: damage echoes for '+echoDmg+'!','s');
+    }
+    // gauntletsOfRuin: take 3 self-damage per attack
+    const ruinPassive=getEquippedPassive('selfDmg');
+    if(ruinPassive&&dmg>0&&(typeof _dev_godMode==='undefined'||!_dev_godMode)){
+      const sd=ruinPassive.passive.val||3;G.hp=Math.max(1,G.hp-sd);
+      spawnFloater(sd,'dmg',false);log('🔥 Gauntlets of Ruin: -'+sd+' self-damage!','c');
+    }
+  }
   updateEnemyBar();
 }
 

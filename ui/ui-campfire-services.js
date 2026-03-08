@@ -775,7 +775,8 @@ function quickUsePotion(){
   const idx=G.inventory.findIndex(i=>i&&(i.id==='hpPotion'||i.id==='strongPotion'||i.id==='elixir'));
   if(idx===-1){log('No potions in inventory!','s');return;}
   const item=G.inventory[idx];
-  heal(item.stats.heal,item.name+' 🧪');
+  const qpHeal=G._branchSwiftHands?Math.ceil(item.stats.heal*1.5):item.stats.heal;
+  heal(qpHeal,item.name+' 🧪');
   item.qty=(item.qty||1)-1;
   if(item.qty<=0)G.inventory[idx]=null;
   G.bonusUsed=true; // costs your bonus action

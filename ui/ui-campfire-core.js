@@ -254,6 +254,8 @@ function cfDoRest(){
   CLASSES[G.classId].skills.forEach(sk=>{ if(sk.charges) G.skillCharges[sk.id]=sk.charges; });G.sx={};G.raging=false;G.hunterMarked=false;G.concentrating=null;
   G.wildShapeHp=0;G.wildShapeActive=false;G.spiritualWeaponActive=false;G.spiritualWeaponTurns=0;
   G._undyingFuryUsed=false;G._divineInterventionUsed=false;G._ultimateUsed=false;
+  // Restore Battle Master Relentless once per rest
+  if(G.subclassId==='battle_master') G._battleMasterRelentless=true;
   // Class campfire actions reset on rest (so they show as available next campfire)
   G._inscribeScroll=false;G._inscribeScrollId=null;G._inscribeScrollSpell=null;G._inscribeScrollMenu=false;
   G._caseTarget=false;G._warReadiness=false;G._oathRenewal=false;

@@ -50,7 +50,15 @@ function setPlayerTurn(isPlayer){
     // Starry Form tick (Stars Druid)
     if(G._starryFormActive&&G._starryFormTurns>0){
       G._starryFormTurns--;
-      if(G._starryFormTurns<=0){G._starryFormActive=false;log('⭐ Starry Form fades.','s');}
+      if(G._starryFormTurns<=0){
+        G._starryFormActive=false;log('⭐ Starry Form fades.','s');
+        // Twinkling Constellations: all cooldowns reduced by 1 turn when form ends
+        if(G.subclassId==='stars'){
+          const _now=Date.now();
+          for(const _cd in G.skillCooldowns){if(typeof G.skillCooldowns[_cd]==='number')G.skillCooldowns[_cd]=Math.max(_now,G.skillCooldowns[_cd]-1000);}
+          log('🌟 Twinkling Constellations: all cooldowns -1!','s');
+        }
+      }
     }
     // Phantasmal Force (Illusionist Wizard): 2d6+INT psychic/turn while target is Frightened
     if(G._phantasmalTarget>=0&&G.currentEnemies){
@@ -505,6 +513,7 @@ function spawnEnemy(){
   G._beastReactionUsed=false;
   G._warPriestUsed=false;
   G._familiarTurns=0;
+  G._familiarActive=false;
   G._thiefUnseen=true;
   G._starryFormActive=false; G._starryFormTurns=0;
   G._shadowDiveActive=false;
@@ -517,7 +526,9 @@ function spawnEnemy(){
   G._phantasmalTarget=-1;
   G._virtuosoElement=0;
   G._fortressUsedThisTurn=false;
-  G._warPriestUsed=false;
+  // Legendary item per-fight resets
+  G._crimsonBrandUsed=false;
+  G._firstDodgeAvailable=true;
 
   // ── Subclass startup effects ──────────────────────────────
   // Vengeance Paladin: auto-mark highest-HP enemy at fight start
