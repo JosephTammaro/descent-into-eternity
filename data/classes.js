@@ -118,7 +118,7 @@ const CLASSES = {
     saves:['wis','cha'],critRange:20,
     subclassIds:['life','war'],
     skills:[
-      {id:'sacred_flame',name:'Sacred Flame',type:'action',icon:'☀️',desc:'2d8+INT radiant',cd:0,cost:0,effect:'sacred_flame'},
+      {id:'sacred_flame',name:'Sacred Flame',type:'action',icon:'☀️',desc:'2d8+WIS radiant',cd:0,cost:0,effect:'sacred_flame'},
       {id:'smite_evil',name:'Smite Evil',type:'action',icon:'⚡',desc:'3d6+WIS radiant, ×2 vs undead/fiends',cd:0,cost:2,alt:true,effect:'smite_evil'},
       {id:'healing_word',name:'Healing Word',type:'bonus',icon:'💚',desc:'1d4+WIS heal',cd:0,cost:1,charges:3,effect:'healing_word'},
       {id:'bless',name:'Bless',type:'bonus',icon:'✨',desc:'+3 ATK on next 2 attack rolls',cd:4,cost:1,alt:true,effect:'bless'},

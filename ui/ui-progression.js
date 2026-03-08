@@ -75,6 +75,7 @@ function doLevelUp(){
     subclassUnlock: G.level===3&&!G.subclassUnlocked,
     ultimateUnlock: G.level===10,
     capstoneUnlock: G.level===20,
+    extraAttackUnlock: G.level===10&&['fighter','barbarian','paladin','ranger'].includes(G.classId),
   };
 
   AUDIO.sfx.levelUp();
@@ -130,6 +131,7 @@ function showNextLevelUp(){
   if(data.talentUnlock)gains.push({label:'Talent Point',val:'NEW!'});
   if(data.subclassUnlock)gains.push({label:'Subclass',val:'UNLOCKED!'});
   if(data.ultimateUnlock)gains.push({label:'ULTIMATE I',val:'UNLOCKED! ⚡'});
+  if(data.extraAttackUnlock)gains.push({label:'DUAL ATTACK',val:'UNLOCKED! ⚔⚔'});
   if(data.capstoneUnlock)gains.push({label:'CAPSTONE',val:'UNLEASHED! 🔱'});
 
   document.getElementById('lu-gains').innerHTML=gains.map(g=>`

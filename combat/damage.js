@@ -103,7 +103,7 @@ function calcPlayerDmg(){
       G._explosiveArrowUsed=true;dmg=dmg*2;
       log('💥 Explosive Arrow: base damage doubled!','s');
     }
-    dmg=Math.ceil(dmg*(G.critMult||2));crit=true;
+    dmg+=roll(_wd);crit=true; // D&D crit: roll weapon die again, flat bonuses unchanged
     // Infiltration Expertise (Assassin): +WIS mod flat damage on each Assassinate crit
     if(G.subclassId==='assassin'&&G.classId==='rogue'&&G.roundNum===1){
       const ie=Math.max(0,md(G.stats&&G.stats.wis?G.stats.wis:10));

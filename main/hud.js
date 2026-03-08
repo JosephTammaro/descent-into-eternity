@@ -679,7 +679,8 @@ function renderSkillButtons(){
       const bearRequired = sk.bearReq && (!G.wildShapeHp || G.wildShapeHp <= 0);
       const formLocked = (sk.id==='elemental_wild_shape' && G.wildShapeHp>0) || (sk.id==='wild_shape' && G._elementalForm && G.wildShapeHp>0);
       const roundLocked = sk.roundReq && (G.roundNum!==sk.roundReq || G._dreadAmbushUsed);
-      const disabled=typeUsed||noRes||noSlot||noCombo||noCharges||cdLeft>0||(!G.isPlayerTurn&&type!=='reaction')||paused||reactionOnYourTurn||bearLocked||clawLocked||rageRequired||bearRequired||formLocked||roundLocked;
+      const ultimateConsumed = sk.ultimateOnly && G._ultimateUsed; // grey out once-per-rest ultimates after use
+      const disabled=typeUsed||noRes||noSlot||noCombo||noCharges||cdLeft>0||ultimateConsumed||(!G.isPlayerTurn&&type!=='reaction')||paused||reactionOnYourTurn||bearLocked||clawLocked||rageRequired||bearRequired||formLocked||roundLocked;
       const pipHtml=sk.charges?`<span class="sk-charges">${Array.from({length:sk.charges},(_,i)=>i<chargesLeft?'●':'○').join('')}</span>`:'';
       // Cost label (bottom-left badge)
       let costLabel='';
@@ -687,6 +688,7 @@ function renderSkillButtons(){
       else if(sk.comboReq) costLabel=sk.comboReq+'CP';
       else if(sk.slotCost) costLabel='L'+sk.slotCost;
       const cdBadge=cdLeft>0?`<span class="sk-cd">${cdLeft}s</span>`:cdLeft===-1?`<span class="sk-cd" style="color:var(--orange2)">●</span>`:'';
+      const dualBadge=sk.effect==='basic_attack'&&G.level>=10&&['fighter','barbarian','paladin','ranger'].includes(G.classId)?'<span class="sk-dual">×2</span>':'';
       const isNew=G._newSkills&&G._newSkills.includes(sk.id);
       const keyNum=globalSkillIdx+1;
       const keybindBadge=keyNum<=9?`<span class="sk-keybind">${keyNum}</span>`:'';
@@ -696,6 +698,7 @@ function renderSkillButtons(){
         ${keybindBadge}
         <span class="sk-icon">${sk.icon}</span>
         <span class="sk-name">${sk.name}</span>
+        ${dualBadge}
         ${pipHtml}
         ${costLabel?`<span class="sk-cost">${costLabel}</span>`:''}
       </button>`;

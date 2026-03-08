@@ -144,6 +144,12 @@ function doSkillEffect(effect, sk){
         r.dmg+=roll(6)+(G._apexCompanion?roll(6):0);
       }
       dealToEnemy(r.dmg,r.crit,'Attack');
+      // ── Dual Attack (Level 10+ martials) ──
+      if(G.level>=10&&['fighter','barbarian','paladin','ranger'].includes(G.classId)&&G.currentEnemy&&G.currentEnemy.hp>0){
+        log('⚔⚔ Dual Strike!','s');
+        const r2=calcPlayerDmg();
+        dealToEnemy(r2.dmg,r2.crit,'Second Strike ⚔');
+      }
       // Sacred Weapon: +1d6 radiant and +3 HP per hit
       if(G.sx&&G.sx.sacredWeapon&&G.sx.sacredWeapon.turns>0){
         const swRad=roll(6)+Math.max(0,md(G.stats.cha));dealToEnemy(swRad,false,'Sacred Weapon 🌟 (1d6+CHA)');
@@ -221,6 +227,7 @@ function doSkillEffect(effect, sk){
     case 'parry':AUDIO.sfx.block();G.sx.parry=true;log('⛊ Parry set — next hit halved!','s');break;
     case 'fire_bolt':{AUDIO.sfx.burn();
       let fbd=roll(10)+roll(10)+getSpellPower()+(G.subclassId==='evoker'?roll(6):0);
+      if(G._overchannelActive){fbd=10+10+getSpellPower()+(G.subclassId==='evoker'?6:0);G._overchannelActive=false;log('⚡ Overchannel: Fire Bolt maximized!','s');}
       // Brilliant Focus: +INT mod to spell damage
       if(G.classId==='wizard'&&G._brilliantFocus)fbd+=Math.max(0,md(G.stats.int));
       // Overload: spells penetrate 30% of enemy DEF
@@ -561,7 +568,7 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.attack();
       const clawDmg=roll(6)+roll(6)+Math.max(0,md(G.stats.str))+G.profBonus;
       const clawCrit=roll(20)>=G.critRange;
-      let finalClaw=clawCrit?Math.ceil(clawDmg*(G.critMult||2)):clawDmg;
+      let finalClaw=clawCrit?clawDmg+roll(6)+roll(6):clawDmg; // D&D crit: roll damage dice again
       if(G._elementalForm){const fireDmg=roll(6);finalClaw+=fireDmg;log('🔥 Elemental: +'+fireDmg+' fire damage!','s');}
       dealToEnemy(finalClaw,clawCrit,G._elementalForm?'Flame Strike 🔥':'Claw Strike 🐾');
       // Apex Predator: 20% chance to Restrain enemy
@@ -764,8 +771,8 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.powerStrike();
       const {dmg:phd,crit:phc}=calcPlayerDmg();
       dealToEnemy(phd,phc,'Pack Hunt 🐺 (Your Strike)');
-      // Beast strike: 1d8+WIS
-      const beastDmg=Math.max(1,roll(8)+Math.max(0,md(G.stats.wis))+(G.hunterMarked?roll(G.talents.includes('Hawk Eye')?8:6):0));
+      // Beast strike: 1d8+DEX
+      const beastDmg=Math.max(1,roll(8)+Math.max(0,md(G.stats.dex))+(G.hunterMarked?roll(G.talents.includes('Hawk Eye')?8:6):0));
       dealToEnemy(beastDmg,false,'Pack Hunt 🐺 (Beast Strike)');
       log('🐺 You and your companion strike together!','s');
       break;}

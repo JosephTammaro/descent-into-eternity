@@ -48,16 +48,16 @@ function doEnemyTurn(){
     if(!G.conditionTurns)G.conditionTurns={};
     // Apply tick damage before ticking down
     if(G.conditions.includes('Poisoned')){
-      const poisonDmg=3+G.zoneIdx;
+      const poisonDmg=roll(4)+G.zoneIdx;
       if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=poisonDmg;spawnFloater(poisonDmg,'dmg',false);}
       AUDIO.sfx.poison();
-      log('☠ Poison: '+poisonDmg+' damage!','c');
+      log('☠ Poison: '+poisonDmg+' (1d4+zone)!','c');
     }
     if(G.conditions.includes('Burning')&&!(G.sx&&G.sx.immuneConditions)){
-      const burnDmg=G._crimsonBrand?12:5+G.zoneIdx*2;
+      const burnDmg=G._crimsonBrand?12:roll(6)+G.zoneIdx;
       if(typeof _dev_godMode==='undefined'||!_dev_godMode){G.hp-=burnDmg;spawnFloater(burnDmg,'dmg',false);}
       AUDIO.sfx.burn();
-      log('🔥 Burning: '+burnDmg+' fire damage!','c');
+      log('🔥 Burning: '+burnDmg+' (1d6+zone)!','c');
     }
     if(G.hp<=0){onPlayerDied();return;}
     if(G.hp>0 && G.hp<Math.floor(G.maxHp*0.5)) G._ironmanFlag=false;
@@ -109,9 +109,9 @@ function doEnemyTurn(){
     const enemyBurning=e.conditions.find(c=>c.name==='Burning'&&c.turns>0);
     const enemyPoisoned=e.conditions.find(c=>c.name==='Poisoned'&&c.turns>0);
     const enemyBleeding=e.conditions.find(c=>c.name==='Bleeding'&&c.turns>0);
-    if(enemyBurning){const bd=5+G.zoneIdx*2;e.hp-=bd;updateEnemyBar();log('🔥 '+e.name+' burns: '+bd+' fire damage!','c');if(e.hp<=0){onEnemyDied();return;}}
-    if(enemyPoisoned){const pd=3+G.zoneIdx*2;e.hp-=pd;updateEnemyBar();log('☠ '+e.name+' is poisoned: '+pd+' damage!','c');if(e.hp<=0){onEnemyDied();return;}}
-    if(enemyBleeding){const bd=Math.max(5,Math.floor(G.zoneIdx*2.5+3));e.hp-=bd;updateEnemyBar();log('🩸 '+e.name+' bleeds: '+bd+' damage!','c');if(e.hp<=0){onEnemyDied();return;}}
+    if(enemyBurning){const bd=roll(6)+G.zoneIdx;e.hp-=bd;updateEnemyBar();log('🔥 '+e.name+' burns: '+bd+' fire (1d6+zone)!','c');if(e.hp<=0){onEnemyDied();return;}}
+    if(enemyPoisoned){const pd=roll(4)+G.zoneIdx;e.hp-=pd;updateEnemyBar();log('☠ '+e.name+' is poisoned: '+pd+' (1d4+zone)!','c');if(e.hp<=0){onEnemyDied();return;}}
+    if(enemyBleeding){const bd=roll(6)+G.zoneIdx;e.hp-=bd;updateEnemyBar();log('🩸 '+e.name+' bleeds: '+bd+' (1d6+zone)!','c');if(e.hp<=0){onEnemyDied();return;}}
     // Cyclone: 1d6 per turn while Restrained
     const enemyRestrained=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
     if(enemyRestrained&&e._cycloneDmg){const cd=roll(6);e.hp-=cd;updateEnemyBar();log('🌀 Cyclone: '+cd+' nature damage while Restrained!','c');if(e.hp<=0){onEnemyDied();return;}}
@@ -743,7 +743,8 @@ function doEnemyAttack(e){
     delete e._defBoost;
   }
 
-  let dmg=e.atk+roll(4)-2;
+  const _ed=G.zoneIdx>=7?12:G.zoneIdx>=5?10:G.zoneIdx>=2?8:6;
+  let dmg=e.atk+roll(_ed)-Math.floor(_ed/2);
   if(e._intent==='defending') dmg=Math.ceil(dmg*0.5);
   if(e._intent==='poisoning'||e._intent==='burning'||e._intent==='stunning') dmg=Math.ceil(dmg*0.75);
   // Rare Event: Cursed Forge — all enemies deal +10% damage
