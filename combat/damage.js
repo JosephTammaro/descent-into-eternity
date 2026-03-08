@@ -4,6 +4,10 @@ function calcPlayerDmg(){
   let base=G.atk+G.profBonus;
   G.upgrades.filter(u=>u.bought&&u.eff==='atk').forEach(u=>base+=u.val);
   if(G.raging)base+=2+Math.floor(G.level/4)+(G.talents.includes('Brutal')&&G.classId==='barbarian'?4:0);
+  // Rage STR mod: barbarians add their STR modifier to rage attacks
+  if(G.raging&&G.classId==='barbarian')base+=Math.max(0,md(G.stats&&G.stats.str?G.stats.str:10));
+  // Blood Offering (campfire ritual): +20% dmg while HP < 50%
+  if(G._bloodOffering&&G.hp<G.maxHp*0.5)base=Math.ceil(base*1.2);
   // Thunder Clap: once per player turn (not per-hit), deal 1d6+LVL/4 bonus damage while raging
   if(G.raging&&G.talents.includes('Thunder Clap')&&G.currentEnemy&&!G._thunderClapUsed){
     G._thunderClapUsed=true;
@@ -48,6 +52,8 @@ function calcPlayerDmg(){
   if(G.classId==='fighter'&&G._deathblow&&G.currentEnemy&&G.currentEnemy.hp<G.currentEnemy.maxHp*0.5)base=Math.ceil(base*1.15);
   // Battle Master: Know Your Enemy — +2 ATK this fight
   if(G._knowEnemyBonus)base+=2;
+  // Avenging Angel (Vengeance Paladin): below 30% HP, +3 ATK
+  if(G.classId==='paladin'&&G.subclassId==='vengeance'&&G.hp<G.maxHp*0.3)base+=3;
   // Guided Strike (War Domain): +10 ATK on next attack
   if(G._guidedStrikeBonus){G._guidedStrikeBonus=false;base+=10;log('✨ Guided Strike: +10 ATK!','s');}
   // Bless: +3 to next 2 attack rolls
@@ -56,6 +62,13 @@ function calcPlayerDmg(){
   if(G._camouflageActive){G._camouflageActive=false;base+=roll(8);log('🌿 Camouflage: +1d8 bonus strike!','s');}
   // Cosmic Omen (Stars Druid): +1d6 to next attack roll
   if(G._cosmicOmenActive){G._cosmicOmenActive=false;const co=roll(6);base+=co;log('🌟 Cosmic Omen: +'+co+' bonus!','s');}
+  // Dreadful Strike (Gloom Stalker): +2d6 psychic on first WIS-mod attacks this fight
+  if(G.subclassId==='gloom_stalker'&&(G._dreadfulStrikesLeft||0)>0){
+    G._dreadfulStrikesLeft--;
+    const ds=roll(6)+roll(6);
+    base+=ds;
+    log('🌑 Dreadful Strike: +'+ds+' psychic!','s');
+  }
   // Marked for Death (Assassin): +25% damage vs marked target
   if(G._markedForDeath){base=Math.ceil(base*1.25);log('🎯 Marked for Death: +25%!','s');}
   // Starry Form — Archer (Stars Druid): +1d8+WIS radiant per attack
@@ -82,13 +95,18 @@ function calcPlayerDmg(){
   // Fighter capstone: advantage (roll twice take higher)
   let roll20=roll(20);
   if(G._capstone&&G.classId==='fighter'){const r2=roll(20);if(r2>roll20)roll20=r2;}
-  if(ghostStep||vanishCrit||shadowStep||unbreakableCrit||roll20>=critThresh||(G.subclassId==='champion'&&G.classId==='fighter'&&G.level>=3&&roll20>=19)||(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed)){
+  if(ghostStep||vanishCrit||shadowStep||unbreakableCrit||roll20>=critThresh||(G.subclassId==='champion'&&G.classId==='fighter'&&G.level>=3&&roll20>=19)||(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed)||(G.subclassId==='assassin'&&G.classId==='rogue'&&G.roundNum===1)){
     if(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed){G._deadeyeUsed=true;log('🎯 Deadeye: first strike crits while Marked!','s');}
-    dmg=Math.ceil(dmg*(G.critMult||2));crit=true;
-    // Explosive Arrow: once per fight, first crit deals double damage
+    // Explosive Arrow: double base dmg BEFORE crit multiplier so ×2 doesn't compound with ×2 crit
     if(G.classId==='ranger'&&G._explosiveArrow&&!G._explosiveArrowUsed){
       G._explosiveArrowUsed=true;dmg=dmg*2;
-      log('💥 Explosive Arrow: crit doubled!','s');
+      log('💥 Explosive Arrow: base damage doubled!','s');
+    }
+    dmg=Math.ceil(dmg*(G.critMult||2));crit=true;
+    // Infiltration Expertise (Assassin): +WIS mod flat damage on each Assassinate crit
+    if(G.subclassId==='assassin'&&G.classId==='rogue'&&G.roundNum===1){
+      const ie=Math.max(0,md(G.stats&&G.stats.wis?G.stats.wis:10));
+      if(ie>0){dmg+=ie;log('🕵️ Infiltration Expertise: +'+ie+' psychic!','s');}
     }
   }
   if((ghostStep||vanishCrit)&&!G.firstAttackUsed){G.firstAttackUsed=true;}
@@ -151,6 +169,12 @@ function dealToEnemy(dmg,crit,source){
     G._envenomStacks--;
     if(typeof addConditionEnemy==='function') addConditionEnemy('Poisoned',3);
     log('☠ Envenom: target poisoned!','s');
+  }
+  // Assassin's Tools: apply Poisoned(2) to next target after a kill
+  if(G._assassinToolsPoison&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){
+    G._assassinToolsPoison=false;
+    if(typeof addConditionEnemy==='function') addConditionEnemy('Poisoned',2);
+    log("☠ Assassin's Tools: poison applied!",'s');
   }
   // Run summary tracking
   G.totalDmgDealt=(G.totalDmgDealt||0)+dmg;

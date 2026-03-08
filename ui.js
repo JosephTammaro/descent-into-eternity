@@ -25,6 +25,8 @@ function addCondition(cond,turns=2){
   // Aura of Protection (Devotion): immune to Frightened and Restrained for 3 turns
   if(cond==='Frightened'&&G.sx&&G.sx.immuneFrightened>0){log('😇 Aura of Protection blocks Frightened!','s');return;}
   if(cond==='Restrained'&&G.sx&&G.sx.immuneRestrained>0){log('😇 Aura of Protection blocks Restrained!','s');return;}
+  // Aura of Devotion (Devotion Paladin): permanent immunity to Charmed
+  if(cond==='Charmed'&&G.classId==='paladin'&&G.subclassId==='devotion'){log('😇 Aura of Devotion: Charmed immunity!','s');return;}
   if(!G.conditions.includes(cond)){
     G.conditions.push(cond);
     if(!G.conditionTurns)G.conditionTurns={};

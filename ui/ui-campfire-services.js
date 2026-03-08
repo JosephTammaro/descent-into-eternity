@@ -38,7 +38,7 @@ const CRAFT_RECIPES=[
    desc:'2 Iron Cores + 2 Bones → Iron Skin (+12 DEF, 5 HP)'},
   // ── LEGENDARY BREWS ────────────────────────────────────────────────
   {cat:'legendary',req:{celestialDust:1,ghostEssence:2,herb:2},
-   result:{id:'celestialDraught',name:'Celestial Draught',icon:'⭐',type:'consumable',slot:null,rarity:'epic',stats:{heal:65},value:150},
+   result:{id:'celestialDraught',name:'Celestial Draught',icon:'⭐',type:'consumable',slot:null,rarity:'epic',stats:{heal:100},value:150},
    desc:'1 Celestial Dust + 2 Ghost Essence + 2 Herbs → Celestial Draught (100 HP)'},
   {cat:'legendary',req:{shadowEssence:1,voidShard:2,demonAsh:1},
    result:{id:'shadowBlood',name:'Shadow Blood',icon:'🌑',type:'consumable',slot:null,rarity:'epic',stats:{heal:40,tempAtk:12,tempDef:6},value:200},

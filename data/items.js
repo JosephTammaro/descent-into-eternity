@@ -12,7 +12,7 @@ const ITEMS = [
   {id:'handaxe',name:'Twin Handaxes',icon:'🪓',type:'weapon',slot:'weapon',rarity:'uncommon',stats:{atk:8,crit:1},value:58},
   // ── WEAPONS (rare) ───────────────────────────────────────
   {id:'greatsword',name:'Greatsword',icon:'⚔',type:'weapon',slot:'weapon',rarity:'rare',stats:{atk:14},value:220},
-  {id:'voidDagger',name:'Void Dagger',icon:'🗡️',type:'weapon',slot:'weapon',rarity:'rare',stats:{atk:10,crit:10},value:160},
+  {id:'voidDagger',name:'Void Dagger',icon:'🗡️',type:'weapon',slot:'weapon',rarity:'rare',stats:{atk:10,crit:4},value:160},
   {id:'arcaneOrb',name:'Arcane Orb',icon:'🔮',type:'weapon',slot:'weapon',rarity:'rare',stats:{atk:4,magAtk:16},value:260},
   {id:'druidStaff',name:"Nature's Staff",icon:'🌿',type:'weapon',slot:'weapon',rarity:'rare',stats:{atk:6,magAtk:10,def:3},value:155},
   // ── ARMOR (common) ───────────────────────────────────────
@@ -63,7 +63,7 @@ const ITEMS = [
   {id:'hpPotion',name:'Healing Potion',icon:'🧪',type:'consumable',slot:null,rarity:'common',stats:{heal:12},value:15},
   {id:'strongPotion',name:'Strong Potion',icon:'⚗️',type:'consumable',slot:null,rarity:'uncommon',stats:{heal:25},value:40},
   {id:'elixir',name:'Elixir of Life',icon:'✨',type:'consumable',slot:null,rarity:'rare',stats:{heal:45},value:100},
-  {id:'antidote',name:'Antidote',icon:'💊',type:'consumable',slot:null,rarity:'common',stats:{heal:5},value:12},
+  {id:'antidote',name:'Minor Potion',icon:'💊',type:'consumable',slot:null,rarity:'common',stats:{heal:5},value:12},
   // ── MATERIALS ────────────────────────────────────────────
   {id:'herb',name:'Dried Herb',icon:'🌿',type:'material',slot:null,rarity:'common',stats:{},value:3},
   {id:'fang',name:'Wolf Fang',icon:'🦷',type:'material',slot:null,rarity:'common',stats:{},value:5},
@@ -80,7 +80,9 @@ const ITEMS = [
   {id:'godslayerBlade',name:'Godslayer',icon:'⚡',type:'weapon',slot:'weapon',rarity:'legendary',stats:{atk:32,crit:3,magAtk:12},value:600},
   {id:'voidcrownOfMalvaris',name:"Malvaris's Voidcrown",icon:'💀',type:'armor',slot:'armor',rarity:'legendary',stats:{def:30,hp:80,magAtk:20},value:800},
   {id:'shardOfEternity',name:'Shard of Eternity',icon:'🌟',type:'offhand',slot:'offhand',rarity:'legendary',stats:{magAtk:28,def:10,hp:40},value:700},
-  {id:'wraithbane',name:'Wraithbane',icon:'🗡️',type:'weapon',slot:'weapon',rarity:'legendary',stats:{atk:24,magAtk:18,crit:12},value:580},
+  {id:'wraithbane',name:'Wraithbane',icon:'🗡️',type:'weapon',slot:'weapon',rarity:'legendary',stats:{atk:24,magAtk:18,crit:3},value:580},
+  {id:'crimsonBrandAmulet',name:"Vexara's Crimson Brand",icon:'📿',type:'accessory',slot:'amulet',rarity:'legendary',stats:{atk:14,magAtk:12,crit:2,hp:20},value:520,
+    desc:"The brand never fades. Your first attack each fight deals +50% damage."},
   // ── OBJECTIVE REWARD ITEMS ────────────────────────────────
   {id:'frostRing',name:'Ring of the Untainted',icon:'❄️',type:'accessory',slot:'ring',rarity:'rare',stats:{def:6,hp:18},value:80},
   {id:'boneWard',name:"Exorcist's Ward",icon:'🛡️',type:'offhand',slot:'offhand',rarity:'rare',stats:{def:10,hp:15},value:90},
@@ -107,9 +109,9 @@ const ITEMS = [
   {id:'spellweaveRobes',name:'Spellweave Robes',icon:'👘',type:'armor',slot:'armor',rarity:'epic',set:'archmageAscension',forClass:'wizard',stats:{magAtk:14,def:6,hp:22},value:0},
   {id:'tomeOfArcane',name:'Tome of the Arcane',icon:'📖',type:'offhand',slot:'offhand',rarity:'epic',set:'archmageAscension',forClass:'wizard',stats:{magAtk:16,hp:15,def:4},value:0},
   // Rogue — Veil of Shadows
-  {id:'shadowfang',name:'Shadowfang',icon:'🗡️',type:'weapon',slot:'weapon',rarity:'epic',set:'veilOfShadows',forClass:'rogue',stats:{atk:14,crit:10,hp:8},value:0},
-  {id:'shroudOfUnseen',name:'Shroud of the Unseen',icon:'🥋',type:'armor',slot:'armor',rarity:'epic',set:'veilOfShadows',forClass:'rogue',stats:{def:10,crit:6,hp:18},value:0},
-  {id:'thievesBrand',name:"Thief's Brand",icon:'💍',type:'accessory',slot:'ring',rarity:'epic',set:'veilOfShadows',forClass:'rogue',stats:{atk:8,crit:8,hp:10},value:0},
+  {id:'shadowfang',name:'Shadowfang',icon:'🗡️',type:'weapon',slot:'weapon',rarity:'epic',set:'veilOfShadows',forClass:'rogue',stats:{atk:14,crit:4,hp:8},value:0},
+  {id:'shroudOfUnseen',name:'Shroud of the Unseen',icon:'🥋',type:'armor',slot:'armor',rarity:'epic',set:'veilOfShadows',forClass:'rogue',stats:{def:10,crit:2,hp:18},value:0},
+  {id:'thievesBrand',name:"Thief's Brand",icon:'💍',type:'accessory',slot:'ring',rarity:'epic',set:'veilOfShadows',forClass:'rogue',stats:{atk:8,crit:3,hp:10},value:0},
   // Paladin — Oath of the Undying
   {id:'sanctifiedLongsword',name:'Sanctified Longsword',icon:'⚔️',type:'weapon',slot:'weapon',rarity:'epic',set:'oathUndying',forClass:'paladin',stats:{atk:14,magAtk:8,hp:15},value:0},
   {id:'aegisDevoted',name:'Aegis of the Devoted',icon:'🛡️',type:'offhand',slot:'offhand',rarity:'epic',set:'oathUndying',forClass:'paladin',stats:{def:16,hp:25,magAtk:4},value:0},
@@ -130,9 +132,9 @@ const ITEMS = [
   {id:'rootstaffWild',name:'Rootstaff of the Wild',icon:'🌿',type:'weapon',slot:'weapon',rarity:'epic',set:'heartWild',forClass:'druid',stats:{magAtk:14,atk:8,hp:12},value:0},
   {id:'barkMantle',name:'Bark Mantle',icon:'🥋',type:'armor',slot:'armor',rarity:'epic',set:'heartWild',forClass:'druid',stats:{def:14,hp:32,magAtk:6},value:0},
   {id:'heartOfGrove',name:'Heart of the Grove',icon:'💚',type:'accessory',slot:'ring',rarity:'epic',set:'heartWild',forClass:'druid',stats:{magAtk:10,hp:25,def:6},value:0},
-  {id:'shadowBlade',name:"Shadowwalker's Edge",icon:'🗡️',type:'weapon',slot:'weapon',rarity:'epic',set:'shadowwalker',stats:{atk:14,crit:6},value:220},
-  {id:'shadowLeatherSet',name:"Shadowwalker's Leather",icon:'🥋',type:'armor',slot:'armor',rarity:'epic',set:'shadowwalker',stats:{def:10,crit:6,hp:14},value:210},
-  {id:'shadowRing',name:'Ring of Shadows',icon:'💍',type:'accessory',slot:'ring',rarity:'epic',set:'shadowwalker',stats:{atk:6,crit:8},value:200},
+  {id:'shadowBlade',name:"Shadowwalker's Edge",icon:'🗡️',type:'weapon',slot:'weapon',rarity:'epic',set:'shadowwalker',stats:{atk:14,crit:3},value:220},
+  {id:'shadowLeatherSet',name:"Shadowwalker's Leather",icon:'🥋',type:'armor',slot:'armor',rarity:'epic',set:'shadowwalker',stats:{def:10,crit:2,hp:14},value:210},
+  {id:'shadowRing',name:'Ring of Shadows',icon:'💍',type:'accessory',slot:'ring',rarity:'epic',set:'shadowwalker',stats:{atk:6,crit:3},value:200},
   // Ironclad Set
   {id:'ironcladSword',name:'Ironclad Longsword',icon:'⚔️',type:'weapon',slot:'weapon',rarity:'epic',set:'ironclad',stats:{atk:16,def:4},value:230},
   {id:'ironcladArmor',name:'Ironclad Plate',icon:'🛡',type:'armor',slot:'armor',rarity:'epic',set:'ironclad',stats:{def:18,hp:25},value:240},
@@ -163,7 +165,7 @@ const SET_BONUSES = {
   veilOfShadows:{
     name:'Veil of Shadows',forClass:'rogue',
     pieces:['shadowfang','shroudOfUnseen','thievesBrand'],
-    bonuses:{3:{label:'SET: Sneak Attack cooldown reduced by 1 turn',stats:{crit:3},skillBonus:'rogue_set'}}
+    bonuses:{3:{label:'SET: Sneak Attack cooldown reduced by 1 turn',stats:{crit:1},skillBonus:'rogue_set'}}
   },
   oathUndying:{
     name:'Oath of the Undying',forClass:'paladin',
@@ -194,7 +196,7 @@ const SET_BONUSES = {
   shadowwalker:{
     name:"Shadowwalker's Pact",
     pieces:['shadowBlade','shadowLeatherSet','shadowRing'],
-    bonuses:{2:{label:'2 pcs: +2 Crit',stats:{crit:2}},3:{label:'3 pcs: +12 ATK, +1 Crit',stats:{atk:12,crit:1}}}
+    bonuses:{2:{label:'2 pcs: +1 Crit',stats:{crit:1}},3:{label:'3 pcs: +12 ATK, +1 Crit',stats:{atk:12,crit:1}}}
   },
   ironclad:{
     name:'Ironclad Resolve',

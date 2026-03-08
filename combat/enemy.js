@@ -111,7 +111,7 @@ function doEnemyTurn(){
     const enemyBleeding=e.conditions.find(c=>c.name==='Bleeding'&&c.turns>0);
     if(enemyBurning){const bd=5+G.zoneIdx*2;e.hp-=bd;updateEnemyBar();log('🔥 '+e.name+' burns: '+bd+' fire damage!','c');if(e.hp<=0){onEnemyDied();return;}}
     if(enemyPoisoned){const pd=3+G.zoneIdx*2;e.hp-=pd;updateEnemyBar();log('☠ '+e.name+' is poisoned: '+pd+' damage!','c');if(e.hp<=0){onEnemyDied();return;}}
-    if(enemyBleeding){e.hp-=5;updateEnemyBar();log('🩸 '+e.name+' bleeds: 5 damage!','c');if(e.hp<=0){onEnemyDied();return;}}
+    if(enemyBleeding){const bd=Math.max(5,Math.floor(G.zoneIdx*2.5+3));e.hp-=bd;updateEnemyBar();log('🩸 '+e.name+' bleeds: '+bd+' damage!','c');if(e.hp<=0){onEnemyDied();return;}}
     // Cyclone: 1d6 per turn while Restrained
     const enemyRestrained=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
     if(enemyRestrained&&e._cycloneDmg){const cd=roll(6);e.hp-=cd;updateEnemyBar();log('🌀 Cyclone: '+cd+' nature damage while Restrained!','c');if(e.hp<=0){onEnemyDied();return;}}
@@ -119,7 +119,7 @@ function doEnemyTurn(){
     e.conditions=e.conditions.filter(c=>{c.turns--;if(c.turns<=0){log(c.name+' on '+e.name+' expires.','c');}return c.turns>0;});
     // Overgrowth: after Restrained expires, enemy must save or get re-rooted (DC escalates each re-application)
     if(!restrained&&e._overgrowthDC&&(!e.conditions||!e.conditions.find(c=>c.name==='Restrained'&&c.turns>0))){
-      const escapeSave=roll(20)+Math.floor((e.saveDC||12)-10)+Math.floor((G.zoneIdx||0)*0.75);
+      const escapeSave=roll(20)+Math.floor((G.zoneIdx||0)*1.5);
       e._overgrowthDC+=1; // DC rises each round
       const dcAttempted=e._overgrowthDC;
       if(escapeSave<dcAttempted){
@@ -179,6 +179,15 @@ function doEnemyTurn(){
   // ── LEGENDARY GRACE PER-TURN EFFECTS ──
   // Eternal Bastion: regen 2 HP/turn
   if(G._graceBastion&&G.hp<G.maxHp){const rh=Math.min(2,G.maxHp-G.hp);G.hp+=rh;spawnFloater(rh,'heal',false);log('❤️ Eternal Bastion: +'+rh+' HP','s');renderHUD();}
+  // Lunar Form (Moon Druid): regen 1d6 bear HP per turn while shapeshifted
+  if(G.subclassId==='moon'&&G.wildShapeActive&&G.wildShapeHp>0){
+    const lr=roll(6);
+    const wsCap=G._wildShapeMaxHp||100;
+    G.wildShapeHp=Math.min(G.wildShapeHp+lr,wsCap);
+    spawnFloater(lr,'heal',false);
+    log('🌙 Lunar Form: +'+lr+' bear HP! ('+Math.ceil(G.wildShapeHp)+'/'+wsCap+')','s');
+    if(typeof renderHUD==='function')renderHUD();
+  }
 
   // ── MALVARIS — Grief Aura: -1 resource per turn (passive) ──
   if(e.id==='malvaris'&&G.res>0){
@@ -189,6 +198,7 @@ function doEnemyTurn(){
   // ── BOSS PHASE 2 TRIGGER ──
   if(e.isBoss&&e.phase2&&!e.phaseTriggered&&e.hp<=Math.floor(e.maxHp*0.5)){
     e.phaseTriggered=true;
+    e._baseAtk=e.atk; // snapshot pre-phase2 ATK so Last Stand doesn't compound
     e.atk+=e.phase2.atkBonus||0;
     // Rename boss with Phase II suffix
     e.displayName = e.name + ' — Phase II';
@@ -304,10 +314,10 @@ function doEnemyTurn(){
     if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
     log('❄ Valdris summons 2 Frozen Soldiers! While they stand, Valdris takes 50% reduced damage!','e');
   }
-  // Valdris — Last Stand at 30% HP
+  // Valdris — Last Stand at 30% HP (uses pre-phase2 baseAtk to avoid double-stacking)
   if(e.id==='valdris'&&!e._lastStand&&e.hp<=e.maxHp*0.3){
     e._lastStand=true;
-    e.atk=Math.ceil(e.atk*1.25);
+    e.atk=Math.ceil((e._baseAtk||e.atk)*1.25);
     if(typeof triggerScreenShake==='function')triggerScreenShake('boss');
     log('💢 VALDRIS LAST STAND! Fury incarnate — +25% ATK for the rest of the fight!','e');
   }
@@ -887,7 +897,7 @@ function doEnemyAttack(e){
         log("✦ Warden's Call: Hunter's Mark cannot be broken!",'l');
       } else {
         const concSave=roll(20)+md(G.stats.con);
-        const concDC=Math.max(10,Math.floor(dmg/2));
+        const concDC=Math.max(10,Math.floor(dmg/3));
         const bonusSave=G.talents.includes('Marked Prey')?3:0;
         if((concSave+bonusSave)<concDC){
           G.hunterMarked=false;
@@ -899,8 +909,8 @@ function doEnemyAttack(e){
         }
       }
     }
-    // Paladin: Holy Nimbus (Devotion subclass) = 2 reflect; Radiance (talent) = +2 reflect standalone
-    const nimbusDmg=G.classId==='paladin'&&G.subclassId==='devotion'?2:0;
+    // Paladin: Holy Nimbus (Devotion subclass) = 10 reflect; Radiance (talent) = +2 reflect standalone
+    const nimbusDmg=G.classId==='paladin'&&G.subclassId==='devotion'?10:0;
     const radianceDmg=G.classId==='paladin'&&G.talents.includes('Radiance')?2:0;
     const reflectDmg=nimbusDmg+radianceDmg;
     if(reflectDmg>0&&G.currentEnemy){
@@ -932,6 +942,10 @@ function doEnemyAttack(e){
 
 // Routes damage through Wild Shape bear HP buffer before hitting player HP
 function dealDamageToPlayer(dmg, sourceName){
+  // War Domain subclass: take 3 less damage from all sources
+  if(G.subclassId==='war') dmg=Math.max(1,dmg-3);
+  // Avenging Angel (Vengeance Paladin): below 30% HP, 5 DR
+  if(G.classId==='paladin'&&G.subclassId==='vengeance'&&G.hp<G.maxHp*0.3)dmg=Math.max(1,dmg-5);
   // Iron Skin branch passive: reduce all incoming damage by 2
   if(G._branchIronSkin) dmg=Math.max(0,dmg-2);
   // Sixth Sense: reduce boss special damage by 20%

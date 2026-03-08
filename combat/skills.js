@@ -28,8 +28,8 @@ function useSkill(skillId){
   // Cleric capstone — Vessel of the Divine: Sacred Flame and Channel Divinity have no cooldowns
   const vesselBypass=G.classId==='cleric'&&G.capstoneUnlocked&&(sk.id==='sacred_flame'||sk.id==='channel_divinity');
   if(!vesselBypass&&(cdRaw==='active'||(typeof cdRaw==='number'&&cdRaw>now))){log('That skill is on cooldown!','s');return;}
-  // Holy Fervor: reduces Divine Smite effective cost by 1
-  const effectiveCost=sk.id==='divine_smite'&&G.talents.includes('Holy Fervor')?Math.max(1,sk.cost-1):sk.cost;
+  // Oath Renewal: free Divine Smite | Holy Fervor: reduces Divine Smite effective cost by 1
+  const effectiveCost=G._oathRenewal&&sk.id==='divine_smite'?0:sk.id==='divine_smite'&&G.talents.includes('Holy Fervor')?Math.max(1,sk.cost-1):sk.cost;
   if(effectiveCost>0&&G.res<effectiveCost){log('Not enough '+CLASSES[G.classId].res+'!','s');return;}
   if(sk.slotCost&&(!G.spellSlots||(G.spellSlots[sk.slotCost]||0)===0)&&!G._timeStopActive&&!G._arcaneTranscendence){log('No LVL'+sk.slotCost+' spell slots remaining!','s');return;}
   if(sk.comboReq&&G.res<sk.comboReq){log('Need '+sk.comboReq+' Combo Points!','s');return;}
@@ -353,13 +353,15 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.divineSmite();
       // ── Chroma tracking: lifetime smites ──
       G._lifetimeSmites=(G._lifetimeSmites||0)+1;
-      let d=roll(8)+roll(8)+getSpellPower();
+      let d=roll(8)+roll(8)+roll(8)+getSpellPower();
       // Avatar of Light capstone: spend ALL Holy Power for +1d6 per point
       if(G.capstoneUnlocked&&G.classId==='paladin'&&G.res>0){
         const spent=G.res;for(let i=0;i<spent;i++)d+=roll(6);
         G.res=0;log('👼 Avatar of Light: '+spent+' Holy Power channeled! (+'+spent+'d6)','s');
       }
-      const smiteCrit=Math.random()<0.1;
+      // Oath Renewal: next smite is guaranteed crit
+      const smiteCrit=G._oathRenewal||Math.random()<0.1;
+      if(G._oathRenewal){G._oathRenewal=false;log('🕯 Oath Renewal: free guaranteed-crit smite!','s');}
       dealToEnemy(d,smiteCrit,'Divine Smite ✨');
       if(G.talents.includes('Avenging Angel')){const ah=Math.floor(d/2);G.hp=Math.min(G.maxHp,G.hp+ah);log('⚡ Avenging Angel: healed '+ah+' HP!','s');}
       if(G._classSetBonus==='paladin_set'){const sh=Math.ceil(d*0.25);G.hp=Math.min(G.maxHp,G.hp+sh);spawnFloater(sh,'heal',false);log('✦ Oath of the Undying: healed '+sh+' HP from Smite!','l');}
@@ -589,8 +591,10 @@ function doSkillEffect(effect, sk){
       let hp=G._classSetBonus==='druid_set'?Math.ceil(wsBase*1.5):wsBase;
       // Bear's Endurance: wild shape HP +25% of max HP
       if(G._bearsEndurance)hp+=Math.floor(G.maxHp*0.25);
-      // Cap wild shape temp HP: 100 base, 120 with set bonus
-      const wsCap=G._classSetBonus==='druid_set'?120:100;
+      // Wild Attunement (campfire ritual): +50% Wild Shape HP
+      if(G._wildAttunement){hp=Math.floor(hp*1.5);log('🌿 Wild Attunement: +50% Wild Shape HP!','s');}
+      // Cap wild shape temp HP: 100 base, 120 with set bonus (raised to 150/180 with Wild Attunement)
+      const wsCap=G._classSetBonus==='druid_set'?(G._wildAttunement?180:120):(G._wildAttunement?150:100);
       hp=Math.min(hp,wsCap);
       G.wildShapeHp=hp;
       G._wildShapeMaxHp=hp;
@@ -676,7 +680,7 @@ function doSkillEffect(effect, sk){
       const saveBonus=md(G.stats.wis)+G.profBonus;
       let spellDC=8+saveBonus;
       if(G._tidalRoots)spellDC+=3; // Tidal Roots: +3 DC
-      const enemySaveBonus=Math.floor((eEnt.saveDC||12)-10) + Math.floor((G.zoneIdx||0)*0.75);
+      const enemySaveBonus=Math.floor((G.zoneIdx||0)*1.5);
       const enemySave=roll(20)+enemySaveBonus;
       const entTurns=G._tidalRoots?3:2; // Tidal Roots: +1 turn
       if(enemySave<spellDC){
@@ -872,9 +876,10 @@ function doSkillEffect(effect, sk){
       wbDmg+=Math.max(0,md(G.stats.str));
       const hasConditions=G.currentEnemy&&G.currentEnemy.conditions&&G.currentEnemy.conditions.length>0;
       if(hasConditions)wbDmg*=2;
-      G.hp=Math.max(1,G.hp-10); // recoil
+      const wbRecoil=Math.floor(5+G.zoneIdx*3);
+      G.hp=Math.max(1,G.hp-wbRecoil); // recoil scales with zone
       dealToAllEnemies(wbDmg,false,'World Breaker 🌍'+(hasConditions?' [DOUBLED]':''));
-      log('🌍 WORLD BREAKER!'+(hasConditions?' Double damage vs conditioned enemy!':' Recoil: 10 damage to self.'),'s');
+      log('🌍 WORLD BREAKER!'+(hasConditions?' Double damage vs conditioned enemy!':' Recoil: '+wbRecoil+' damage to self.'),'s');
       processAoeDeaths();
       break;}
 

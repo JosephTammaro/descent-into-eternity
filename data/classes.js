@@ -105,7 +105,7 @@ const CLASSES = {
       {id:'reckless',name:'Reckless Attack',type:'action',icon:'💥',desc:'Strike ×1.75, take 8 recoil dmg',cd:0,cost:0,effect:'reckless_attack'},
       {id:'ground_slam',name:'Ground Slam',type:'action',icon:'💢',desc:'AOE 1d8+STR, 50% Restrained(1) each',cd:4,cost:0,alt:true,effect:'ground_slam'},
       {id:'retaliation',name:'Retaliation',type:'reaction',icon:'⚡',desc:'React: 1d8+STR counter-attack when hit',cd:0,cost:0,charges:3,effect:'retaliation'},
-      {id:'adrenaline_rush',name:'Adrenaline Rush',type:'bonus',icon:'💉',desc:'Restore 2 Rage charges (rage required)',cd:0,cost:0,charges:2,rageReq:true,alt:true,effect:'adrenaline_rush'},
+      {id:'adrenaline_rush',name:'Adrenaline Rush',type:'bonus',icon:'💉',desc:'Restore 2 Rage charges (rage required)',cd:2,cost:0,charges:2,rageReq:true,alt:true,effect:'adrenaline_rush'},
       {id:'frenzy_attack',name:'Frenzy Attack',type:'passive',icon:'🩸',desc:'Auto 1d6+STR extra strike while raging',cd:0,cost:0,rageReq:true,subclassOnly:true,subclassId:'berserker',effect:'frenzy_attack'},
       {id:'intimidating_presence',name:'Intimidating Presence',type:'bonus',icon:'😤',desc:'Frightened(3) + ATK-3 (rage required)',cd:5,cost:0,rageReq:true,subclassOnly:true,subclassId:'berserker',effect:'intimidating_presence'},
       {id:'spirit_surge',name:'Spirit Surge',type:'bonus',icon:'🐾',desc:'Bear: 15+CON heal; Eagle: dodge 2; Wolf: +4 ATK(3t)',cd:4,cost:0,rageReq:true,subclassOnly:true,subclassId:'wild_heart',effect:'spirit_surge'},

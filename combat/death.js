@@ -90,6 +90,11 @@ function onEnemyDied(){
   // Spiritual weapon unlocks when done (cleric only)
   if(G.classId==='cleric'&&!G.spiritualWeaponActive){delete G.skillCooldowns['spiritual_weapon'];}
 
+  // Assassin's Tools: kills have 40% chance to prep poison for next attack
+  if(G.classId==='rogue'&&G.subclassId==='assassin'&&!e.isBoss&&Math.random()<0.40){
+    G._assassinToolsPoison=true;
+    log("☠ Assassin's Tools: venom readied!",'s');
+  }
   // Vengeance: on kill, transfer mark to next living enemy
   if(G.classId==='paladin'&&G.subclassId==='vengeance'){
     const nextMark=(G.currentEnemies||[]).find(en=>!en.dead&&en.hp>0);
@@ -115,8 +120,8 @@ function onEnemyDied(){
     G.isPlayerTurn=true;
     log('⚔ Relentless: kill grants a free action!','s');
   }
-  // Seasoned Hunter: each kill in a fight increases ATK by 2
-  if(G.classId==='ranger'&&G._seasonedHunter){
+  // Seasoned Hunter: each kill in a fight increases ATK by 2 (capped at +10)
+  if(G.classId==='ranger'&&G._seasonedHunter&&(G._seasonedHunterBonus||0)<10){
     G._seasonedHunterBonus=(G._seasonedHunterBonus||0)+2;
     G.atk+=2;
     log('🎖 Seasoned Hunter: +2 ATK! (total bonus: '+G._seasonedHunterBonus+')','s');

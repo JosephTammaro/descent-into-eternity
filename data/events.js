@@ -54,7 +54,7 @@ const RANDOM_EVENTS = [
    zones:['woods','outpost'],
    text:'"Thick webs block the path. Something enormous has been feeding here recently — bones and armour scraps litter the ground. There might be something worth salvaging."',
    choices:[
-     {text:'Carefully search the webs (50% find rare item)',outcome:(g)=>{if(Math.random()<.5){const pool=ITEMS.filter(i=>i.rarity==='rare'&&i.slot);const item={...pool[Math.floor(Math.random()*pool.length)],qty:1};addItem(item);return `✓ Wrapped in silk: ${item.icon} ${item.name}! You cut it free.`}return '✗ Nothing but old bones and rusted metal.'}},
+     {text:'Carefully search the webs (50% find uncommon item)',outcome:(g)=>{if(Math.random()<.5){const pool=ITEMS.filter(i=>i.rarity==='uncommon'&&i.slot);const item={...pool[Math.floor(Math.random()*pool.length)],qty:1};addItem(item);return `✓ Wrapped in silk: ${item.icon} ${item.name}! You cut it free.`}return '✗ Nothing but old bones and rusted metal.'}},
      {text:'Burn the webs (take 8 dmg, clear path)',outcome:(g)=>{g.hp=Math.max(1,g.hp-8);return '✓ The webs ignite. You burst through — scorched but moving. Lost 8 HP.'}},
      {text:'Find a way around — lose nothing',outcome:(g)=>'You circle the webs cautiously. Slower, but safer.'},
    ]},

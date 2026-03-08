@@ -486,6 +486,7 @@ function spawnEnemy(){
   // ── Subclass per-fight resets ──────────────────────────────
   G._dreadAmbushUsed=false;
   G._changeTotemUsed=false;
+  G._assassinToolsPoison=false;
   G._illusoryUsed=false;
   G._unkillableUsed=false;
   G._rampageStacks=0;
@@ -518,6 +519,29 @@ function spawnEnemy(){
   if(G.subclassId==='gloom_stalker'){
     G._dreadfulStrikesLeft=Math.max(1,md(G.stats&&G.stats.wis?G.stats.wis:10));
     log('🌑 Dreadful Strikes: '+G._dreadfulStrikesLeft+' psychic charges!','s');
+  }
+  // Stars Druid: Star Map — start each fight with 1 free Nature's Charge
+  if(G.subclassId==='stars'&&G.classId==='druid'){
+    G.res=Math.min(G.resMax,G.res+1);
+    log("⭐ Star Map: +1 Nature's Charge!",'s');
+  }
+  // Blood Offering (Barbarian campfire ritual): enter Rage for free at fight start
+  if(G._bloodOffering&&G.classId==='barbarian'&&!G.raging){
+    G.raging=true;G.rageTurns=5;
+    log('🩸 Blood Offering: Blood sacrifice fuels Rage from the start!','s');
+  }
+  // Case Target (Rogue campfire ritual): reduce primary enemy DEF by 4 for the fight
+  if(G._caseTarget&&G.currentEnemy){
+    G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;
+    G.currentEnemy._defDebuffTurns=999; // lasts whole fight
+    G._caseTarget=false;
+    log('🗡 Case Target: enemy DEF reduced by 4!','s');
+  }
+  // War Readiness (Fighter campfire ritual): Second Wind cooldown reset for next fight
+  if(G._warReadiness&&G.classId==='fighter'){
+    delete G.skillCooldowns['second_wind'];
+    G._warReadiness=false;
+    log('⚔️ War Readiness: Second Wind cooldown cleared!','s');
   }
   // Battle Master: Know Your Enemy — +2 ATK bonus this fight
   if(G.subclassId==='battle_master'){G._knowEnemyBonus=true;log('📖 Know Your Enemy: +2 ATK!','s');}
