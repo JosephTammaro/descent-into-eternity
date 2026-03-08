@@ -163,8 +163,6 @@ function newState(classId){
     // ── Per-turn state (reset in setPlayerTurn() or enemy turn) ──
     _fortressUsedThisTurn: false,  // Fortress keystone: one Parry per enemy turn
     _phantomTargetedBy: -1,        // Phantom keystone: enemy index that targeted you
-    _warPriestUsed: false,         // War Domain: per-turn War Priest free attack
-    _beastReactionUsed: false,     // Beast Master: independent beast reaction
   };
 }
 

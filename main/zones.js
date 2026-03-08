@@ -93,8 +93,6 @@ function setPlayerTurn(isPlayer){
     }
     // Per-turn subclass resets
     G._fortressUsedThisTurn=false;
-    G._warPriestUsed=false;
-    G._beastReactionUsed=false;
     G.roundNum++;
     // ── Roll intent for all living enemies this round ──
     (G.currentEnemies||[]).forEach(en=>{if(!en.dead&&en.hp>0)_rollIntentForEnemy(en);});
@@ -510,8 +508,6 @@ function spawnEnemy(){
   G._unkillableUsed=false;
   G._rampageStacks=0;
   G._phantomFirstHit=true;
-  G._beastReactionUsed=false;
-  G._warPriestUsed=false;
   G._familiarTurns=0;
   G._familiarActive=false;
   G._thiefUnseen=true;

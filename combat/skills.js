@@ -1118,7 +1118,7 @@ function doSkillEffect(effect, sk){
     // War Domain — Guided Strike
     case 'guided_strike':{
       G._guidedStrikeBonus=true;
-      log('🎯 Guided Strike: +10 ATK + 2d8 divine on next attack!','s');
+      log('🎯 Guided Strike: +WIS ATK + 2d8+WIS divine on next attack!','s');
       break;}
 
     // War Domain — War Priest Strike
