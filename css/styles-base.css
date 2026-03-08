@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+/* ── PALETTE ─────────────────────────────────────────────── */
+:root {
+  --bg:       #0e0c0a;
+  --panel:    #161412;
+  --panel2:   #1e1b18;
+  --panel3:   #252118;
+  --border:   #3a3228;
+  --border2:  #4a4038;
+  --gold:     #c8a84b;
+  --gold2:    #e8d080;
+  --gold-dim: #6a5820;
+  --red:      #8b1a1a;
+  --red2:     #c0392b;
+  --red-dim:  #3a0a0a;
+  --parchment:#d4c090;
+  --text:     #b8a878;
+  --dim:      #5a5040;
+  --white:    #e8dfc8;
+  --green:    #2d6b3a;
+  --green2:   #3d9b4a;
+  --blue:     #1a3a5a;
+  --blue2:    #2a6aaa;
+  --purple:   #4a2a6a;
+  --orange:   #8b4a10;
+  --orange2:  #d4721a;
+}
+
+/* ── Z-INDEX TIERS ──────────────────────────────────────────
+   1-100     Game HUD (bars, sprites, turn state)
+   150-400   UI panels (pause btn 500, loadout 400)
+   600-700   Screen overlays (intro 600, help 700)
+   800-950   Narrative overlays (victoryFade 800, pause 850,
+             town-intro 850, farewell 880, level-up 900,
+             achievement toast 950)
+   7500      Salvage overlay
+   8001      Bug reporter
+   9000-9500 Combat popups (rareEvent 9000, branchReward 9100,
+             graceDropOverlay 9500)
+   9998-9999 Critical (phase2 9998, death 9999)
+   10500     Unlock toast (above death)
+   99999     Fade overlay, scanlines
+─────────────────────────────────────────────────────────── */
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:'VT323',monospace;font-size:18px;color:var(--text);}
+
+/* scanlines */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.07) 4px);}
+
+/* ── SCREEN SYSTEM ───────────────────────────────────────── */
+.screen{display:none;width:100%;height:100vh;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ── SHARED COMPONENTS ───────────────────────────────────── */
+.px-border{border:3px solid var(--border);box-shadow:4px 4px 0 #000;}
+.px-border-gold{border:3px solid var(--gold-dim);box-shadow:4px 4px 0 #000;}
+.px-border-red{border:3px solid var(--red);box-shadow:4px 4px 0 #000;}
+
+.panel-title{
+  font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gold);
+  padding:8px 12px;background:var(--panel2);border-bottom:2px solid var(--border);
+  letter-spacing:2px;text-transform:uppercase;
+  border-top:1px solid var(--border);
+}
+
+.btn{
+  font-family:'Press Start 2P',monospace;font-size:12px;padding:10px 16px;
+  background:var(--panel2);border:2px solid var(--border2);color:var(--text);
+  cursor:pointer;box-shadow:3px 3px 0 #000;transition:all .1s;
+}
+.btn:hover{border-color:var(--gold);color:var(--gold);transform:translate(-1px,-1px);box-shadow:4px 4px 0 #000;}
+.btn:active{transform:translate(1px,1px);box-shadow:2px 2px 0 #000;}
+.btn-gold{border-color:var(--gold-dim);color:var(--gold);}
+.btn-gold:hover{background:var(--panel3);}
+.btn-red{border-color:var(--red);color:var(--red2);}
+.btn-red:hover{background:var(--red-dim);}
+.btn-green{border-color:var(--green);color:var(--green2);}
+.btn-green:hover{background:#0a1a0a;}
+
+/* HP/XP bars */
+.bar-wrap{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.bar-label{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--dim);width:28px;}
+.bar-track{flex:1;height:16px;background:#0a0806;border:1px solid rgba(60,50,40,0.4);position:relative;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);}
+.bar-fill{height:100%;transition:width .4s;position:relative;}
+.bar-hp{background:linear-gradient(90deg,#4a0a0a,#8b1a1a,#c0392b);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);}
+.bar-mp{background:linear-gradient(90deg,#0a1a3a,#1a3a6b,#2a7adc);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);}
+.bar-xp{background:linear-gradient(90deg,#0a2a14,#1a4b2a,#2d8b3a);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);}
+.bar-res{background:linear-gradient(90deg,#3a2000,var(--orange),var(--orange2));box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);}
+.bar-text{position:absolute;right:5px;top:50%;transform:translateY(-50%);font-family:'Press Start 2P',monospace;font-size:9px;white-space:nowrap;color:var(--white);text-shadow:1px 1px 2px rgba(0,0,0,0.8);}
+

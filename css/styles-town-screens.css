@@ -1,0 +1,686 @@
+/* ══════════════════════════════════════════════════════════
+   TOWN INTRODUCTION OVERLAY — ANIMATED TOUR
+   ══════════════════════════════════════════════════════════ */
+.town-intro-overlay{
+  display:none; position:fixed; inset:0; z-index:850;
+  background:rgba(4,2,10,0.55);
+  flex-direction:column; align-items:center; justify-content:flex-end;
+  padding:24px 24px 48px;
+  transition: opacity 0.6s ease;
+}
+.town-intro-overlay.fading-out{
+  opacity:0; pointer-events:none;
+}
+/* ── Gold progress bar across top ── */
+.town-intro-progress{
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:rgba(200,168,75,0.08);
+}
+.town-intro-progress-fill{
+  height:100%; width:0%;
+  background:linear-gradient(90deg, rgba(200,168,75,0.3), rgba(200,168,75,0.9));
+  transition: width 0.6s cubic-bezier(0.25,0.8,0.25,1);
+  box-shadow: 0 0 8px rgba(200,168,75,0.3);
+}
+/* ── Card ── */
+.town-intro-box{
+  max-width:720px; width:100%;
+  background:rgba(10,8,6,0.92);
+  border:1px solid rgba(200,168,75,0.2);
+  border-radius:2px;
+  padding:32px 36px 28px;
+  text-align:left;
+  position:relative;
+  backdrop-filter:blur(4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 1px rgba(200,168,75,0.15) inset;
+  animation: introCardAppear 0.8s ease both;
+}
+@keyframes introCardAppear{
+  from{ opacity:0; transform:translateY(16px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+/* ── Slide transitions ── */
+.town-intro-card-inner{
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.town-intro-card-inner.slide-out{
+  opacity:0; transform:translateX(-12px);
+}
+.town-intro-card-inner.slide-in{
+  animation: introSlideIn 0.35s ease both;
+}
+@keyframes introSlideIn{
+  from{ opacity:0; transform:translateX(12px); }
+  to{ opacity:1; transform:translateX(0); }
+}
+/* ── Header ── */
+.town-intro-header{
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:14px;
+}
+.town-intro-icon{
+  font-size:40px; flex-shrink:0;
+  filter:grayscale(0.15);
+  transition: transform 0.3s ease;
+}
+.town-intro-icon.pulse{
+  animation: introIconPulse 0.5s ease;
+}
+@keyframes introIconPulse{
+  0%{ transform:scale(1); }
+  40%{ transform:scale(1.3); }
+  100%{ transform:scale(1); }
+}
+.town-intro-heading{
+  font-family:'Press Start 2P',monospace;
+  font-size:18px; letter-spacing:3px;
+  color:var(--gold,#c8a84b); text-transform:uppercase;
+}
+/* ── Text ── */
+.town-intro-text{
+  font-family:'Press Start 2P',monospace;
+  font-size:16px; line-height:2.3;
+  color:var(--parchment,#e8dfc0);
+  min-height:55px;
+  opacity:0.9;
+}
+/* ── Footer ── */
+.town-intro-footer{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:18px; padding-top:12px;
+  border-top:1px solid rgba(200,168,75,0.1);
+}
+.town-intro-counter{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px; color:rgba(200,168,75,0.3); letter-spacing:1px;
+}
+.town-intro-btns{
+  display:flex; gap:10px;
+}
+.town-intro-btn{
+  font-family:'Press Start 2P',monospace;
+  font-size:8px; padding:8px 16px;
+  cursor:pointer; letter-spacing:1px;
+  transition:all 0.2s ease;
+  border-radius:1px;
+}
+.town-intro-skip{
+  background:transparent;
+  border:1px solid rgba(100,90,70,0.25);
+  color:rgba(200,168,75,0.3);
+}
+.town-intro-skip:hover{
+  border-color:rgba(200,168,75,0.4); color:rgba(200,168,75,0.7);
+}
+.town-intro-next{
+  background:rgba(200,168,75,0.1);
+  border:1px solid rgba(200,168,75,0.35);
+  color:var(--gold,#c8a84b);
+}
+.town-intro-next:hover{
+  background:rgba(200,168,75,0.2);
+  border-color:var(--gold);
+  box-shadow: 0 0 8px rgba(200,168,75,0.15);
+}
+.town-intro-hint{
+  font-family:'Press Start 2P',monospace;
+  font-size:10px; color:rgba(200,168,75,0.15);
+  margin-top:16px; letter-spacing:1px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FAREWELL CUTSCENE OVERLAY
+   ══════════════════════════════════════════════════════════ */
+.farewell-overlay{
+  display:none; position:fixed; inset:0; z-index:880;
+  background:rgba(4,2,10,0.95);
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:24px;
+}
+.farewell-box{
+  max-width:600px; width:100%;
+  text-align:center;
+  padding:40px 36px;
+}
+.farewell-box.fade-in{
+  animation: introFadeIn 0.8s ease both;
+}
+.farewell-speaker{
+  font-family:'Press Start 2P',monospace;
+  font-size:10px; letter-spacing:3px;
+  color:var(--gold,#c8a84b);
+  text-transform:uppercase;
+  margin-bottom:16px;
+  transition:opacity 0.3s ease;
+}
+.farewell-text{
+  font-family:'Press Start 2P',monospace;
+  font-size:9px; line-height:2.4;
+  color:var(--parchment,#e8dfc0);
+  min-height:60px;
+}
+.farewell-btn{
+  font-family:'Press Start 2P',monospace;
+  font-size:9px; padding:12px 28px;
+  margin-top:30px;
+  background:rgba(139,26,26,0.15);
+  border:1px solid rgba(139,26,26,0.5);
+  color:#c08070;
+  cursor:pointer; letter-spacing:2px;
+  transition:all 0.3s ease;
+}
+.farewell-btn:hover{
+  background:rgba(139,26,26,0.3);
+  border-color:#8b1a1a;
+  color:#e8dfc0;
+}
+
+/* ── In-town farewell narrator ─────────────────────────── */
+#farewellNarrator{
+  position:fixed;
+  bottom:16%; left:50%; transform:translateX(-50%);
+  max-width:580px; width:90%;
+  background:rgba(4,3,2,0.88);
+  border:1px solid rgba(200,168,75,0.28);
+  padding:22px 30px 16px;
+  text-align:center;
+  z-index:300; cursor:pointer;
+  transition:opacity 0.15s;
+  opacity:0; pointer-events:none;
+}
+#farewellNarrator.active{
+  opacity:1; pointer-events:auto;
+}
+#farewellNarrText{
+  font-family:'VT323',monospace;
+  font-size:26px; line-height:1.55;
+  color:rgba(220,210,190,0.92);
+  margin:0 0 14px;
+}
+.farewell-narrator-continue{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px; letter-spacing:2px;
+  color:rgba(200,168,75,0.6);
+  animation:farewellBlink 1.4s ease-in-out infinite;
+}
+@keyframes farewellBlink{
+  0%,100%{opacity:0.3;}
+  50%{opacity:1;}
+}
+
+/* ══════════════════════════════════════════════════════════
+   VICTORY SCENE — Transition text overlay
+   ══════════════════════════════════════════════════════════ */
+.vs-overlay{
+  display:none; position:fixed; inset:0; z-index:950;
+  flex-direction:column; align-items:center; justify-content:center;
+  background:#04020a; overflow:hidden;
+}
+.vs-trans{
+  position:absolute; inset:0; z-index:10;
+  display:flex; align-items:center; justify-content:center;
+  background:#04020a;
+}
+.vs-trans-text{
+  font-family:'Press Start 2P',monospace;
+  font-size:10px; line-height:2.5;
+  color:var(--gold,#c8a84b);
+  letter-spacing:2px; text-align:center;
+  opacity:0; transform:translateY(6px);
+  transition:opacity 1.5s ease, transform 1.5s ease;
+}
+.vs-trans-text.show{ opacity:1; transform:translateY(0); }
+
+/* ══════════════════════════════════════════════════════════
+   LORE REVEAL — HERO NAME LINE
+   ══════════════════════════════════════════════════════════ */
+.lore-line-name{
+  font-family:'Press Start 2P',monospace;
+  font-size:20px;
+  color:var(--gold);
+  text-align:center;
+  letter-spacing:4px;
+  margin:14px 0;
+  text-shadow:0 0 24px rgba(200,168,75,0.55);
+}
+
+/* ══════════════════════════════════════════════════════════
+   KIT'S JOURNAL
+   ══════════════════════════════════════════════════════════ */
+#kitJournal{
+  position:fixed;inset:0;background:#04020a;
+  display:none;align-items:center;justify-content:center;
+  z-index:960;
+}
+#kitJournal.open{ display:flex; }
+.journal-page{
+  background:#f2e8d0;
+  color:#1a1208;
+  padding:40px 48px;
+  max-width:520px;width:90%;
+  border:1px solid #c8a870;
+  box-shadow:4px 4px 0 #000, 0 0 60px rgba(0,0,0,0.6);
+  transform:rotate(-0.8deg);
+  cursor:pointer;
+}
+.journal-header{
+  font-family:'Press Start 2P',monospace;
+  font-size:9px;
+  color:#6b5030;
+  margin-bottom:20px;
+  letter-spacing:1px;
+}
+.journal-body{
+  font-size:16px;
+  line-height:1.9;
+  font-style:italic;
+  white-space:pre-line;
+}
+.journal-continue{
+  margin-top:24px;
+  font-family:'Press Start 2P',monospace;
+  font-size:9px;
+  color:#6b5030;
+  text-align:right;
+  animation:farewellBlink 1.2s infinite;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CREDITS SCREEN
+   ══════════════════════════════════════════════════════════ */
+.credits-overlay{
+  display:none; position:fixed; inset:0; z-index:970;
+  flex-direction:column; align-items:center; justify-content:center;
+  background:#04020a; padding:24px;
+}
+.credits-content{
+  text-align:center; max-width:440px;
+  display:flex; flex-direction:column; gap:0;
+}
+.credits-game-title{
+  font-family:'Press Start 2P',monospace;
+  font-size:14px; letter-spacing:3px;
+  color:var(--gold,#c8a84b);
+  margin-bottom:48px;
+  text-shadow:0 0 30px rgba(200,168,75,0.2);
+}
+.credits-block{
+  margin-bottom:36px;
+  opacity:0; transform:translateY(12px);
+}
+.credits-role{
+  font-family:'Press Start 2P',monospace;
+  font-size:10px; letter-spacing:3px;
+  color:rgba(200,168,75,0.4);
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.credits-name{
+  font-family:'Press Start 2P',monospace;
+  font-size:9px; color:#e8dfc0;
+  line-height:2;
+}
+.credits-divider{
+  width:40px; height:1px; margin:8px auto 36px;
+  background:linear-gradient(to right,transparent,rgba(200,168,75,0.25),transparent);
+}
+.credits-tagline{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px; line-height:2.2;
+  color:rgba(200,168,75,0.5);
+  font-style:italic;
+  margin-bottom:12px;
+  opacity:0;
+}
+.credits-thanks{
+  font-family:'Press Start 2P',monospace;
+  font-size:8px; color:var(--gold,#c8a84b);
+  letter-spacing:2px;
+  margin-top:20px;
+  opacity:0;
+}
+.credits-btn{
+  margin-top:48px;
+  font-family:'Press Start 2P',monospace;
+  font-size:8px; padding:12px 28px;
+  background:rgba(200,168,75,0.08);
+  border:1px solid rgba(200,168,75,0.3);
+  color:var(--gold,#c8a84b);
+  cursor:pointer; letter-spacing:2px;
+  opacity:0; transition:all 0.5s ease;
+}
+.credits-btn.show{ opacity:1; }
+.credits-btn:hover{ background:rgba(200,168,75,0.15); border-color:var(--gold,#c8a84b); }
+
+/* ══════════════════════════════════════════════════════════
+   PHASE B: ZONE MODIFIER BANNER (story screen)
+   ══════════════════════════════════════════════════════════ */
+.modifier-banner{
+  display:flex; align-items:center; gap:12px;
+  padding:10px 18px; margin:12px 0 6px;
+  border:2px solid rgba(200,168,75,0.3);
+  background:rgba(200,168,75,0.06);
+  font-family:'Press Start 2P',monospace;
+  animation:mod-banner-appear 0.8s ease both;
+}
+.modifier-banner.mod-cat-risk{ border-color:rgba(200,60,60,0.5); background:rgba(200,60,60,0.08); }
+.modifier-banner.mod-cat-combat{ border-color:rgba(100,160,255,0.5); background:rgba(100,160,255,0.06); }
+.modifier-banner.mod-cat-economy{ border-color:rgba(200,168,75,0.5); background:rgba(200,168,75,0.08); }
+.modifier-banner.mod-cat-environment{ border-color:rgba(80,200,120,0.5); background:rgba(80,200,120,0.06); }
+.mod-banner-icon{ font-size:22px; flex-shrink:0; }
+.mod-banner-name{ font-size:9px; color:var(--gold,#c8a84b); letter-spacing:2px; }
+.mod-banner-desc{ font-size:10px; color:var(--dim,#9a8a6a); margin-top:2px; line-height:1.4; }
+@keyframes mod-banner-appear{
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+
+/* ── HUD Modifier Indicator (in-game zone bar) ── */
+.zone-modifier-hud{
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px;
+  font-family:'Press Start 2P',monospace; font-size:7px;
+  color:var(--gold,#c8a84b);
+  background:rgba(200,168,75,0.08);
+  border:1px solid rgba(200,168,75,0.25);
+  border-radius:2px;
+  cursor:help;
+  position:relative;
+}
+.zone-modifier-hud .mod-hud-tip{
+  display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  background:#1a1520; border:1px solid var(--gold-dim,#8a7a5a); padding:6px 10px;
+  font-size:7px; color:var(--pale,#e8dfc0); white-space:nowrap; z-index:50;
+  margin-top:4px;
+}
+.zone-modifier-hud:hover .mod-hud-tip{ display:block; }
+
+/* ── Modifier type buff icon variant ── */
+.rare-buff-icon.modifier{
+  border-color:rgba(200,168,75,0.6);
+  animation:mod-icon-pulse 3s ease-in-out infinite;
+}
+@keyframes mod-icon-pulse{
+  0%,100%{ box-shadow:0 0 4px rgba(200,168,75,0.2); }
+  50%{ box-shadow:0 0 8px rgba(200,168,75,0.5); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PHASE B: UNLOCK TOASTS
+   ══════════════════════════════════════════════════════════ */
+.unlock-toast{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 16px;
+  background:linear-gradient(135deg, #1a1520 0%, #0d0a12 100%);
+  border:2px solid var(--gold,#c8a84b);
+  box-shadow:0 0 20px rgba(200,168,75,0.3), 3px 3px 0 #000;
+  font-family:'Press Start 2P',monospace;
+  animation:unlock-slide-in 0.5s ease both, unlock-fade-out 0.5s ease 4.5s both;
+  pointer-events:none;
+  min-width:220px;
+}
+.unlock-toast-icon{ font-size:20px; flex-shrink:0; }
+.unlock-toast-body{}
+.unlock-toast-label{ font-size:6px; color:var(--gold,#c8a84b); letter-spacing:3px; margin-bottom:3px; }
+.unlock-toast-name{ font-size:8px; color:var(--pale,#e8dfc0); }
+@keyframes unlock-slide-in{
+  from{ opacity:0; transform:translateX(60px); }
+  to{ opacity:1; transform:translateX(0); }
+}
+@keyframes unlock-fade-out{
+  from{ opacity:1; }
+  to{ opacity:0; transform:translateX(30px); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PHASE B: MODIFIER ANNOUNCEMENT OVERLAY
+   ══════════════════════════════════════════════════════════ */
+.mod-announce{
+  position:fixed; inset:0; z-index:8500;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.75);
+  animation:mod-announce-bg-in 0.4s ease both;
+  pointer-events:none;
+}
+.mod-announce-inner{
+  text-align:center;
+  padding:32px 48px;
+  border:2px solid rgba(200,168,75,0.4);
+  background:linear-gradient(180deg, rgba(16,12,20,0.95) 0%, rgba(4,2,10,0.98) 100%);
+  box-shadow:0 0 60px rgba(200,168,75,0.15), 0 0 120px rgba(0,0,0,0.8);
+  animation:mod-announce-card-in 0.6s ease both 0.2s;
+  max-width:420px;
+}
+.mod-announce-label{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px; letter-spacing:4px;
+  color:var(--blood,#8b1a1a);
+  margin-bottom:16px;
+}
+.mod-announce-icon{
+  font-size:42px;
+  margin-bottom:12px;
+  animation:mod-announce-icon-pulse 1.5s ease-in-out infinite;
+}
+.mod-announce-name{
+  font-family:'Press Start 2P',monospace;
+  font-size:12px; letter-spacing:3px;
+  color:var(--gold,#c8a84b);
+  margin-bottom:10px;
+  text-shadow:0 0 20px rgba(200,168,75,0.4);
+}
+.mod-announce-desc{
+  font-family:'Press Start 2P',monospace;
+  font-size:8px; line-height:1.6;
+  color:var(--pale,#e8dfc0);
+  margin-bottom:14px;
+}
+.mod-announce-flavor{
+  font-size:13px; font-style:italic;
+  color:var(--dim,#9a8a6a);
+  line-height:1.5;
+}
+/* Category-specific border colors */
+.mod-announce.cat-risk .mod-announce-inner{ border-color:rgba(200,60,60,0.5); }
+.mod-announce.cat-risk .mod-announce-label{ color:#c04040; }
+.mod-announce.cat-combat .mod-announce-inner{ border-color:rgba(100,160,255,0.5); }
+.mod-announce.cat-combat .mod-announce-label{ color:#6496e0; }
+.mod-announce.cat-economy .mod-announce-inner{ border-color:rgba(200,168,75,0.5); }
+.mod-announce.cat-economy .mod-announce-label{ color:var(--gold,#c8a84b); }
+.mod-announce.cat-environment .mod-announce-inner{ border-color:rgba(80,200,120,0.5); }
+.mod-announce.cat-environment .mod-announce-label{ color:#50c878; }
+
+@keyframes mod-announce-bg-in{
+  from{ opacity:0; } to{ opacity:1; }
+}
+@keyframes mod-announce-card-in{
+  from{ opacity:0; transform:scale(0.8) translateY(20px); }
+  to{ opacity:1; transform:scale(1) translateY(0); }
+}
+@keyframes mod-announce-icon-pulse{
+  0%,100%{ transform:scale(1); filter:drop-shadow(0 0 8px rgba(200,168,75,0.3)); }
+  50%{ transform:scale(1.1); filter:drop-shadow(0 0 16px rgba(200,168,75,0.6)); }
+}
+
+
+/* ── BOSS TELEGRAPH ─────────────────────────────────── */
+.telegraph-banner{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0.9);
+  background:rgba(139,26,26,0.85);
+  border:2px solid #c8601a;
+  padding:12px 28px;
+  font-family:'Press Start 2P',monospace;
+  font-size:9px;
+  color:#ffd280;
+  text-align:center;
+  letter-spacing:1px;
+  z-index:50;
+  pointer-events:none;
+  opacity:0;
+  transition:none;
+  max-width:80%;
+  text-shadow:0 1px 4px rgba(0,0,0,0.8);
+  box-shadow:0 0 40px rgba(139,26,26,0.6), inset 0 0 20px rgba(0,0,0,0.3);
+}
+.telegraph-banner.active{
+  animation:telegraph-in 0.4s ease-out forwards, telegraph-out 0.6s 2.8s ease-in forwards;
+}
+@keyframes telegraph-in{
+  from{opacity:0;transform:translate(-50%,-50%) scale(0.8);}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1);}
+}
+@keyframes telegraph-out{
+  from{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  to{opacity:0;transform:translate(-50%,-50%) scale(1.05);}
+}
+
+/* Telegraph log entry */
+.battle-log .log-telegraph{
+  color:#ffd280;
+  font-style:italic;
+  text-shadow:0 0 8px rgba(200,96,26,0.4);
+}
+
+/* ── COMBAT FEEDBACK — crit shake, boss shake, kill freeze, phase zoom ── */
+
+/* Crit shake — harder, longer */
+.panel-center.screen-shake-crit{animation:screenShakeCrit 0.45s ease-out;}
+@keyframes screenShakeCrit{
+  0%{transform:translate(0,0)}
+  10%{transform:translate(-5px,3px)}
+  20%{transform:translate(6px,-2px)}
+  30%{transform:translate(-4px,4px)}
+  40%{transform:translate(5px,-3px)}
+  55%{transform:translate(-3px,2px)}
+  70%{transform:translate(2px,-1px)}
+  85%{transform:translate(-1px,1px)}
+  100%{transform:translate(0,0)}
+}
+
+/* Boss shake — heavy, dramatic */
+.panel-center.screen-shake-boss{animation:screenShakeBoss 0.6s ease-out;}
+@keyframes screenShakeBoss{
+  0%{transform:translate(0,0)}
+  8%{transform:translate(-7px,4px)}
+  16%{transform:translate(8px,-3px)}
+  24%{transform:translate(-6px,5px)}
+  32%{transform:translate(7px,-4px)}
+  44%{transform:translate(-4px,3px)}
+  56%{transform:translate(5px,-2px)}
+  68%{transform:translate(-3px,2px)}
+  80%{transform:translate(2px,-1px)}
+  100%{transform:translate(0,0)}
+}
+
+/* Boss special — white-red flash */
+.battle-stage.flash-boss-special{animation:stageBossFlash 0.4s ease-out;}
+@keyframes stageBossFlash{
+  0%{box-shadow:inset 0 0 120px rgba(255,255,255,0.4), inset 0 0 80px rgba(200,20,10,0.5)}
+  30%{box-shadow:inset 0 0 100px rgba(200,20,10,0.4), inset 0 0 60px rgba(139,26,26,0.3)}
+  100%{box-shadow:inset 0 -20px 40px rgba(0,0,0,0.4), inset 0 20px 40px rgba(0,0,0,0.2)}
+}
+
+/* Kill freeze — brief pause on killing blow */
+.battle-stage.kill-freeze{
+  animation:killFreeze 0.1s step-end;
+}
+@keyframes killFreeze{
+  0%,100%{filter:brightness(1.3) contrast(1.1);}
+}
+
+/* Phase 2 zoom — subtle zoom-in when boss enrages */
+.battle-stage.phase2-zoom{animation:phase2Zoom 1.2s ease-out;}
+@keyframes phase2Zoom{
+  0%{transform:scale(1);}
+  15%{transform:scale(1.04);}
+  100%{transform:scale(1);}
+}
+
+/* Updated splat with horizontal drift */
+@keyframes splat-pop{
+  0%  {opacity:0;transform:scale(0.4) translate(0, 0);}
+  12% {opacity:1;transform:scale(1.25) translate(calc(var(--drift-x,0px)*0.3), -4px);}
+  25% {transform:scale(1.0) translate(calc(var(--drift-x,0px)*0.5), 0);}
+  60% {opacity:1;transform:scale(1.0) translate(var(--drift-x,0px), -18px);}
+  100%{opacity:0;transform:scale(0.85) translate(calc(var(--drift-x,0px)*1.2), -40px);}
+}
+
+
+/* ── ZONE CINEMATIC OVERLAY ─────────────────────────── */
+.zone-cine-overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  pointer-events:none;
+  background:rgba(4,2,10,1);
+  flex-direction:column;align-items:center;justify-content:center;
+}
+.zone-cine-overlay.active{
+  display:flex;
+}
+.zone-cine-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 50%, rgba(10,6,14,0.3) 0%, rgba(4,2,10,0.7) 70%, rgba(4,2,10,1) 100%);
+}
+.zone-cine-content{
+  position:relative;z-index:1;
+  text-align:center;
+  animation:zoneCineContentIn 0.7s 0.2s ease-out both;
+}
+.zone-cine-num{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px;
+  letter-spacing:4px;
+  color:var(--blood,#8b1a1a);
+  text-transform:uppercase;
+  margin-bottom:16px;
+}
+.zone-cine-divider{
+  width:80px;height:1px;margin:0 auto 18px;
+  background:linear-gradient(to right, transparent, rgba(200,168,75,0.5), transparent);
+}
+.zone-cine-name{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(12px,2.2vw,20px);
+  font-weight:400;
+  color:var(--gold2,#c8a84b);
+  letter-spacing:2px;
+  text-shadow:0 0 40px rgba(200,168,75,0.3), 0 2px 20px rgba(0,0,0,0.8);
+  margin-bottom:14px;
+}
+.zone-cine-tagline{
+  font-family:'VT323',monospace;
+  font-size:clamp(18px,2.6vw,26px);
+  font-style:italic;
+  color:rgba(232,223,192,0.6);
+  max-width:440px;margin:0 auto;
+}
+@keyframes zoneCineIn{
+  from{opacity:0.85;} to{opacity:1;}
+}
+@keyframes zoneCineOut{
+  from{opacity:1;} to{opacity:0;}
+}
+@keyframes zoneCineContentIn{
+  from{opacity:0;transform:translateY(12px) scale(0.95);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+/* ── DEATH HIGHLIGHT BOX ───────────────────────────── */
+.death-highlight-box{
+  background:rgba(200,168,75,0.06);
+  border:1px solid rgba(200,168,75,0.2);
+  padding:10px 18px;
+  margin:12px auto 0;
+  max-width:380px;
+  text-align:center;
+  font-family:'Press Start 2P',monospace;
+  font-size:8px;
+  letter-spacing:1px;
+  color:var(--gold2,#c8a84b);
+}
+.death-stat-row .death-cause{
+  color:#c08070;
+}
+
+

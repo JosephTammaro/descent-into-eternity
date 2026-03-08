@@ -1,0 +1,359 @@
+/* ══════════════════════════════════════════════════════════
+   STORY INTRO
+══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   GAME INTRO CUTSCENE
+══════════════════════════════════════════════════════════ */
+#screen-intro{
+  position:fixed;inset:0;background:#000;z-index:600;
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;
+}
+.intro-content{max-width:560px;width:90%;text-align:center;}
+.intro-line{
+  font-size:19px;color:var(--parchment);line-height:1.8;
+  min-height:32px;font-style:italic;margin-bottom:8px;
+  opacity:0;transition:opacity .6s;
+}
+.intro-line.show{opacity:1;}
+.intro-title{
+  font-family:'Press Start 2P',monospace;font-size:13px;color:var(--gold);
+  margin-bottom:28px;opacity:0;transition:opacity .6s;
+  text-shadow:0 0 20px rgba(200,168,75,.5);
+}
+.intro-title.show{opacity:1;}
+.intro-skip{
+  margin-top:32px;font-family:'Press Start 2P',monospace;font-size:12px;
+  color:var(--dim);background:transparent;border:1px solid var(--border);
+  padding:8px 18px;cursor:pointer;transition:color .2s,border-color .2s;
+}
+.intro-skip:hover{color:var(--gold);border-color:var(--gold-dim);}
+
+/* ══════════════════════════════════════════════════════════
+   CAMPFIRE INVENTORY TAB
+══════════════════════════════════════════════════════════ */
+.cf-inv-panel{padding:4px 0;}
+.cf-inv-section-title{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold-dim);letter-spacing:2px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(60,50,40,0.15);}
+.cf-eq-list{display:flex;flex-direction:column;gap:4px;margin-bottom:4px;}
+.cf-eq-row{display:flex;align-items:center;gap:8px;padding:6px 10px;
+  background:linear-gradient(135deg,#0a0806,#0e0a08);
+  border:1px solid rgba(60,50,40,0.2);cursor:pointer;min-height:32px;font-family:'Press Start 2P',monospace;
+  transition:border-color 0.15s, background 0.15s;
+}
+.cf-eq-row.cf-eq-filled{border-color:rgba(60,50,40,0.25);cursor:pointer;}
+.cf-eq-row.cf-eq-filled:hover{border-color:rgba(200,168,75,0.2);background:linear-gradient(135deg,#0e0a06,#12100a);}
+.cf-eq-slot-lbl{font-size:12px;color:var(--dim);width:54px;flex-shrink:0;}
+.cf-eq-icon{font-size:14px;flex-shrink:0;}
+.cf-eq-name{font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cf-eq-stats{font-size:12px;color:var(--dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cf-eq-unequip{font-size:12px;color:var(--red2);margin-left:4px;flex-shrink:0;opacity:.6;}
+.cf-eq-row:hover .cf-eq-unequip{opacity:1;}
+.cf-inv-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-bottom:10px;}
+.cf-inv-slot{aspect-ratio:1;
+  background:linear-gradient(135deg,#0a0806,#0c0a08);
+  border:1px solid rgba(60,50,40,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:grab;position:relative;
+  transition:border-color .15s,opacity .15s,transform .15s;
+}
+.cf-inv-slot:hover:not(.empty){border-color:rgba(200,168,75,0.3);box-shadow:0 0 6px rgba(255,120,40,0.06);}
+.cf-inv-slot.empty{color:rgba(60,50,40,0.3);cursor:default;font-size:12px;}
+.cf-inv-slot.drag-over{border-color:var(--gold);background:rgba(200,160,48,0.15);transform:scale(1.08);}
+.cf-inv-slot.dragging{opacity:0.35;cursor:grabbing;}
+.cf-item-detail{min-height:28px;padding:6px 8px;
+  background:linear-gradient(135deg,#0a0806,#0e0a08);
+  border:1px solid rgba(60,50,40,0.2);display:flex;align-items:center;gap:4px;font-family:'Press Start 2P',monospace;font-size:12px;flex-wrap:wrap;}
+
+
+/* ══ CAMPFIRE REST SCENE ══════════════════════════════════════════════════ */
+.cf-rest-scene{
+  position:relative;width:100%;max-width:480px;height:130px;
+  margin:0 auto 18px;overflow:hidden;
+  background:linear-gradient(180deg,#060410 0%,#0a0612 40%,#120818 70%,#1a0c08 100%);
+  border:1px solid rgba(60,50,40,0.3);
+  image-rendering:pixelated;
+  box-shadow:inset 0 0 30px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.4);
+}
+/* Ground strip */
+.cf-ground{position:absolute;bottom:0;left:0;right:0;height:32px;
+  background:linear-gradient(180deg,#1a0e04,#140a02);border-top:2px solid #2a1a08;
+  box-shadow:0 -6px 20px rgba(255,100,0,0.06);
+}
+/* Stars */
+.cf-star{position:absolute;background:#fff;animation:cf-twinkle 2s ease-in-out infinite;
+  box-shadow:0 0 2px rgba(255,255,255,0.3);
+}
+@keyframes cf-twinkle{0%,100%{opacity:.15;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+/* Sleeping bag */
+.cf-bag{position:absolute;bottom:32px;right:80px;}
+.cf-bag-body{width:90px;height:28px;background:#1a3a6a;border:2px solid #2a5a9a;border-radius:12px 4px 4px 12px;position:relative;
+  box-shadow:2px 2px 6px rgba(0,0,0,0.4);
+}
+.cf-bag-head{width:26px;height:26px;background:#c8a46a;border:2px solid #a07840;border-radius:50%;position:absolute;left:-14px;top:1px;
+  box-shadow:1px 1px 4px rgba(0,0,0,0.3);
+}
+/* Eyes (closed, sleeping) */
+.cf-eye{position:absolute;width:4px;height:2px;background:#5a3010;top:10px;}
+.cf-eye.l{left:6px;} .cf-eye.r{right:6px;}
+/* Zzz */
+.cf-zzz{position:absolute;font-family:'Press Start 2P',monospace;font-size:12px;color:#8ab4d4;top:-16px;right:0;animation:cf-float 2.5s ease-in-out infinite;
+  text-shadow:0 0 6px rgba(138,180,212,0.3);
+}
+@keyframes cf-float{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-8px);opacity:1}}
+/* Campfire */
+.cf-fire-wrap{position:absolute;bottom:32px;left:90px;}
+.cf-log1,.cf-log2{position:absolute;bottom:0;width:28px;height:8px;background:#4a2000;border:1px solid #6a3a10;border-radius:2px;
+  box-shadow:1px 1px 3px rgba(0,0,0,0.4);
+}
+.cf-log1{transform:rotate(-20deg);left:-4px;}
+.cf-log2{transform:rotate(20deg);left:10px;}
+.cf-ember{position:absolute;bottom:6px;left:6px;width:20px;height:6px;background:#ff6600;border-radius:50%;filter:blur(2px);
+  animation:cf-ember-pulse 1.5s ease-in-out infinite alternate;
+}
+@keyframes cf-ember-pulse{0%{opacity:0.6;filter:blur(2px)}100%{opacity:1;filter:blur(3px)}}
+.cf-flame{position:absolute;bottom:12px;left:0;}
+.cf-flame-c{position:absolute;border-radius:50% 50% 30% 30%;animation:cf-burn 0.7s ease-in-out infinite alternate;}
+@keyframes cf-burn{0%{transform:scaleX(1) scaleY(1)}100%{transform:scaleX(0.85) scaleY(1.15)}}
+/* Glow on ground — much more visible */
+.cf-glow{position:absolute;bottom:0;left:30px;width:120px;height:35px;
+  background:radial-gradient(ellipse, rgba(255,100,0,0.35) 0%, rgba(255,80,0,0.15) 40%, transparent 70%);
+  border-radius:50%;animation:cf-ground-glow 2s ease-in-out infinite alternate;
+}
+@keyframes cf-ground-glow{0%{opacity:0.6}100%{opacity:1}}
+/* Pixel wizard (shop) */
+.px-wizard-wrap{flex-shrink:0;position:relative;}
+.px-wizard{image-rendering:pixelated;display:block;}
+
+/* ══════════════════════════════════════════════════════════
+   BOSS VICTORY OVERLAY
+══════════════════════════════════════════════════════════ */
+#bossVictoryOverlay {
+  position:fixed;inset:0;z-index:950;
+  background:rgba(0,0,0,0);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+  transition:background 0.6s ease;
+}
+#bossVictoryOverlay.active {
+  background:rgba(0,0,0,0.88);
+  pointer-events:all;
+}
+.bvo-slash {
+  width:0;height:3px;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin-bottom:28px;
+  transition:width 0.7s ease 0.3s;
+}
+#bossVictoryOverlay.active .bvo-slash { width:320px; }
+
+.bvo-defeated {
+  font-family:'Press Start 2P',monospace;
+  font-size:12px;letter-spacing:4px;
+  color:var(--gold-dim);
+  opacity:0;
+  transform:translateY(-8px);
+  transition:opacity 0.5s ease 0.6s, transform 0.5s ease 0.6s;
+  margin-bottom:18px;
+}
+#bossVictoryOverlay.active .bvo-defeated { opacity:1; transform:translateY(0); }
+
+.bvo-name {
+  font-family:'Press Start 2P',monospace;
+  font-size:18px;
+  color:var(--gold);
+  text-shadow:0 0 30px rgba(200,168,75,.6), 0 0 60px rgba(200,168,75,.3);
+  opacity:0;
+  transform:scale(0.8);
+  transition:opacity 0.6s ease 0.9s, transform 0.6s ease 0.9s;
+  text-align:center;padding:0 16px;
+  margin-bottom:12px;
+}
+#bossVictoryOverlay.active .bvo-name { opacity:1; transform:scale(1); }
+
+.bvo-title {
+  font-size:15px;
+  color:var(--dim);
+  font-style:italic;
+  opacity:0;
+  transition:opacity 0.5s ease 1.2s;
+  margin-bottom:36px;
+  text-align:center;
+}
+#bossVictoryOverlay.active .bvo-title { opacity:1; }
+
+.bvo-slash2 {
+  width:0;height:1px;
+  background:linear-gradient(90deg, transparent, var(--border), transparent);
+  margin-bottom:28px;
+  transition:width 0.6s ease 1.3s;
+}
+#bossVictoryOverlay.active .bvo-slash2 { width:200px; }
+
+.bvo-continue {
+  font-family:'Press Start 2P',monospace;
+  font-size:12px;
+  color:var(--gold-dim);
+  letter-spacing:2px;
+  opacity:0;
+  transition:opacity 0.5s ease 2.5s;
+  cursor:pointer;
+  border:1px solid var(--gold-dim);
+  padding:10px 20px;
+  background:transparent;
+}
+.bvo-continue:hover { color:var(--gold); border-color:var(--gold); }
+#bossVictoryOverlay.active .bvo-continue { opacity:1; }
+
+/* ══════════════════════════════════════════════════════════
+   ACHIEVEMENT TOAST
+══════════════════════════════════════════════════════════ */
+#achToast{
+  position:fixed;bottom:24px;right:24px;z-index:950;
+  background:#0a0800;border:2px solid var(--gold-dim);
+  box-shadow:0 0 20px rgba(200,168,75,.2),4px 4px 0 #000;
+  padding:12px 16px;display:flex;gap:10px;align-items:center;
+  max-width:280px;
+  opacity:0;transform:translateX(120%);
+  transition:opacity .3s,transform .3s;
+}
+#achToast.show{opacity:1;transform:translateX(0);}
+#achToastIcon{font-size:26px;flex-shrink:0;}
+.ach-toast-text{}
+.ach-toast-label{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold-dim);margin-bottom:3px;letter-spacing:2px;}
+#achToastTitle{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold);margin-bottom:3px;}
+#achToastDesc{font-size:13px;color:var(--dim);}
+
+/* OBJECTIVE STATUS BAR */
+#objectiveStatus{
+  display:none;margin:4px 0 6px;padding:5px 8px;
+  background:#050401;border:1px solid var(--border);
+  font-size:13px;line-height:1.4;
+}
+
+/* CODEX / ACHIEVEMENTS */
+.ach-grid{display:flex;flex-direction:column;gap:6px;}
+.ach-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  background:#050401;border:1px solid var(--border);
+}
+.ach-row.got{border-color:var(--gold-dim);}
+.ach-row.locked{opacity:.55;}
+.ach-icon{font-size:20px;flex-shrink:0;width:24px;text-align:center;}
+.ach-info{flex:1;min-width:0;}
+.ach-title{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold2);margin-bottom:3px;}
+.ach-desc{font-size:13px;color:var(--dim);}
+.ach-check{color:var(--green2);font-size:16px;font-weight:bold;flex-shrink:0;}
+
+/* ══════════════════════════════════════════════════════════
+   LORE REVEAL MODAL (shown after boss death)
+══════════════════════════════════════════════════════════ */
+#loreReveal{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:850;
+  display:none;align-items:center;justify-content:center;
+}
+#loreReveal.open{display:flex;}
+.lore-box{
+  background:#050401;border:2px solid var(--gold-dim);
+  box-shadow:0 0 40px rgba(200,168,75,.15),6px 6px 0 #000;
+  padding:32px;max-width:520px;width:92%;
+}
+.lore-icon{font-size:36px;margin-bottom:12px;display:block;text-align:center;}
+.lore-title{
+  font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold);
+  text-align:center;margin-bottom:20px;letter-spacing:1px;
+}
+.lore-lines{min-height:120px;}
+.lore-line{
+  font-size:18px;color:var(--parchment);line-height:1.8;
+  font-style:italic;margin-bottom:6px;
+  opacity:0;transition:opacity .5s;
+}
+.lore-line.show{opacity:1;}
+.lore-continue{
+  display:none;width:100%;margin-top:20px;
+  font-family:'Press Start 2P',monospace;font-size:12px;
+  color:var(--gold);background:transparent;border:2px solid var(--gold-dim);
+  padding:10px;cursor:pointer;text-align:center;
+}
+.lore-continue:hover{background:rgba(200,168,75,.05);}
+.lore-continue.show{display:block;}
+
+/* ══════════════════════════════════════════════════════════
+   PLAYER IDLE ANIMATIONS
+══════════════════════════════════════════════════════════ */
+
+/* Bob — classic up/down idle (Fighter, Rogue) */
+@keyframes player-bob {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* Float — smooth gentle hover (Wizard, Cleric) */
+@keyframes player-float {
+  0%,100% { transform: translateY(0px) scale(1.00); }
+  50%      { transform: translateY(-5px) scale(1.01); }
+}
+
+/* Pulse — breathe in/out scale (Paladin) */
+@keyframes player-pulse {
+  0%,100% { transform: scale(1.00) translateY(0px); }
+  40%      { transform: scale(1.02) translateY(-2px); }
+  60%      { transform: scale(1.02) translateY(-2px); }
+}
+
+/* Sway — gentle left-right rock (Ranger, Druid) */
+@keyframes player-sway {
+  0%,100% { transform: rotate(0deg) translateY(0px); }
+  25%      { transform: rotate(-1.5deg) translateY(-2px); }
+  75%      { transform: rotate(1.5deg) translateY(-2px); }
+}
+
+/* Shake — aggressive micro-vibrate (Barbarian) */
+@keyframes player-shake {
+  0%,100% { transform: translateX(0px) translateY(0px); }
+  20%      { transform: translateX(-2px) translateY(-1px); }
+  40%      { transform: translateX(2px) translateY(-2px); }
+  60%      { transform: translateX(-1px) translateY(-1px); }
+  80%      { transform: translateX(1px) translateY(-2px); }
+}
+
+/* Make playerSprite container use transform-origin from bottom-center */
+#playerSprite {
+  transform-origin: bottom center;
+  display: inline-block;
+}
+
+/* Idle animation classes — one per profile */
+#playerSprite.idle-bob    { animation: player-bob   1.2s ease-in-out infinite; }
+#playerSprite.idle-bob-fast{ animation: player-bob  0.8s ease-in-out infinite; }
+#playerSprite.idle-float  { animation: player-float 2.0s ease-in-out infinite; }
+#playerSprite.idle-float-slow{ animation: player-float 2.8s ease-in-out infinite; }
+#playerSprite.idle-pulse  { animation: player-pulse 2.4s ease-in-out infinite; }
+#playerSprite.idle-sway   { animation: player-sway  1.8s ease-in-out infinite; }
+#playerSprite.idle-sway-slow{ animation: player-sway 2.2s ease-in-out infinite; }
+#playerSprite.idle-shake  { animation: player-shake 0.6s ease-in-out infinite; }
+
+/* Attack/hit animations override idle — higher specificity via !important */
+#playerSprite.attack-anim { animation: attack-swing .45s ease-in-out !important; }
+#playerSprite.hit-anim    { animation: take-hit     .3s  ease-in-out !important; }
+
+#screen-story{
+  flex-direction:column;align-items:center;justify-content:center;
+  background:#000;position:relative;overflow:hidden;
+}
+.story-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.85) 100%);
+  pointer-events:none;
+}
+.story-content{position:relative;z-index:1;max-width:580px;padding:40px;text-align:center;}
+.story-zone-tag{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--dim);letter-spacing:3px;margin-bottom:18px;}
+.story-title{font-family:'Press Start 2P',monospace;font-size:17px;color:var(--gold);
+  text-shadow:0 0 40px rgba(200,168,75,.5),3px 3px 0 #000;margin-bottom:28px;}
+.story-body{font-size:21px;color:var(--parchment);line-height:1.7;margin-bottom:36px;min-height:80px;font-style:italic;}
+.story-enter{
+  font-family:'Press Start 2P',monospace;font-size:12px;padding:13px 32px;
+  background:transparent;border:3px solid var(--gold-dim);color:var(--gold);
+  cursor:pointer;box-shadow:4px 4px 0 #000;animation:pulse-gold 2s infinite;
+}
+@keyframes pulse-gold{0%,100%{box-shadow:4px 4px 0 #000}50%{box-shadow:4px 4px 0 #000,0 0 20px rgba(200,168,75,.3)}}
+.story-enter:hover{background:rgba(200,168,75,.05);}
+
