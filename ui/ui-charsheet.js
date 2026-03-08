@@ -303,6 +303,8 @@ function _renderChromaGalleryContent(container){
     if(defEl){
       if(window.hasImageSprite && window.hasImageSprite(classId)){
         window.renderImageSpriteStatic(classId, defEl, SPRITE_SCALE);
+        const defImg = defEl.querySelector('img.img-sprite');
+        if(defImg) defImg.style.filter = 'none'; // default card always shows original colors
       } else if(typeof CLASS_SPRITES!=='undefined' && CLASS_SPRITES[classId]){
         renderSprite(CLASS_SPRITES[classId], 6, defEl);
       }
