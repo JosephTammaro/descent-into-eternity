@@ -52,10 +52,21 @@ function setPlayerTurn(isPlayer){
       G._starryFormTurns--;
       if(G._starryFormTurns<=0){G._starryFormActive=false;log('⭐ Starry Form fades.','s');}
     }
+    // Phantasmal Force (Illusionist Wizard): 2d6+INT psychic/turn while target is Frightened
+    if(G._phantasmalTarget>=0&&G.currentEnemies){
+      const pfTarget=G.currentEnemies[G._phantasmalTarget];
+      if(pfTarget&&!pfTarget.dead&&pfTarget.hp>0){
+        const isFrightened=pfTarget.conditions&&pfTarget.conditions.find(c=>c.name==='Frightened'&&c.turns>0);
+        if(isFrightened){
+          const pfDmg=roll(6)+roll(6)+Math.max(0,md(G.stats.int));
+          dealToEnemy(pfDmg,false,'Phantasmal Force 😱 (2d6+INT psychic)');
+        }
+      } else {G._phantasmalTarget=-1;}
+    }
     // Arcane Familiar (Illusionist Wizard): fires damage each turn
     if(G._familiarActive&&G._familiarTurns>0&&G.currentEnemy&&G.currentEnemy.hp>0){
-      const famDmg=roll(6)+Math.floor(Math.max(0,md(G.stats&&G.stats.int?G.stats.int:10))/2);
-      dealToEnemy(famDmg,false,'Arcane Familiar 🦉');
+      const famDmg=roll(6)+Math.max(0,md(G.stats&&G.stats.int?G.stats.int:10));
+      dealToEnemy(famDmg,false,'Arcane Familiar 🦉 (1d6+INT)');
       G._familiarTurns--;
       if(G._familiarTurns<=0){G._familiarActive=false;log('🦉 Arcane Familiar departs.','s');}
     }
@@ -500,7 +511,7 @@ function spawnEnemy(){
   G._envenomStacks=0;
   G._markedForDeath=false;
   G._blessAttacks=0;
-  G._guidedStrikeBonus=false;
+  G._guidedStrikeBonus=false;G._guidedStrikeDmgBonus=0;
   G._cosmicOmenActive=false;
   G._camouflageActive=false;
   G._phantasmalTarget=-1;

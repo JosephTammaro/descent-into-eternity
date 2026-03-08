@@ -146,7 +146,7 @@ function doSkillEffect(effect, sk){
       dealToEnemy(r.dmg,r.crit,'Attack');
       // Sacred Weapon: +1d6 radiant and +3 HP per hit
       if(G.sx&&G.sx.sacredWeapon&&G.sx.sacredWeapon.turns>0){
-        const swRad=roll(6);dealToEnemy(swRad,false,'Sacred Weapon 🌟 radiant');
+        const swRad=roll(6)+Math.max(0,md(G.stats.cha));dealToEnemy(swRad,false,'Sacred Weapon 🌟 (1d6+CHA)');
         heal(3,'Sacred Weapon');
         G.sx.sacredWeapon.turns--;
         if(G.sx.sacredWeapon.turns<=0){delete G.sx.sacredWeapon;log('Sacred Weapon fades.','s');}
@@ -190,10 +190,10 @@ function doSkillEffect(effect, sk){
       // Temporarily remove _vulnerable so Power Strike itself doesn't consume it
       const hadVuln=G.currentEnemy&&G.currentEnemy._vulnerable;
       if(hadVuln)delete G.currentEnemy._vulnerable;
-      const r=calcPlayerDmg();r.dmg=Math.ceil(r.dmg*2.2);
+      const r=calcPlayerDmg();r.dmg=r.dmg+roll(10)+roll(10);
       // Restore if it was there, then set new one for NEXT hit
       if(hadVuln&&G.currentEnemy)G.currentEnemy._vulnerable=true;
-      dealToEnemy(r.dmg,r.crit,'Power Strike 💪');
+      dealToEnemy(r.dmg,r.crit,'Power Strike 💪 (base+2d10)');
       if(G.currentEnemy&&G.currentEnemy.hp>0){
         G.currentEnemy._vulnerable=true;
         log('Vulnerable! Enemy takes +10% dmg on next hit.','s');
@@ -209,7 +209,7 @@ function doSkillEffect(effect, sk){
         },380);
       }
       break;}
-    case 'second_wind':{AUDIO.sfx.secondWind();const h=roll(10)+G.level;heal(h,'Second Wind');
+    case 'second_wind':{AUDIO.sfx.secondWind();const h=roll(10)+md(G.stats.con);heal(h,'Second Wind (1d10+CON)');
       // Relentless Advance: Second Wind also removes one negative condition
       if(G.classId==='fighter'&&G._relentlessAdvance&&G.conditions.length>0){
         const removed=G.conditions[0];
@@ -220,7 +220,7 @@ function doSkillEffect(effect, sk){
       break;}
     case 'parry':AUDIO.sfx.block();G.sx.parry=true;log('⛊ Parry set — next hit halved!','s');break;
     case 'fire_bolt':{AUDIO.sfx.burn();
-      let fbd=roll(10)+getSpellPower()+(G.subclassId==='evoker'?roll(6):0);
+      let fbd=roll(10)+roll(10)+getSpellPower()+(G.subclassId==='evoker'?roll(6):0);
       // Brilliant Focus: +INT mod to spell damage
       if(G.classId==='wizard'&&G._brilliantFocus)fbd+=Math.max(0,md(G.stats.int));
       // Overload: spells penetrate 30% of enemy DEF
@@ -254,7 +254,7 @@ function doSkillEffect(effect, sk){
       // Metamagic: Twin — once per rest, fire bolt twice
       if(G.classId==='wizard'&&G._metamagicTwin&&!G._metamagicTwinUsed&&G.currentEnemy&&G.currentEnemy.hp>0){
         G._metamagicTwinUsed=true;
-        let fbd2=roll(10)+getSpellPower();
+        let fbd2=roll(10)+roll(10)+getSpellPower();
         if(G._brilliantFocus)fbd2+=Math.max(0,md(G.stats.int));
         if(G._overload&&G.currentEnemy)fbd2+=Math.floor((G.currentEnemy.def||0)*0.3);
         dealToEnemy(fbd2,false,'Metamagic Twin 🌀 second bolt');
@@ -285,7 +285,7 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.fireball();
       // Tidal Surge: upgrade Fireball dice from d6 to d8
       const fbDie=G.classId==='wizard'&&G._tidalSurge?8:6;
-      let d=0;for(let i=0;i<5;i++)d+=roll(fbDie);
+      let d=0;for(let i=0;i<8;i++)d+=roll(fbDie);
       d+=getSpellPower();
       // Brilliant Focus: +INT mod to spell damage
       if(G.classId==='wizard'&&G._brilliantFocus)d+=Math.max(0,md(G.stats.int));
@@ -379,7 +379,7 @@ function doSkillEffect(effect, sk){
     case 'lay_on_hands':{
       AUDIO.sfx.heal();
       if(G.layOnHandsPool<=0){log('Lay on Hands pool exhausted!','s');return;}
-      const healAmt=Math.min(G.layOnHandsPool, roll(8)+roll(8)+G.level+(G.talents.includes('Lay on Hands+')?G.level:0));
+      const healAmt=Math.min(G.layOnHandsPool, roll(8)+roll(8)+Math.max(0,md(G.stats.wis))+(G.talents.includes('Lay on Hands+')?Math.max(0,md(G.stats.wis)):0));
       G.layOnHandsPool=Math.max(0,G.layOnHandsPool-healAmt);
       heal(Math.floor(healAmt),'Lay on Hands 🙏 ('+G.layOnHandsPool+' pool left)');
       // Restorative Aura: remove one condition on use
@@ -413,10 +413,10 @@ function doSkillEffect(effect, sk){
         for(let i=0;i<3;i++){
           if(!G.currentEnemy||G.currentEnemy.hp<=0)break;
           const r=calcPlayerDmg();
-          let d=Math.ceil(r.dmg*.8);
+          let d=Math.ceil(r.dmg*.7)+roll(6);
           if(G._longShot)d+=roll(8)-roll(6);
           if(G._volleyMastery&&G.hunterMarked)d+=roll(G._hawkEye?8:6);
-          dealToEnemy(d,r.crit,'Volley 🏹');
+          dealToEnemy(d,r.crit,'Volley 🏹 (base×0.7+1d6)');
           t+=d;arrowsHit++;
         }
       } else {
@@ -428,10 +428,10 @@ function doSkillEffect(effect, sk){
           G.currentEnemy=target;
           G.targetIdx=(G.currentEnemies||[]).indexOf(target);
           const r=calcPlayerDmg();
-          let d=Math.ceil(r.dmg*.8);
+          let d=Math.ceil(r.dmg*.7)+roll(6);
           if(G._longShot)d+=roll(8)-roll(6);
           if(G._volleyMastery&&G.hunterMarked)d+=roll(G._hawkEye?8:6);
-          dealToEnemy(d,r.crit,'Volley 🏹');
+          dealToEnemy(d,r.crit,'Volley 🏹 (base×0.7+1d6)');
           t+=d;arrowsHit++;
         }
         processAoeDeaths();
@@ -462,8 +462,8 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.attack();const r=calcPlayerDmg();
       // Tidal Force: damage die increases to d12 (adds extra d12 bonus)
       if(G._tidalForce)r.dmg+=roll(12);
-      r.dmg=Math.ceil(r.dmg*1.75);
-      dealToEnemy(r.dmg,r.crit,'Reckless Attack 💥');
+      r.dmg=r.dmg+roll(12)+roll(12);
+      dealToEnemy(r.dmg,r.crit,'Reckless Attack 💥 (base+2d12)');
       // ── Chroma tracking: reckless attacks ──
       G.totalReckless=(G.totalReckless||0)+1;
       // Consumes 20 rage resource — but never drops you out of rage entirely
@@ -475,7 +475,7 @@ function doSkillEffect(effect, sk){
       }
       // Recoil — Juggernaut halves it; Volcanic Rage redirects to enemy
       {
-        let recoil=8; // flat recoil
+        let recoil=roll(6); // 1d6 recoil
         if(G._juggernaut) recoil=Math.floor(recoil*0.5); // Juggernaut: 50% reduction
         if(recoil>0&&G._volcanicRage&&G.raging&&G.currentEnemy&&G.currentEnemy.hp>0){
           const burnBonus=roll(6);
@@ -498,15 +498,15 @@ function doSkillEffect(effect, sk){
       else{const r=calcPlayerDmg();dealToEnemy(r.dmg,r.crit,'Retaliation ⚡');}
       break;}
     case 'sacred_flame':{
-      AUDIO.sfx.sacredFlame();const scalingBonus=Math.floor(G.level/4);
-      const d=roll(10)+scalingBonus+getSpellPower()+(G.subclassId==='life'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
+      AUDIO.sfx.sacredFlame();
+      const d=roll(8)+roll(8)+getSpellPower()+(G.subclassId==='life'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
       dealToEnemy(d,false,'Sacred Flame ☀️');
       // Wrath of the Righteous: applies Vulnerable (+15% dmg taken) for 1 turn
       if(G.classId==='cleric'&&G._wrathRighteous&&G.currentEnemy&&G.currentEnemy.hp>0){G.currentEnemy._vulnerable=true;log('⚡ Wrath of the Righteous: Vulnerable!','c');}
       // Wrath of God: sacred flame hits twice (once per turn)
       if(G.classId==='cleric'&&G._wrathOfGod&&!G._wrathOfGodUsed&&G.currentEnemy&&G.currentEnemy.hp>0){
         G._wrathOfGodUsed=true;
-        const d2=roll(10)+scalingBonus+getSpellPower()+(G.subclassId==='life'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
+        const d2=roll(8)+roll(8)+getSpellPower()+(G.subclassId==='life'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
         dealToEnemy(d2,false,'Wrath of God ⚡ second flame');
         log('⚡ Wrath of God: second Sacred Flame!','s');
       }
@@ -559,7 +559,7 @@ function doSkillEffect(effect, sk){
     case 'claw_strike':{
       if((G.wildShapeHp<=0)&&G.classId==='druid'){log('Claw Strike only available in Wild Shape!','s');return;}
       AUDIO.sfx.attack();
-      const clawDmg=roll(6)+roll(6)+G.atk+G.profBonus;
+      const clawDmg=roll(6)+roll(6)+Math.max(0,md(G.stats.str))+G.profBonus;
       const clawCrit=roll(20)>=G.critRange;
       let finalClaw=clawCrit?Math.ceil(clawDmg*(G.critMult||2)):clawDmg;
       if(G._elementalForm){const fireDmg=roll(6);finalClaw+=fireDmg;log('🔥 Elemental: +'+fireDmg+' fire damage!','s');}
@@ -684,7 +684,7 @@ function doSkillEffect(effect, sk){
       const enemySave=roll(20)+enemySaveBonus;
       const entTurns=G._tidalRoots?3:2; // Tidal Roots: +1 turn
       if(enemySave<spellDC){
-        const entDmg=roll(4);addConditionEnemy('Restrained',entTurns);dealToEnemy(entDmg,false,'Entangle 🌿');
+        const entDmg=roll(4)+Math.max(0,md(G.stats.wis));addConditionEnemy('Restrained',entTurns);dealToEnemy(entDmg,false,'Entangle 🌿 (1d4+WIS)');
         if(G.currentEnemy&&G.currentEnemy.hp>0)log('Enemy is Restrained for '+entTurns+' rounds!','c');
         // Overgrowth: mark for persistent re-restraint
         if(G._overgrowth){eEnt._overgrowthDC=spellDC;log('🌿 Overgrowth: roots hold!','s');}
@@ -700,9 +700,9 @@ function doSkillEffect(effect, sk){
       if(!G.currentEnemy){log('No target!','e');break;}
       AUDIO.sfx.powerStrike();
       const {dmg:sd,crit:sc}=calcPlayerDmg();
-      const surgeBonus=roll(10)+roll(10)+Math.max(0,md(G.stats.str));
+      const surgeBonus=roll(10)+roll(10);
       const surgeDmg=Math.ceil((sd+surgeBonus)*(sc?2:1));
-      dealToEnemy(surgeDmg,sc,'Surge Strike ⚡');
+      dealToEnemy(surgeDmg,sc,'Surge Strike ⚡ (base+2d10)');
       if(sc){
         G.bonusUsed=false;
         log('⚡ CRITICAL! Bonus action restored!','s');
@@ -718,8 +718,8 @@ function doSkillEffect(effect, sk){
         restoreSpellSlot();
         log('⚡ Overcharged: Empowered Blast is free this rest!','s');
       }
-      // Maximized: 4×8 + spell power
-      const ebDmg0=32+getSpellPower();
+      // 4d8 + spell power
+      const ebDmg0=roll(8)+roll(8)+roll(8)+roll(8)+getSpellPower();
       // Spell Power: +15% spell damage
       let ebDmg1=G.talents.includes('Spell Power')?Math.ceil(ebDmg0*1.10):ebDmg0;
       // Arcane Transcendence: +30% spell damage
@@ -774,8 +774,8 @@ function doSkillEffect(effect, sk){
       if(!G.raging){log('Frenzy Attack requires Rage!','e');break;}
       AUDIO.sfx.powerStrike();
       const {dmg:fad,crit:fac}=calcPlayerDmg();
-      const frenzBonus=roll(6);
-      dealToEnemy(fad+frenzBonus,fac,'Frenzy Attack 🩸');
+      const frenzBonus=roll(8);
+      dealToEnemy(fad+frenzBonus,fac,'Frenzy Attack 🩸 (base+1d8)');
       // Burns 5 from the rage bar
       G.rageTurns=Math.max(0,(G.rageTurns||0)-1);
       log('🩸 Frenzy! Extra attack while raging!','s');
@@ -797,9 +797,9 @@ function doSkillEffect(effect, sk){
       const {dmg:esd,crit:esc}=calcPlayerDmg();
       const elements=['fire','cold','lightning'];
       const elem=elements[Math.floor(Math.random()*3)];
-      const elemDmg=roll(6)+(G.talents.includes('Wildfire')?roll(6):0);
+      const elemDmg=roll(6)+roll(6)+(G.talents.includes('Wildfire')?roll(6):0);
       const totalElem=esd+elemDmg;
-      dealToEnemy(totalElem,esc,'Elemental Strike 🌊 ('+elem+')');
+      dealToEnemy(totalElem,esc,'Elemental Strike 🌊 (base+2d6 '+elem+')');
       if(elem==='fire'&&Math.random()<0.25)addConditionEnemy('Burning',3);
       else if(elem==='cold'&&Math.random()<0.25){if(G.currentEnemy){G.currentEnemy._vulnerable=true;log('Chilled! Enemy DEF reduced.','c');}}
       else if(elem==='lightning'&&Math.random()<0.25)addConditionEnemy('Stunned',1);
@@ -907,10 +907,10 @@ function doSkillEffect(effect, sk){
       G.wildShapeHp=Math.min((G.wildShapeHp||0)+paHp, G._classSetBonus==='druid_set'?120:100);
       swapBearBars(true,G.wildShapeHp,G.wildShapeHp);
       G.sx.immuneConditions=true;
-      let paDmg=0;for(let i=0;i<3;i++)paDmg+=roll(6);
+      let paDmg=0;for(let i=0;i<3;i++)paDmg+=roll(6);paDmg+=Math.max(0,md(G.stats.wis));
       const paAlive=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
       const _paAliveCount=paAlive.length;
-      if(paAlive.length>0)dealToAllEnemies(paDmg,false,'Primal Avatar 🌿 surge');
+      if(paAlive.length>0)dealToAllEnemies(paDmg,false,'Primal Avatar 🌿 (3d6+WIS)');
       log('🌿 PRIMAL AVATAR! +80 temp HP, immune to conditions for '+paTurns+' turns!','s');
       processAoeDeaths();
       // ── Chroma tracking: primal avatar triple kill ──
@@ -925,8 +925,8 @@ function doSkillEffect(effect, sk){
     // Champion — Survivor's Strike (reaction: on first drop below 50% HP)
     case 'survivor_strike':{
       const {dmg:sdmg,crit:scrit}=calcPlayerDmg();
-      const finalDmg=Math.ceil(sdmg*1.5);
-      dealToEnemy(finalDmg,scrit,"Survivor's Strike 💀");
+      const finalDmg=sdmg+roll(8);
+      dealToEnemy(finalDmg,scrit,"Survivor's Strike 💀 (base+1d8)");
       G.skillCharges.parry=Math.min((G.skillCharges.parry||0)+1,3);
       log("💀 Survivor's Strike: 1.5× counter + 1 Parry charge restored!",'s');
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
@@ -935,9 +935,9 @@ function doSkillEffect(effect, sk){
     // Battle Master — Maneuver Strike
     case 'maneuver_strike':{
       const {dmg:mdmg,crit:mcrit}=calcPlayerDmg();
-      const bonusDice=roll(8);
+      const bonusDice=roll(10);
       const totalMdmg=mdmg+bonusDice;
-      dealToEnemy(totalMdmg,mcrit,'Maneuver Strike 🎯');
+      dealToEnemy(totalMdmg,mcrit,'Maneuver Strike 🎯 (base+1d10)');
       addConditionEnemy('Restrained',1);
       if(G.currentEnemy){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+3;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,2);log('🎯 Maneuver Strike: Restrained(1) + DEF -3!','s');}
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
@@ -945,8 +945,8 @@ function doSkillEffect(effect, sk){
 
     // Battle Master — Rally
     case 'rally':{
-      const rallyHeal=roll(6)+G.level;
-      heal(rallyHeal,'Rally 🛡');
+      const rallyHeal=roll(8)+md(G.stats.con);
+      heal(rallyHeal,'Rally 🛡 (1d8+CON)');
       if(G.skillCharges.second_wind!==undefined) G.skillCharges.second_wind=Math.min((G.skillCharges.second_wind||0)+1,3);
       log('🛡 Rally: +'+rallyHeal+' HP + 1 Second Wind charge!','s');
       break;}
@@ -1009,20 +1009,21 @@ function doSkillEffect(effect, sk){
 
     // Vengeance — Vow Strike
     case 'vow_strike':{
-      let vsDmg=roll(8)+md(G.stats.str);
+      const {dmg:vsd,crit:vsc}=calcPlayerDmg();
       const isMarked=G._vengeanceMarked>=0&&G.targetIdx===G._vengeanceMarked;
-      if(isMarked)vsDmg+=roll(8);
-      dealToEnemy(vsDmg,false,'Vow Strike ⚔️'+(isMarked?' [MARKED]':''));
+      const vsDmg=vsd+roll(8)+(isMarked?roll(8):0);
+      dealToEnemy(vsDmg,vsc,'Vow Strike ⚔️ (base+1d8'+(isMarked?'+1d8':'')+')');
       addConditionEnemy('Frightened',2);
-      if(isMarked){G.res=Math.min(G.resMax,G.res+1);log('⚔️ Vow Strike: +1d8 vs marked + Frightened(2) + 1 Holy Power!','s');}
-      else{log('⚔️ Vow Strike: 1d8 radiant + Frightened(2)!','s');}
+      if(isMarked){G.res=Math.min(G.resMax,G.res+1);log('⚔️ Vow Strike: base+2d8 vs marked + Frightened(2) + 1 Holy Power!','s');}
+      else{log('⚔️ Vow Strike: base+1d8 + Frightened(2)!','s');}
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
 
     // Vengeance — Relentless Pursuit (reaction)
     case 'relentless_pursuit':{
-      const rpDmg=roll(8)+md(G.stats.str);
-      dealToEnemy(rpDmg,false,'Relentless Pursuit 🔒');
+      const {dmg:rpBase,crit:rpc}=calcPlayerDmg();
+      const rpDmg=rpBase+roll(8);
+      dealToEnemy(rpDmg,rpc,'Relentless Pursuit 🔒 (base+1d8)');
       log('🔒 Relentless Pursuit: counter for '+rpDmg+'!','s');
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
@@ -1039,7 +1040,7 @@ function doSkillEffect(effect, sk){
       if(G.roundNum!==1||G._dreadAmbushUsed){log('Dread Ambush only usable in round 1!','e');break;}
       G._dreadAmbushUsed=true;
       const {dmg:dadmg,crit:dacrit}=calcPlayerDmg();
-      dealToEnemy(dadmg,dacrit,'Dread Ambush 💀');
+      dealToEnemy(dadmg+roll(8),dacrit,'Dread Ambush 💀 (base+1d8)');
       addConditionEnemy('Frightened',2);
       addConditionEnemy('Restrained',1);
       log('💀 DREAD AMBUSH! Frightened(2) + Restrained(1)!','s');
@@ -1051,8 +1052,8 @@ function doSkillEffect(effect, sk){
       const totem=G._totemSpirit||'bear';
       const doubling=G.raging&&G.subclassId==='wild_heart';
       if(totem==='bear'){
-        const ssHeal=(15+md(G.stats.con))*(doubling?2:1);
-        heal(ssHeal,'Spirit Surge 🐻 (Bear)');
+        const ssHeal=(roll(10)+md(G.stats.con))*(doubling?2:1);
+        heal(ssHeal,'Spirit Surge 🐻 (1d10+CON)');
       } else if(totem==='eagle'){
         const ssDodge=doubling?4:2;
         G.sx.evasion=true; G.sx.evasionStacks=(G.sx.evasionStacks||0)+ssDodge;
@@ -1084,9 +1085,9 @@ function doSkillEffect(effect, sk){
 
     // Life Domain — Supreme Healing
     case 'supreme_healing':{
-      const shHeal=24+md(G.stats.wis); // maximized 3d8 = 24
+      const shHeal=roll(8)+roll(8)+roll(8)+md(G.stats.wis);
       heal(shHeal,'Supreme Healing 💖');
-      log('💖 Supreme Healing: maximized 3d8+WIS = '+shHeal+' HP!','s');
+      log('💖 Supreme Healing: 3d8+WIS = '+shHeal+' HP!','s');
       break;}
 
     // War Domain — Guided Strike
@@ -1098,8 +1099,8 @@ function doSkillEffect(effect, sk){
     // War Domain — War Priest Strike
     case 'war_priest_strike':{
       const {dmg:wpdmg,crit:wpcrit}=calcPlayerDmg();
-      const wpDivine=roll(8);
-      dealToEnemy(wpdmg+wpDivine,wpcrit,'War Priest Strike ⚔️');
+      const wpDivine=roll(8)+Math.max(0,md(G.stats.str));
+      dealToEnemy(wpdmg+wpDivine,wpcrit,'War Priest Strike ⚔️ (base+1d8+STR)');
       log('⚔️ War Priest Strike: '+wpdmg+'+'+wpDivine+' divine!','s');
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
@@ -1123,8 +1124,8 @@ function doSkillEffect(effect, sk){
     // Fighter — Rend
     case 'rend':{
       const {dmg:rdmg,crit:rcrit}=calcPlayerDmg();
-      const rendDmg=Math.ceil(rdmg*1.5);
-      dealToEnemy(rendDmg,rcrit,'Rend 🗡');
+      const rendDmg=rdmg+roll(8);
+      dealToEnemy(rendDmg,rcrit,'Rend 🗡 (base+1d8)');
       addConditionEnemy('Bleeding',3);
       if(G.currentEnemy){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+3;G.currentEnemy._defDebuffTurns=2;}
       log('🗡 Rend: Bleeding(3) + enemy DEF -3 for 2 turns!','s');
@@ -1141,8 +1142,8 @@ function doSkillEffect(effect, sk){
 
     // Wizard — Frost Nova
     case 'frost_nova':{
-      let fnDmg=roll(6)+roll(6)+getSpellPower();
-      if(G._overchannelActive){fnDmg=6+6+getSpellPower();G._overchannelActive=false;log('⚡ Overchannel: Frost Nova maximized!','s');}
+      let fnDmg=roll(6)+roll(6)+roll(6)+getSpellPower();
+      if(G._overchannelActive){fnDmg=6+6+6+getSpellPower();G._overchannelActive=false;log('⚡ Overchannel: Frost Nova maximized!','s');}
       dealToAllEnemies(fnDmg,false,'Frost Nova ❄️');
       addConditionAllEnemies('Restrained',1);
       log('❄️ Frost Nova: '+fnDmg+' ice to all + Restrained(1)!','s');
@@ -1158,7 +1159,7 @@ function doSkillEffect(effect, sk){
     // Rogue — Cheap Shot
     case 'cheap_shot':{
       const {dmg:csdmg,crit:cscrit}=calcPlayerDmg();
-      dealToEnemy(csdmg,cscrit,'Cheap Shot 👊');
+      dealToEnemy(csdmg+roll(4),cscrit,'Cheap Shot 👊 (base+1d4)');
       if(Math.random()<0.5){addConditionEnemy('Stunned',1);log('👊 Cheap Shot: STUNNED!','s');}
       else{log('👊 Cheap Shot: hit!','s');}
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
@@ -1174,26 +1175,30 @@ function doSkillEffect(effect, sk){
     // Paladin — Aura Strike
     case 'aura_strike':{
       const {dmg:asdmg,crit:ascrit}=calcPlayerDmg();
-      const chaHeal=Math.max(1,md(G.stats.cha));
-      const asDmgFinal=Math.ceil(asdmg*0.7)+roll(8)+md(G.stats.cha);
-      dealToEnemy(asDmgFinal,ascrit,'Aura Strike 💛');
-      heal(chaHeal+(md(G.stats.wis)||0),'Aura Strike 💛');
-      log('💛 Aura Strike: '+asDmgFinal+' radiant + healed '+chaHeal+' HP!','s');
+      const asDmgFinal=asdmg+roll(4);
+      const asHeal=roll(4)+Math.max(0,md(G.stats.wis));
+      dealToEnemy(asDmgFinal,ascrit,'Aura Strike 💛 (base+1d4)');
+      heal(asHeal,'Aura Strike 💛 (1d4+WIS)');
+      log('💛 Aura Strike: '+asDmgFinal+' radiant + healed '+asHeal+' HP!','s');
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
 
     // Paladin — Consecrate
     case 'consecrate':{
+      const _consHit=roll(4)+Math.max(0,md(G.stats.wis));
       const aliveC=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
-      aliveC.forEach(e=>{e._consecrateTurns=3;e._consecrateHit=5;});
-      log('✝️ Consecrate: all enemies take 5 radiant/turn for 3 turns!','s');
+      aliveC.forEach(e=>{e._consecrateTurns=3;e._consecrateHit=_consHit;});
+      log('✝️ Consecrate: all enemies take '+_consHit+' radiant/turn (1d4+WIS) for 3 turns!','s');
       break;}
 
     // Ranger — Crippling Shot
     case 'crippling_shot':{
+      const {dmg:crdmg,crit:crcrit}=calcPlayerDmg();
+      dealToEnemy(crdmg+roll(6),crcrit,'Crippling Shot 🎯 (base+1d6)');
       addConditionEnemy('Restrained',2);
-      if(G.currentEnemy){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,2);}
+      if(G.currentEnemy&&G.currentEnemy.hp>0){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,2);}
       log('🎯 Crippling Shot: Restrained(2) + DEF -4 for 2 turns!','s');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
 
     // Ranger — Camouflage
@@ -1205,9 +1210,9 @@ function doSkillEffect(effect, sk){
 
     // Barbarian — Ground Slam
     case 'ground_slam':{
-      let gsDmg=roll(8)+md(G.stats.str);
+      let gsDmg=roll(8)+roll(8)+md(G.stats.str);
       if(G.raging)gsDmg+=2+Math.floor(G.level/4);
-      dealToAllEnemies(gsDmg,false,'Ground Slam 💢');
+      dealToAllEnemies(gsDmg,false,'Ground Slam 💢 (2d8+STR)');
       const aliveGS=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
       aliveGS.forEach(e=>{if(Math.random()<0.5)addConditionEnemy('Restrained',1);G.currentEnemy=e;});
       log('💢 Ground Slam: '+gsDmg+' AoE + 50% Restrain each!','s');

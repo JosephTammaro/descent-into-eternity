@@ -54,8 +54,8 @@ function calcPlayerDmg(){
   if(G._knowEnemyBonus)base+=2;
   // Avenging Angel (Vengeance Paladin): below 30% HP, +3 ATK
   if(G.classId==='paladin'&&G.subclassId==='vengeance'&&G.hp<G.maxHp*0.3)base+=3;
-  // Guided Strike (War Domain): +10 ATK on next attack
-  if(G._guidedStrikeBonus){G._guidedStrikeBonus=false;base+=10;log('✨ Guided Strike: +10 ATK!','s');}
+  // Guided Strike (War Domain): +WIS ATK + 2d8+WIS divine on next attack
+  if(G._guidedStrikeBonus){G._guidedStrikeBonus=false;const gsWis=Math.max(0,md(G.stats.wis));base+=gsWis;G._guidedStrikeDmgBonus=roll(8)+roll(8)+gsWis;log('✨ Guided Strike: +'+gsWis+' ATK + '+(G._guidedStrikeDmgBonus)+' divine (2d8+WIS)!','s');}
   // Bless: +3 to next 2 attack rolls
   if(G._blessAttacks>0){G._blessAttacks--;base+=3;log('🙏 Bless: +3 attack!','s');}
   // Camouflage (Gloom Stalker): +1d8 bonus on first attack this fight
@@ -76,7 +76,8 @@ function calcPlayerDmg(){
   // Rampage keystone: +3 bonus damage per kill stack (max 5)
   if(G._keystoneRampage&&G._rampageStacks>0){const r=G._rampageStacks*3;base+=r;log('🔥 Rampage: +'+r+' damage!','s');}
   const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)-(G.currentEnemy._defDebuff||0)):0;
-  let dmg=Math.max(1,base-Math.floor(def/2)+roll(4)-2);
+  const _wd={fighter:10,barbarian:12,paladin:8,cleric:8,druid:6,rogue:6,ranger:8,wizard:6}[G.classId]||6;
+  let dmg=Math.max(1,base-Math.floor(def/2)+roll(_wd)-Math.floor(_wd/2));
   let crit=false;
   // Ghost Step: first attack of each fight is a guaranteed crit
   const ghostStep=G.classId==='rogue'&&G.talents.includes('Ghost Step')&&!G.firstAttackUsed;
@@ -130,6 +131,8 @@ function dealToEnemy(dmg,crit,source){
     log('🌫️ Your '+source+' vanishes into the fog — MISS!','c');
     return;
   }
+  // Guided Strike (War Domain): add 2d8+WIS divine bonus to this hit
+  if(G._guidedStrikeDmgBonus){dmg+=G._guidedStrikeDmgBonus;G._guidedStrikeDmgBonus=0;}
   // Phase B: Echoing Halls — single-target -10% (skip for AOE)
   if(!G._isAoeDamage && G._activeModifier && G._activeModifier.effects.singleDmgMult)
     dmg=Math.ceil(dmg*G._activeModifier.effects.singleDmgMult);
@@ -168,7 +171,10 @@ function dealToEnemy(dmg,crit,source){
   if(G._envenomStacks>0&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){
     G._envenomStacks--;
     if(typeof addConditionEnemy==='function') addConditionEnemy('Poisoned',3);
-    log('☠ Envenom: target poisoned!','s');
+    const evPoisonDmg=roll(6)+Math.max(0,md(G.stats.dex));
+    G.currentEnemy.hp=Math.max(0,G.currentEnemy.hp-evPoisonDmg);
+    spawnFloater(evPoisonDmg,'dmg',false);
+    log('☠ Envenom: '+evPoisonDmg+' poison (1d6+DEX) + Poisoned(3)!','s');
   }
   // Assassin's Tools: apply Poisoned(2) to next target after a kill
   if(G._assassinToolsPoison&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){

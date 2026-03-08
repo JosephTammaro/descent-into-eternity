@@ -154,7 +154,8 @@ function newState(classId){
     _envenomStacks: 0,             // Assassin: remaining envenomed attacks
     _markedForDeath: false,        // Assassin: next sneak attack maximized
     _blessAttacks: 0,              // War Cleric: remaining blessed attacks
-    _guidedStrikeBonus: false,     // War Cleric: next attack +10 ATK + 2d8 divine
+    _guidedStrikeBonus: false,     // War Cleric: next attack +WIS ATK + 2d8+WIS divine
+    _guidedStrikeDmgBonus: 0,     // War Cleric: pending bonus damage from Guided Strike
     _cosmicOmenActive: false,      // Stars: next roll gets +1d6
     _camouflageActive: false,      // Ranger: hidden — enemy misses + next attack +1d8
     _phantasmalTarget: -1,         // Illusionist: enemy index under phantasmal force

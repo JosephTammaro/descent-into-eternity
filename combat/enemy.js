@@ -662,8 +662,8 @@ function doEnemyAttack(e){
     if(G.classId==='ranger'&&G._evasionFocus){G.res=Math.min(G.resMax,G.res+1);log('🌀 Evasion: +1 Focus from beast block!','s');}
     if(G.sx.beastRetaliate){
       delete G.sx.beastRetaliate;
-      const retDmg=roll(6)+Math.floor(G.level/2);
-      if(G.currentEnemy){G.currentEnemy.hp-=retDmg;updateEnemyBar();log('🐺 Companion retaliates: '+retDmg+' damage!','p');}
+      const retDmg=roll(6)+Math.max(0,md(G.stats.dex));
+      if(G.currentEnemy){G.currentEnemy.hp-=retDmg;updateEnemyBar();log('🐺 Companion retaliates: '+retDmg+' (1d6+DEX)!','p');}
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
     }
     afterEnemyActs();
