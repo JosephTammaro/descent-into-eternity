@@ -45,6 +45,47 @@ function triggerPhase2Zoom(){
   setTimeout(()=> stage.classList.remove('phase2-zoom'), 1200);
 }
 
+function showTurnBanner(text, color){
+  const stage=document.getElementById('battleStage');
+  if(!stage) return;
+  let banner=document.getElementById('turnBanner');
+  if(!banner){
+    banner=document.createElement('div');
+    banner.id='turnBanner';
+    stage.appendChild(banner);
+  }
+  banner.textContent=text;
+  banner.style.color=color||'#fff';
+  banner.classList.remove('active');
+  void banner.offsetWidth;
+  banner.classList.add('active');
+}
+
+function spawnGoldBurst(sourceEl){
+  if(!sourceEl) return;
+  const sr=sourceEl.getBoundingClientRect();
+  const cx=Math.round(sr.left+sr.width/2);
+  const cy=Math.round(sr.top+sr.height/2);
+  const n=5+Math.floor(Math.random()*3);
+  for(let i=0;i<n;i++){
+    const coin=document.createElement('div');
+    coin.textContent='🪙';
+    coin.style.cssText='position:fixed;pointer-events:none;font-size:18px;z-index:99998;left:'+cx+'px;top:'+cy+'px;transform:translate(-50%,-50%);opacity:1;transition:none;';
+    document.body.appendChild(coin);
+    const ang=(Math.PI*2*i/n)+(Math.random()-0.5)*0.9;
+    const dist=40+Math.random()*50;
+    const dx=Math.round(Math.cos(ang)*dist);
+    const dy=Math.round(Math.sin(ang)*dist-38);
+    const delay=i*45;
+    setTimeout(()=>{
+      coin.style.transition='transform 0.6s ease-out, opacity 0.45s ease-out 0.18s';
+      coin.style.transform='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px)) scale(0.3)';
+      coin.style.opacity='0';
+    }, delay+16);
+    setTimeout(()=>{if(coin.parentNode)coin.parentNode.removeChild(coin);}, delay+800);
+  }
+}
+
 function triggerBossEntrance(name, title){
   const el = document.getElementById('bossEntranceOverlay');
   if(!el) return;

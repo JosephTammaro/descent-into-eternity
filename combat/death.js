@@ -62,6 +62,16 @@ function onEnemyDied(){
   // Clear stale reaction flags on enemy death
   if(G.sx){delete G.sx.counterspell; delete G.sx.parry; delete G.sx.evasion;}
   AUDIO.sfx.enemyDeath();
+  // Gold burst — coins spray from enemy position
+  if(typeof spawnGoldBurst==='function'){
+    if(G.currentEnemies&&G.currentEnemies.length>1){
+      const _gIdx=G.currentEnemies.indexOf(e);
+      const _gCard=document.querySelector('.enemy-card[data-idx="'+_gIdx+'"]');
+      if(_gCard)spawnGoldBurst(_gCard);
+    } else {
+      spawnGoldBurst(document.getElementById('enemyWrap'));
+    }
+  }
   G._singleEnemyDying=true;
   animEl('enemySprite','die-anim',700);
   setTimeout(()=>{G._singleEnemyDying=false;const s=document.getElementById('enemySprite');if(s){s.classList.remove('die-anim');s.style.opacity='0';}},710);
@@ -428,6 +438,11 @@ function onEnemyDied(){
       const _dyingIdx=G.currentEnemies.indexOf(_dying);
       G._dyingCards=G._dyingCards||{};
       G._dyingCards[_dyingIdx]=Date.now();
+      // Gold burst for multi-enemy individual kill
+      if(typeof spawnGoldBurst==='function'){
+        const _gc=document.querySelector('.enemy-card[data-idx="'+_dyingIdx+'"]');
+        if(_gc)spawnGoldBurst(_gc);
+      }
       G.currentEnemy=null;
       syncTarget();
       setTimeout(()=>{ autoSave(); }, 800);

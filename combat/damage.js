@@ -336,6 +336,19 @@ function updateEnemyBar(){
   fill.style.background=pct<25?'var(--red2)':pct<50?'var(--orange2)':'var(--green2)';
   const txt=document.getElementById('enemyHpText');
   if(txt)txt.textContent=Math.max(0,Math.ceil(G.currentEnemy.hp))+' / '+G.currentEnemy.maxHp+' HP';
+  // Boss HP segment marks at 25/50/75%
+  const _barEl=fill&&fill.parentElement;
+  if(_barEl){
+    _barEl.querySelectorAll('.boss-hp-seg-mark').forEach(m=>m.remove());
+    if(G.currentEnemy.isBoss){
+      [25,50,75].forEach(p=>{
+        const mark=document.createElement('div');
+        mark.className='boss-hp-seg-mark';
+        mark.style.left=p+'%';
+        _barEl.appendChild(mark);
+      });
+    }
+  }
   // Render active conditions as tags under the enemy name
   const ctEl=document.getElementById('enemyConditionTags');
   if(ctEl){

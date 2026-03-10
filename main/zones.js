@@ -129,9 +129,13 @@ function setPlayerTurn(isPlayer){
     }
     renderAll();
     updateEnemyIntent();
+    if(typeof showTurnBanner==='function'&&G.currentEnemy&&G.currentEnemy.hp>0&&!G._pauseForTutorial)
+      showTurnBanner('YOUR TURN','#c8a850');
   } else {
     ts.textContent='🔴 ENEMY TURN';
     ts.className='turn-state enemy-turn';
+    if(typeof showTurnBanner==='function'&&G.currentEnemy&&G.currentEnemy.hp>0)
+      showTurnBanner('ENEMY TURN','#cc3333');
     // Clear intent while enemy is acting
     const _intentEl=document.getElementById('enemyIntent');
     if(_intentEl){_intentEl.innerHTML='';_intentEl.className='enemy-intent';}
@@ -161,6 +165,9 @@ function setPlayerTurn(isPlayer){
 
 function handleNextEnemy(){
   if(!G) return;
+  // Zone transition wipe — dark edge flash before new enemy
+  const _wipeStage=document.getElementById('battleStage');
+  if(_wipeStage){_wipeStage.classList.remove('zone-scene-wipe');void _wipeStage.offsetWidth;_wipeStage.classList.add('zone-scene-wipe');setTimeout(()=>_wipeStage.classList.remove('zone-scene-wipe'),500);}
   // Branch zones use their own spawner
   if(G._inBranch){ spawnBranchEnemy(); return; }
   // Don't trigger rare events if boss is ready, or already had one this zone
@@ -630,6 +637,20 @@ function spawnEnemy(){
   // Tutorial: don't start the player's turn yet — the choice/tour overlay controls this
   if(!G._pauseForTutorial) setPlayerTurn(true);
   renderEnemyArea();
+  // Enemy spawn animation — scale/fade in from above
+  {
+    const _single=G.currentEnemies.length<=1;
+    if(_single){
+      const _eEl=document.getElementById('enemySprite');
+      if(_eEl){_eEl.classList.remove('enemy-spawning');void _eEl.offsetWidth;_eEl.classList.add('enemy-spawning');setTimeout(()=>_eEl.classList.remove('enemy-spawning'),500);}
+    } else {
+      document.querySelectorAll('#multiEnemyRow .enemy-card').forEach((card,idx)=>{
+        card.style.animationDelay=(idx*80)+'ms';
+        card.classList.add('enemy-spawning');
+        setTimeout(()=>{card.classList.remove('enemy-spawning');card.style.animationDelay='';},600);
+      });
+    }
+  }
   if(typeof autoSave==='function'&&!G._pauseForTutorial) autoSave();
 }
 
