@@ -372,7 +372,7 @@ function renderLives(){
   if(!G) return;
   const lives = G.lives !== undefined ? G.lives : 3;
   const hearts = Array.from({length:3},(_,i)=>
-    `<span class="life-heart${i>=lives?' lost':''}"><i class="ra ra-health" aria-hidden="true"></i></span>`
+    `<span class="life-heart${i>=lives?' lost':''}"><i class="ra ra-glass-heart" aria-hidden="true"></i></span>`
   ).join('');
   // Combat zone bar display
   const el = document.getElementById('livesDisplay');
@@ -717,7 +717,7 @@ function renderSkillButtons(){
       return `<button class="skill-btn type-${type}${isNew?' sk-new':''}" data-skill-key="${keyNum}" ${disabled?'disabled':''} onclick="if(G._newSkills){G._newSkills=G._newSkills.filter(x=>x!=='${sk.id}');this.classList.remove('sk-new');}useSkill('${sk.id}')" title="${sk.name}: ${sk.desc} [${keyNum}]">
         ${cdBadge}
         ${keybindBadge}
-        <span class="sk-icon">${iconHTML(sk.icon)}</span>
+        <span class="sk-icon"${sk.iconColor?` style="color:${sk.iconColor}"`:''}}>${iconHTML(sk.icon)}</span>
         <span class="sk-name">${sk.name}</span>
         ${dualBadge}
         ${pipHtml}
