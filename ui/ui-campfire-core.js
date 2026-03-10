@@ -13,6 +13,7 @@ function showCampfire(){
   if(enemyTurnTimeout){clearTimeout(enemyTurnTimeout);enemyTurnTimeout=null;}
   // BGM started in fadeToScreen callback so it isn't muted by the fade
   G.isPlayerTurn=true;
+  G._dyingFlag=false;
   G.currentEnemy=null;
   const neb=document.getElementById('nextEnemyBtn');
   const etb=document.getElementById('endTurnBtn');
