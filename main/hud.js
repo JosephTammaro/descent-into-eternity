@@ -79,6 +79,19 @@ function setupGameUI(){
   document.getElementById('bgTrees').style.display=z.showTrees?'block':'none';
   document.getElementById('battleStage').setAttribute('data-zone', z.id);
 
+  // ── Zone color grading — tint the entire game screen based on depth ──
+  const _ZONE_TINTS=['rgba(30,60,20,0.18)','rgba(60,40,20,0.15)','rgba(40,30,50,0.20)',
+    'rgba(20,10,60,0.35)','rgba(80,10,10,0.30)','rgba(20,40,80,0.25)',
+    'rgba(60,50,10,0.20)','rgba(0,0,0,0.45)'];
+  const _sg=document.getElementById('screen-game');
+  if(_sg) _sg.style.setProperty('--zone-tint',_ZONE_TINTS[G.zoneIdx]||_ZONE_TINTS[0]);
+
+  // ── Zone ambient particles — start/restart when zone changes ──
+  if(typeof startZoneParticles==='function'&&G._lastParticleZone!==G.zoneIdx){
+    G._lastParticleZone=G.zoneIdx;
+    startZoneParticles(G.zoneIdx);
+  }
+
   // Zone bar
   document.getElementById('zoneNameLabel').textContent=z.name;
   document.getElementById('bossAlert').style.display=G.bossReady&&!G.runBossDefeated[G.zoneIdx]?'block':'none';
@@ -704,6 +717,34 @@ function renderSkillButtons(){
       </button>`;
     }).join('');
   });
+
+  // ── Cooldown clock-wipe overlay + ultimate glow (post-render pass) ──
+  {
+    const allBtns=Array.from(document.querySelectorAll('.skill-btn'));
+    const nowMs=Date.now();
+    allBtns.forEach(btn=>{
+      const skId=btn.getAttribute('onclick')?btn.getAttribute('onclick').match(/useSkill\('([^']+)'\)/)?.[1]:null;
+      if(!skId)return;
+      const cdRaw=G.skillCooldowns[skId];
+      const cdEnd=(cdRaw==='active')?Infinity:(cdRaw||0);
+      const cdLeft=cdEnd===Infinity?-1:Math.max(0,cdEnd-nowMs);
+      // Clock-wipe based on % of cooldown remaining
+      const sk=(CLASSES[G.classId].skills||[]).find(s=>s.id===skId);
+      if(cdLeft>0){
+        const maxMs=(sk&&sk.cooldown?sk.cooldown:3)*1000;
+        const pct=Math.min(100,Math.round((cdLeft/maxMs)*100));
+        btn.style.setProperty('--cd-pct',pct);
+        btn.setAttribute('data-cd-active','1');
+      } else {
+        btn.style.removeProperty('--cd-pct');
+        btn.removeAttribute('data-cd-active');
+      }
+      // Ultimate glow when available and unlocked
+      if(sk&&sk.ultimateOnly&&G.ultimateUnlocked&&!G._ultimateUsed&&cdLeft<=0){
+        btn.classList.add('ultimate-ready');
+      }
+    });
+  }
 
   // AE pips
   document.getElementById('pip-action').className='ae-pip '+(G.actionUsed||!G.isPlayerTurn?'spent':'avail');

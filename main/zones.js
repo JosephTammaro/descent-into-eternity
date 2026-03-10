@@ -415,7 +415,7 @@ function spawnEnemy(){
   // ── Per-fight passives (unchanged) ───────────────────────
   if(G.classId==='ranger'&&G.talents.includes('Beast Bond')){G.sx.beastBlock=true;log("Beast Bond: companion stands guard ready to block one hit!",'s');}
   G.roundNum=0;G.firstAttackUsed=false;G._surgeCritBonus=0;
-  G._fightGoldEarned=0;G._fightDamageTaken=false;
+  G._fightGoldEarned=0;G._fightDamageTaken=false;G._dyingCards={};
   if(G._flurry)G._flurryUsed=false;
   if(G._shadowForm)G._shadowFormUsed=false;
   if(G._shadowStep)G._shadowStepUsed=false;
@@ -667,9 +667,10 @@ function renderEnemyArea(){
   if(!singleWrap||!multiRow) return;
 
   if(single){
+    if(!G.currentEnemy){if(!G._singleEnemyDying){singleWrap.style.display='none';multiRow.style.display='none';}return;}
+    if(G.currentEnemy.hp<=0||G.currentEnemy.dead) return; // die-anim playing — don't touch display or re-render
     singleWrap.style.display='';
     multiRow.style.display='none';
-    if(!G.currentEnemy) return;
     // Render sprite + name/HP for the single-enemy view
     // (spawnEnemy does this on a new fight; renderEnemyArea must also do it so
     // combat restores after page reload render correctly)
@@ -680,6 +681,7 @@ function renderEnemyArea(){
       const spriteData=(isBoss||e._usesBossSprite)?BOSS_SPRITES[e.sprite]:ENEMY_SPRITES[e.sprite];
       if(spriteData) renderSprite(spriteData,isBoss?15:13,eEl);
       eEl.className=isBoss?'boss-anim':'';
+      eEl.style.opacity='';
       eEl.style.filter=`drop-shadow(0 0 4px ${e.color||'#888'})`;
     }
     const hpPct=e.maxHp>0?Math.max(0,e.hp/e.maxHp*100):100;
@@ -703,15 +705,46 @@ function renderEnemyArea(){
   multiRow.innerHTML='';
 
   G.currentEnemies.forEach((e,i)=>{
-    const isTarget = i===G.targetIdx && !e.dead;
-    const isDead   = e.dead;
-    const hpPct    = isDead ? 0 : Math.max(0,e.hp/e.maxHp*100);
+    if(e.dead){
+      // Dead enemy: render ghost card (sprite dying/gone, HP bar at 0, name stays)
+      const dyingTs=G._dyingCards&&G._dyingCards[i];
+      if(!dyingTs) return;
+      const elapsed=Date.now()-dyingTs;
+      const deadCard=document.createElement('div');
+      deadCard.className='enemy-card';
+      deadCard.style.pointerEvents='none';
+      const dSprCanvas=document.createElement('div');
+      dSprCanvas.className='enemy-card-sprite';
+      const dSprEl=document.createElement('div');
+      const dSprData=(e.isBoss||e._usesBossSprite)?BOSS_SPRITES[e.sprite]:ENEMY_SPRITES[e.sprite];
+      if(dSprData) renderSprite(dSprData,7,dSprEl);
+      dSprEl.style.filter=`drop-shadow(0 0 3px ${e.color||'#888'})`;
+      if(elapsed<750){
+        dSprEl.classList.add('dying-sprite');
+        dSprEl.style.animationDelay=`-${elapsed}ms`;
+      } else {
+        dSprEl.style.opacity='0';
+      }
+      dSprCanvas.appendChild(dSprEl);
+      deadCard.appendChild(dSprCanvas);
+      deadCard.insertAdjacentHTML('beforeend',
+        `<div class="enemy-card-hp-bar"><div class="enemy-card-hp-fill" style="width:0%;background:var(--red2);"></div></div>`+
+        `<div class="enemy-card-hp-txt">0/${e.maxHp}</div>`+
+        `<div class="enemy-card-name">${e.name}</div>`
+      );
+      multiRow.appendChild(deadCard);
+      return;
+    }
+
+    const isTarget = i===G.targetIdx;
+    const hpPct    = Math.max(0,e.hp/e.maxHp*100);
     const hpColor  = hpPct<25?'var(--red2)':hpPct<50?'var(--orange2)':'var(--green2)';
 
     const card = document.createElement('div');
-    card.className='enemy-card'+(isTarget?' targeted':'')+(isDead?' dead':'');
+    card.className='enemy-card'+(isTarget?' targeted':'');
+    card.dataset.idx = i;
     if(e._isRealEmpress){card.style.outline='2px solid rgba(200,168,75,0.9)';card.style.boxShadow='0 0 10px rgba(200,168,75,0.4)';}
-    card.onclick = isDead ? null : ()=>{ selectTarget(i); };
+    card.onclick = ()=>{ selectTarget(i); };
 
     // Build sprite canvas
     const spriteCanvas = document.createElement('div');
@@ -723,19 +756,16 @@ function renderEnemyArea(){
     spriteCanvas.appendChild(spriteEl);
 
     const hpBar = `<div class="enemy-card-hp-bar"><div class="enemy-card-hp-fill" style="width:${hpPct}%;background:${hpColor};"></div></div>`;
-    const hpTxt = `<div class="enemy-card-hp-txt">${isDead?'DEAD':Math.ceil(e.hp)+'/'+e.maxHp}</div>`;
-    const name  = `<div class="enemy-card-name">${e.name}<br><span style="color:var(--dim);font-size:4px;">Lv.${e.effectiveLvl}</span></div>`;
+    const hpTxt = `<div class="enemy-card-hp-txt">${Math.ceil(e.hp)+'/'+e.maxHp}</div>`;
+    const name  = `<div class="enemy-card-name">${e.name}</div><div class="enemy-card-level">Lv.${e.effectiveLvl}</div>`;
     const arrow = isTarget ? `<div class="enemy-target-arrow">▼</div>` : '';
-    const deadX = isDead   ? `<div class="enemy-card-dead-x">💀</div>` : '';
     // Intent badge on each card
     let intentHtml='';
-    if(!isDead){
-      const d=_getIntentDisplay(e);
-      if(d)intentHtml=`<div class="enemy-card-intent${d.cls==='intent-special'||d.cls==='intent-blocked'?' '+d.cls:''}">${d.icon}</div>`;
-    }
+    const d=_getIntentDisplay(e);
+    if(d)intentHtml=`<div class="enemy-card-intent${d.cls==='intent-special'||d.cls==='intent-blocked'?' '+d.cls:''}">${d.icon}</div>`;
 
     card.appendChild(spriteCanvas);
-    card.insertAdjacentHTML('beforeend', hpBar+hpTxt+name+arrow+deadX+intentHtml);
+    card.insertAdjacentHTML('beforeend', hpBar+hpTxt+name+arrow+intentHtml);
     multiRow.appendChild(card);
   });
 }

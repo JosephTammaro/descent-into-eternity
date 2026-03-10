@@ -270,8 +270,20 @@ function spawnFloater(val,type,onRight){
       fill="${c.rim}" opacity="0.3"/>
   </svg>`;
 
+  // ── Scale size with damage magnitude ──
+  const _scale=type==='crit'?Math.min(2.2,1.0+val/35):Math.min(1.7,0.75+val/50);
+  const _sz=Math.round(44*_scale);
+
+  // ── Crit flash on #battleStage ──
+  if(type==='crit'){
+    const _bs=document.getElementById('battleStage');
+    if(_bs){_bs.classList.add('crit-flash');setTimeout(()=>_bs.classList.remove('crit-flash'),420);}
+  }
+
   const wrap=document.createElement('div');
   wrap.className=`splat splat-${type}`;
+  wrap.style.width=_sz+'px';
+  wrap.style.height=_sz+'px';
 
   // Random drift direction for visual variety
   const driftX = (Math.random()-0.5)*24;
@@ -290,6 +302,8 @@ function spawnFloater(val,type,onRight){
   const numEl=document.createElement('div');
   numEl.className='splat-num';
   numEl.textContent=txt;
+  // Scale font with splat size
+  numEl.style.fontSize=Math.round(10*_scale)+'px';
 
   wrap.appendChild(svgWrap);
   wrap.appendChild(numEl);

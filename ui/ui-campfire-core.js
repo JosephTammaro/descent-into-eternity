@@ -7,10 +7,11 @@
 //  CAMPFIRE — TABBED IN-GAME UI
 // ══════════════════════════════════════════════════════════
 function showCampfire(){
+  if(typeof stopZoneParticles==='function') stopZoneParticles();
   stopPlayerAnim();
   checkObjectiveProgress('campfire_used',true);
   if(enemyTurnTimeout){clearTimeout(enemyTurnTimeout);enemyTurnTimeout=null;}
-  AUDIO.playBGM('campfire');
+  // BGM started in fadeToScreen callback so it isn't muted by the fade
   G.isPlayerTurn=true;
   G.currentEnemy=null;
   const neb=document.getElementById('nextEnemyBtn');
@@ -40,10 +41,12 @@ function showCampfire(){
     contBtn.textContent=bossCleared?'CONTINUE JOURNEY ▶':'BACK TO BATTLE ▶';
   }
   cfRenderTab('rest');
-  showScreen('campfire');
-  if(typeof renderLives==='function') renderLives();
-  // Start pixel campfire animation
-  startCampfireAnim();
+  // Fade to black → show campfire → fade in (smoother than instant cut)
+  fadeToScreen('campfire', ()=>{
+    AUDIO.playBGM('campfire');
+    if(typeof renderLives==='function') renderLives();
+    startCampfireAnim();
+  });
 }
 
 let _cfAnimTimer=null;

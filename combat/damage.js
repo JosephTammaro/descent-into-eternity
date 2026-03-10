@@ -171,6 +171,26 @@ function dealToEnemy(dmg,crit,source){
     if(hasSoldiers){dmg=Math.ceil(dmg*0.5);log('❄ Frozen Bulwark shields Valdris! (-50% dmg)','c');}
   }
   G.currentEnemy.hp-=dmg;
+
+  // ── HIT STOP — freeze animations for 90ms (physical impact feel) ──
+  const _stage=document.getElementById('battleStage');
+  if(_stage){
+    _stage.classList.add('hit-stop');
+    setTimeout(()=>_stage.classList.remove('hit-stop'),120);
+  }
+
+  // ── ENEMY HURT FLASH — flash white on hit ──
+  const _eidx=(G.currentEnemies||[]).indexOf(G.currentEnemy);
+  if(_eidx>=0){
+    const _eCard=document.querySelector('[data-idx="'+_eidx+'"]');
+    if(_eCard){_eCard.classList.add('enemy-flash');setTimeout(()=>_eCard.classList.remove('enemy-flash'),300);}
+  }
+  // Also flash the single-enemy sprite when only one enemy
+  const _eSpr=document.getElementById('enemySprite');
+  if(_eSpr&&(G.currentEnemies||[]).length<=1){
+    _eSpr.classList.add('enemy-flash');setTimeout(()=>_eSpr.classList.remove('enemy-flash'),300);
+  }
+
   // Shadow Dive (Gloom Stalker): next attack applies Frightened(2)
   if(G._shadowDiveActive&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){
     G._shadowDiveActive=false;

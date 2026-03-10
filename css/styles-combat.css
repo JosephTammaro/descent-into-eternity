@@ -233,31 +233,33 @@
   border:1px solid rgba(60,50,40,0.3);
   background:rgba(0,0,0,0.4);
   transition:border-color 0.2s,box-shadow 0.2s;
-  min-width:72px;position:relative;
+  min-width:90px;position:relative;
 }
 .enemy-card:hover{ border-color:rgba(200,168,75,0.3); box-shadow:0 0 8px rgba(200,168,75,0.1); }
 .enemy-card.targeted{
   border-color:var(--gold);
   box-shadow:0 0 14px rgba(200,168,75,0.4);
 }
-.enemy-card.dead{
-  opacity:0.25;filter:grayscale(1);pointer-events:none;
-}
 .enemy-card-sprite{ margin-bottom:4px; }
 .enemy-card-hp-bar{
-  width:70px;height:6px;background:#060404;
+  width:80px;height:6px;background:#060404;
   border:1px solid rgba(60,50,40,0.3);overflow:hidden;margin-bottom:4px;
 }
 .enemy-card-hp-fill{ height:100%;transition:width .3s; }
 .enemy-card-name{
-  font-family:'Press Start 2P',monospace;font-size:12px;
-  color:var(--parchment);text-align:center;line-height:1.6;
-  max-width:80px;word-break:break-word;
+  font-family:'Press Start 2P',monospace;font-size:7px;
+  color:var(--parchment);text-align:center;line-height:1.4;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76px;
+}
+.enemy-card-level{
+  font-family:'Press Start 2P',monospace;font-size:5px;
+  color:var(--dim);text-align:center;margin-top:1px;
 }
 .enemy-card-hp-txt{
-  font-family:'Press Start 2P',monospace;font-size:12px;
+  font-family:'Press Start 2P',monospace;font-size:8px;
   color:var(--dim);text-align:center;margin-bottom:2px;
 }
+.dying-sprite{animation:enemy-die 0.75s ease-out forwards!important;}
 .enemy-target-arrow{
   position:absolute;top:-16px;left:50%;transform:translateX(-50%);
   font-size:14px;color:var(--gold);
@@ -697,4 +699,50 @@
 .upgrade-row:hover{background:var(--panel2);}
 .upgrade-row.cant{opacity:.4;cursor:not-allowed;}
 .upg-cost{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold);white-space:nowrap;}
+
+/* ══════════════════════════════════════════════════
+   PHASE 1 JUICE — hit stop, flash, death, color grading,
+   vignette, boss intro, crit flash, particles
+══════════════════════════════════════════════════ */
+
+/* ── HIT STOP ── */
+.hit-stop *{animation-play-state:paused!important;}
+
+/* ── ENEMY HURT FLASH ── */
+.enemy-flash{filter:brightness(8) saturate(0)!important;transition:filter 0.25s!important;}
+
+/* ── ENEMY DEATH DISSOLVE ── */
+.dying{animation:enemy-die 0.75s ease-out forwards!important;pointer-events:none;}
+@keyframes enemy-die{
+  0%{opacity:1;transform:scale(1) translateY(0);}
+  100%{opacity:0;transform:scale(0.6) translateY(20px);}
+}
+
+/* ── ZONE COLOR GRADING ── */
+#screen-game{--zone-tint:rgba(30,60,20,0.18);}
+#screen-game::after{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background:var(--zone-tint);mix-blend-mode:multiply;z-index:1;
+}
+
+/* ── CRIT SCREEN FLASH ── */
+.crit-flash{animation:crit-flash-anim 0.4s ease-out forwards;}
+@keyframes crit-flash-anim{
+  0%{box-shadow:inset 0 0 0 0 rgba(255,180,0,0.0);}
+  15%{box-shadow:inset 0 0 80px 20px rgba(255,180,0,0.22);}
+  100%{box-shadow:inset 0 0 0 0 rgba(255,180,0,0.0);}
+}
+
+/* ── ZONE PARTICLES CANVAS ── */
+#zoneParticles{
+  position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;
+}
+
+/* ── LOOT REVEAL THEATER ── */
+@keyframes inv-pop-in{
+  0%{opacity:0;transform:scale(0.4);}
+  65%{transform:scale(1.2);}
+  100%{opacity:1;transform:scale(1);}
+}
+.inv-slot.inv-popin{animation:inv-pop-in 0.28s cubic-bezier(0.22,1,0.36,1) both;}
 

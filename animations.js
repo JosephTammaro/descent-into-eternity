@@ -487,6 +487,103 @@ const Anim = {
 
 };
 
+// ══════════════════════════════════════════════════════════
+//  ZONE AMBIENT PARTICLES
+// ══════════════════════════════════════════════════════════
+
+(function(){
+
+let _pCanvas=null, _pCtx=null, _pRAF=null, _pParticles=[], _pZoneIdx=-1;
+
+// Particle configs per zone
+const _PCONFIGS=[
+  // 0: Whispering Woods — fireflies
+  {count:18,spawn(){return{x:Math.random()*100,y:20+Math.random()*70,vx:(Math.random()-0.5)*0.08,vy:-0.04-Math.random()*0.06,r:1.5+Math.random()*1.5,op:0,maxOp:0.7+Math.random()*0.3,fade:0.008+Math.random()*0.006,pulse:Math.random()*Math.PI*2,color:'#ccffaa'};}},
+  // 1: Ruined Outpost — dust motes
+  {count:14,spawn(){return{x:Math.random()*100,y:10+Math.random()*80,vx:(Math.random()-0.5)*0.06,vy:-0.03-Math.random()*0.04,r:1+Math.random()*1,op:0,maxOp:0.35+Math.random()*0.2,fade:0.005+Math.random()*0.004,pulse:Math.random()*Math.PI*2,color:'#c8a870'};}},
+  // 2: Thornwall Castle — embers
+  {count:16,spawn(){return{x:Math.random()*100,y:40+Math.random()*60,vx:(Math.random()-0.5)*0.15,vy:-0.15-Math.random()*0.15,r:1+Math.random()*1.5,op:0,maxOp:0.8+Math.random()*0.2,fade:0.012+Math.random()*0.008,pulse:Math.random()*Math.PI*2,color:Math.random()<0.5?'#ff6600':'#ffaa00'};}},
+  // 3: Underdark — spore drifts
+  {count:20,spawn(){return{x:Math.random()*100,y:Math.random()*100,vx:(Math.random()-0.5)*0.05,vy:-0.02-Math.random()*0.03,r:1.5+Math.random()*2,op:0,maxOp:0.4+Math.random()*0.25,fade:0.004+Math.random()*0.003,pulse:Math.random()*Math.PI*2,color:Math.random()<0.6?'#8844ff':'#44aaff'};}},
+  // 4: Abyssal Gate — ash & embers
+  {count:22,spawn(){return{x:Math.random()*100,y:30+Math.random()*70,vx:(Math.random()-0.5)*0.12,vy:-0.12-Math.random()*0.18,r:0.8+Math.random()*1.8,op:0,maxOp:0.7+Math.random()*0.3,fade:0.010+Math.random()*0.008,pulse:Math.random()*Math.PI*2,color:Math.random()<0.4?'#ff4400':Math.random()<0.7?'#ff8800':'#cccccc'};}},
+  // 5: Frostveil — snowflakes
+  {count:20,spawn(){return{x:Math.random()*100,y:-5,vx:(Math.random()-0.5)*0.12,vy:0.08+Math.random()*0.12,r:1+Math.random()*1.5,op:0,maxOp:0.6+Math.random()*0.3,fade:0.006+Math.random()*0.004,pulse:Math.random()*Math.PI*2,color:'#ddeeff'};}},
+  // 6: Celestial Plane — golden motes
+  {count:16,spawn(){return{x:Math.random()*100,y:Math.random()*100,vx:(Math.random()-0.5)*0.05,vy:-0.04-Math.random()*0.04,r:1+Math.random()*2,op:0,maxOp:0.5+Math.random()*0.3,fade:0.006+Math.random()*0.004,pulse:Math.random()*Math.PI*2,color:Math.random()<0.5?'#ffdd88':'#ffffff'};}},
+  // 7: Shadow Realm — shadow wisps
+  {count:24,spawn(){return{x:Math.random()*100,y:Math.random()*100,vx:(Math.random()-0.5)*0.1,vy:(Math.random()-0.5)*0.08,r:2+Math.random()*3,op:0,maxOp:0.45+Math.random()*0.25,fade:0.005+Math.random()*0.004,pulse:Math.random()*Math.PI*2,color:Math.random()<0.5?'#6600aa':'#220044'};}},
+];
+
+function _pInit(zoneIdx){
+  _pCanvas=document.getElementById('zoneParticles');
+  if(!_pCanvas)return;
+  _pCtx=_pCanvas.getContext('2d');
+  _pZoneIdx=zoneIdx;
+  _pParticles=[];
+  const cfg=_PCONFIGS[zoneIdx];
+  if(!cfg)return;
+  for(let i=0;i<cfg.count;i++) _pParticles.push(cfg.spawn());
+}
+
+function _pResize(){
+  if(!_pCanvas)return;
+  const stage=document.getElementById('battleStage');
+  if(!stage)return;
+  _pCanvas.width=stage.offsetWidth||800;
+  _pCanvas.height=stage.offsetHeight||260;
+}
+
+function _pTick(){
+  _pRAF=requestAnimationFrame(_pTick);
+  if(!_pCanvas||!_pCtx)return;
+  _pResize();
+  const W=_pCanvas.width,H=_pCanvas.height;
+  _pCtx.clearRect(0,0,W,H);
+  const cfg=_PCONFIGS[_pZoneIdx];
+  if(!cfg)return;
+  for(let i=0;i<_pParticles.length;i++){
+    const p=_pParticles[i];
+    // Move
+    p.x+=p.vx; p.y+=p.vy;
+    p.pulse+=0.06;
+    // Fade in then out
+    if(p.op<p.maxOp) p.op=Math.min(p.maxOp,p.op+p.fade);
+    // Wrap or respawn
+    const offscreen=(p.vy<0&&p.y*H/100<-10)||(p.vy>0&&p.y*H/100>H+10)||p.x<-5||p.x>105;
+    if(offscreen){ Object.assign(p,cfg.spawn()); continue; }
+    // Draw — pulse opacity
+    const drawOp=p.op*(0.6+0.4*Math.sin(p.pulse));
+    _pCtx.globalAlpha=drawOp;
+    _pCtx.fillStyle=p.color;
+    _pCtx.beginPath();
+    _pCtx.arc(p.x*W/100,p.y*H/100,p.r,0,Math.PI*2);
+    _pCtx.fill();
+    // Glow for bright particles
+    if(drawOp>0.3){
+      _pCtx.globalAlpha=drawOp*0.3;
+      _pCtx.beginPath();
+      _pCtx.arc(p.x*W/100,p.y*H/100,p.r*2.5,0,Math.PI*2);
+      _pCtx.fill();
+    }
+  }
+  _pCtx.globalAlpha=1;
+}
+
+window.startZoneParticles=function(zoneIdx){
+  stopZoneParticles();
+  _pInit(zoneIdx);
+  if(_PCONFIGS[zoneIdx]) _pTick();
+};
+
+window.stopZoneParticles=function(){
+  if(_pRAF){cancelAnimationFrame(_pRAF);_pRAF=null;}
+  if(_pCtx&&_pCanvas){_pCtx.clearRect(0,0,_pCanvas.width,_pCanvas.height);}
+  _pParticles=[];_pZoneIdx=-1;
+};
+
+})();
+
 window.Anim = Anim;
 
 })();

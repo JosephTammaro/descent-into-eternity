@@ -16,6 +16,25 @@ function addItem(item){
   if(idx===-1)return false;
   if(!item.qty)item.qty=1;
   G.inventory[idx]=item;
+  // Loot reveal theater — accumulate new slot indices, animate after current sync batch
+  G._newLootSlots=G._newLootSlots||[];
+  G._newLootSlots.push(idx);
+  if(!G._lootAnimPending){
+    G._lootAnimPending=true;
+    requestAnimationFrame(()=>{
+      G._lootAnimPending=false;
+      const slots=(G._newLootSlots||[]).slice();
+      G._newLootSlots=[];
+      const grid=document.getElementById('invGrid');
+      if(!grid)return;
+      slots.forEach((si,i)=>{
+        setTimeout(()=>{
+          const el=grid.querySelector('[data-idx="'+si+'"]');
+          if(el&&!el.classList.contains('empty'))el.classList.add('inv-popin');
+        },i*140);
+      });
+    });
+  }
   renderInventory();
   return true;
 }

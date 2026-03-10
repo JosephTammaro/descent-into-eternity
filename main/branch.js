@@ -69,6 +69,10 @@ function enterBranch(){
   document.getElementById('bgSky').className = 'bg-layer ' + branch.bgSky;
   document.getElementById('bgGround').className = 'bg-layer ' + branch.bgGround;
   document.getElementById('bgTrees').style.display = 'none';
+  // Branch zones use earthy tints based on their theme
+  const _BRANCH_TINTS={catacombs:'rgba(20,10,30,0.30)',fungalwarren:'rgba(10,40,10,0.22)',sunkenvault:'rgba(20,30,50,0.25)',ashenwastes:'rgba(60,20,10,0.28)'};
+  const _sg=document.getElementById('screen-game');
+  if(_sg) _sg.style.setProperty('--zone-tint',_BRANCH_TINTS[branch.id]||'rgba(30,20,10,0.20)');
   document.getElementById('bossAlert').style.display = 'none';
   if(typeof updateCampBtn==='function') updateCampBtn();
   renderAll();

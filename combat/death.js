@@ -62,7 +62,9 @@ function onEnemyDied(){
   // Clear stale reaction flags on enemy death
   if(G.sx){delete G.sx.counterspell; delete G.sx.parry; delete G.sx.evasion;}
   AUDIO.sfx.enemyDeath();
+  G._singleEnemyDying=true;
   animEl('enemySprite','die-anim',700);
+  setTimeout(()=>{G._singleEnemyDying=false;const s=document.getElementById('enemySprite');if(s){s.classList.remove('die-anim');s.style.opacity='0';}},710);
   if(window.Anim) Anim.enemyDeath();
   // Clean up phase 2 glow/nametag if it was active
   const _eSprite=document.getElementById('enemySprite');
@@ -419,14 +421,16 @@ function onEnemyDied(){
   // In multi-enemy rooms, only advance when ALL enemies are dead
   if(G.currentEnemies&&G.currentEnemies.length>1){
     // Mark this enemy as dead in the group
-    const dying=G.currentEnemies.find(e=>e===G.currentEnemy);
-    if(dying) dying.dead=true;
+    const _dying=G.currentEnemies.find(e=>e===G.currentEnemy);
+    if(_dying) _dying.dead=true;
     if(!allEnemiesDead()){
       // Room not clear yet — let player target remaining enemies
+      const _dyingIdx=G.currentEnemies.indexOf(_dying);
+      G._dyingCards=G._dyingCards||{};
+      G._dyingCards[_dyingIdx]=Date.now();
       G.currentEnemy=null;
       syncTarget();
-      renderAll();
-      autoSave();
+      setTimeout(()=>{ autoSave(); }, 800);
       return;
     }
   }
@@ -795,6 +799,12 @@ function onPlayerDied(){
   hideReactionPrompt();
   G.hp=0; G.isPlayerTurn=false;
   G.currentEnemy=null;
+  // Freeze player sprite on last defend frame — looks hurt/beaten
+  if(typeof stopImageAnim==='function') stopImageAnim();
+  const _pSpr=document.getElementById('playerSprite');
+  if(_pSpr&&window.hasImageSprite&&window.hasImageSprite(G.classId)){
+    window.renderImageSprite(G.classId,'defend',2,_pSpr,260);
+  }
   AUDIO.sfx.death();
   log('💔 You have fallen...','e');
 

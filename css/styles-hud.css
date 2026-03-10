@@ -250,7 +250,7 @@
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:7px 6px 14px;gap:4px;
   background:rgba(8,6,4,0.9);border:2px solid rgba(60,50,40,0.4);cursor:pointer;transition:all .15s;
-  min-width:84px;max-width:104px;position:relative;overflow:hidden;
+  width:96px;flex:0 0 96px;height:104px;position:relative;overflow:hidden;
 }
 .skill-btn:hover:not(:disabled){border-color:rgba(200,168,75,0.5);background:rgba(200,168,75,0.04);box-shadow:0 0 10px rgba(200,168,75,0.12);}
 .skill-btn:disabled{opacity:.35;cursor:not-allowed;}
@@ -430,4 +430,38 @@
 .lu-gain-row{display:flex;justify-content:center;align-items:center;gap:12px;padding:5px 0;font-size:18px;border-bottom:1px solid rgba(60,50,40,0.15);}
 .lu-gain-label{color:var(--dim);width:120px;text-align:right;}
 .lu-gain-val{color:var(--green2);width:80px;text-align:left;font-family:'Press Start 2P',monospace;font-size:12px;}
+
+/* ══════════════════════════════════════════════════
+   SKILL BUTTON MICRO-ANIMATIONS (Phase 1 Juice)
+══════════════════════════════════════════════════ */
+
+/* Press effect */
+.skill-btn:active:not(:disabled){transform:scale(0.93) translateY(1px)!important;}
+
+/* Cooldown clock-wipe overlay */
+.skill-btn{position:relative;overflow:hidden;}
+.skill-btn::before{
+  content:'';
+  position:absolute;inset:0;
+  background:conic-gradient(
+    rgba(0,0,0,0.55) calc(var(--cd-pct, 0) * 1%),
+    transparent calc(var(--cd-pct, 0) * 1%)
+  );
+  pointer-events:none;z-index:4;
+  border-radius:inherit;
+  transform-origin:center;
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.skill-btn[data-cd-active]::before{opacity:1;}
+
+/* Ultimate skill glow pulse when available */
+@keyframes ultimate-pulse{
+  0%,100%{box-shadow:0 0 4px rgba(200,100,255,0.2),inset 0 0 4px rgba(200,100,255,0.05);}
+  50%{box-shadow:0 0 14px rgba(200,100,255,0.5),inset 0 0 8px rgba(200,100,255,0.1);}
+}
+.skill-btn.ultimate-ready{
+  animation:ultimate-pulse 2s ease-in-out infinite;
+  border-color:rgba(180,80,255,0.5)!important;
+}
 

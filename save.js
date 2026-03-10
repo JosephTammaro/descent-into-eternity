@@ -306,6 +306,8 @@ function serializeState(g){
     'currentEnemy','_dyingFlag',
     '_afterLevelUpCallback',
     '_nethrixShuffleOrder','_auranthosBlindedBtns',
+    '_lastParticleZone',
+    '_newLootSlots','_lootAnimPending','_singleEnemyDying','_dyingCards',
   ]);
   const copy = {};
   for(const [k,v] of Object.entries(g)){
