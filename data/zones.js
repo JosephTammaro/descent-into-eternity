@@ -1,6 +1,6 @@
 const ZONES = [
   {id:'woods',name:'Whispering Woods',num:'I',reqLvl:1,kills:10,
-   bgSky:'bg-woods-sky',bgGround:'bg-ground-woods',showTrees:true,
+   bgImg:'zone-1',bgSky:'bg-woods-sky',bgGround:'bg-ground-woods',showTrees:true,
    story:{title:'The Whispering Woods',
      text:'"The road into the Whispering Woods is overgrown and silent. The trees list toward you as you pass — not with malice, but recognition. As if they have been waiting. You have had this feeling before, in dreams. Your hands know the path before your eyes do."'},
    enemies:[
@@ -15,7 +15,7 @@ const ZONES = [
      special:{name:'Root Slam',desc:'Roots burst from earth — STR save DC12 or Restrained + 8 dmg',saveType:'str',saveDC:12,damage:8},
      phase2:{name:'Thorn Frenzy',desc:'Ancient rage — thorns erupt everywhere for 14 dmg, CON save DC13 or Poisoned',saveType:'con',saveDC:13,damage:14,condition:'Poisoned',atkBonus:2}}},
   {id:'outpost',name:'Ruined Outpost',num:'II',reqLvl:3,kills:12,
-   bgSky:'bg-outpost-sky',bgGround:'bg-ground-outpost',showTrees:false,
+   bgImg:'zone-2',bgSky:'bg-outpost-sky',bgGround:'bg-ground-outpost',showTrees:false,
    story:{title:'The Ruined Outpost',
      text:'"The garrison fell three hundred years ago — the same night the sky first went dark. The soldiers never left. They could not leave. Something beneath the earth holds them here like pins in a map. Their commander, Grakthar, has not forgotten the old war. He has been waiting for the person who started it."'},
    enemies:[
@@ -30,7 +30,7 @@ const ZONES = [
      special:{name:"Warlord's Bellow",desc:'Frightening roar — WIS save DC13 or Frightened 2 rounds',saveType:'wis',saveDC:13,damage:8,condition:'Frightened'},
      phase2:{name:'Death March',desc:'Undying fury — 18 dmg, STR save DC14 or Stunned 1 round',saveType:'str',saveDC:14,damage:18,condition:'Stunned',atkBonus:3}}},
   {id:'castle',name:'Thornwall Castle',num:'III',reqLvl:6,kills:14,
-   bgSky:'bg-outpost-sky',bgGround:'bg-ground-outpost',showTrees:false,
+   bgImg:'zone-3',bgSky:'bg-outpost-sky',bgGround:'bg-ground-outpost',showTrees:false,
    story:{title:'Thornwall Castle',
      text:'"The Crimson Cult has known your name for decades. They have been preparing this place — not as a fortress, but as a message. The High Priestess Vexara serves something so far below that its voice takes years to travel upward. It told her you were coming. It told her to let you through — after you proved yourself worthy."'},
    enemies:[
@@ -45,7 +45,7 @@ const ZONES = [
      special:{name:'Void Eruption',desc:'Dark energy bursts — INT save DC15 or Frightened + 16 dmg',saveType:'int',saveDC:15,damage:16,condition:'Frightened'},
      phase2:{name:'Crimson Ritual',desc:'Blood magic ignites — 30 dmg, CON save DC16 or Burning 3 turns',saveType:'con',saveDC:16,damage:30,condition:'Burning',atkBonus:6}}},
   {id:'underdark',name:'The Underdark',num:'IV',reqLvl:9,kills:16,
-   bgSky:'bg-woods-sky',bgGround:'bg-ground-woods',showTrees:false,
+   bgImg:'zone-4',bgSky:'bg-woods-sky',bgGround:'bg-ground-woods',showTrees:false,
    story:{title:'The Underdark',
      text:'"Below the roots, the darkness is not empty — it is full. Full of memories pressed flat by the weight of stone. You can feel them against your skin as you walk. Your own memories. Things you chose to forget. The deeper you go, the more your hands remember a weapon they have carried before."'},
    enemies:[
@@ -60,7 +60,7 @@ const ZONES = [
      special:{name:'Mind Shatter',desc:'Psychic assault — WIS save DC16 or Frightened + 20 dmg',saveType:'wis',saveDC:16,damage:20,condition:'Frightened'},
      phase2:{name:'Void Consumption',desc:'Reality unravels — 36 dmg, WIS save DC17 or Stunned + Poisoned',saveType:'wis',saveDC:17,damage:36,condition:'Stunned',condition2:'Poisoned',atkBonus:8}}},
   {id:'abyss',name:'Abyssal Gate',num:'V',reqLvl:12,kills:18,
-   bgSky:'bg-outpost-sky',bgGround:'bg-ground-outpost',showTrees:false,
+   bgImg:'zone-5',bgSky:'bg-outpost-sky',bgGround:'bg-ground-outpost',showTrees:false,
    story:{title:'The Abyssal Gate',
      text:'"The horn that tears the gate open has been sounding for three days. You know this sound. You heard it three centuries ago, when you first descended — when you were the one who chose to open the door in the first place. The demons are not invading. They are responding to a summons. Your summons, echoing backward through time."'},
    enemies:[
@@ -75,7 +75,7 @@ const ZONES = [
      special:{name:'Abyssal Rend',desc:'Reality tears — CON save DC17 or Restrained + 26 dmg',saveType:'con',saveDC:17,damage:26,condition:'Restrained'},
      phase2:{name:'Sundering Howl',desc:'The abyss screams — 45 dmg, CON save DC18 or Burning + Stunned',saveType:'con',saveDC:18,damage:45,condition:'Burning',condition2:'Stunned',atkBonus:11}}},
   {id:'frostpeak',name:'Frostveil Peaks',num:'VI',reqLvl:15,kills:20,
-   bgSky:'bg-frostpeak-sky',bgGround:'bg-ground-frost',showTrees:false,
+   bgImg:'zone-6',bgSky:'bg-frostpeak-sky',bgGround:'bg-ground-frost',showTrees:false,
    story:{title:'The Frostveil Peaks',
      text:'"You surfaced from the Abyssal Gate and the town was almost empty. Elspeth was waiting at your door. She handed you a bowl of soup and sat with you until morning. She did not ask where you had been.\n\nThe Frostveil Peaks are where the old war ended — the one the gods scraped from every record, every gravestone, every mouth that might have told it. The soldiers who fell here were not your enemies. They were yours. They followed you into a war against the gods themselves and did not survive it.\n\nValdris was their general. He has been frozen here for three centuries — not trapped. Waiting. He woke the moment he felt you ascending.\n\nHe has one thing left to say to you. He will not say it gently."'},
    enemies:[
@@ -91,7 +91,7 @@ const ZONES = [
      special:{name:'Avalanche Slam',desc:'Mountain-shattering blow — STR save DC18 or Restrained + 32 dmg',saveType:'str',saveDC:18,damage:32,condition:'Restrained'},
      phase2:{name:'Permafrost Roar',desc:'Glacial fury erupts — 55 dmg, CON save DC19 or Stunned + Poisoned',saveType:'con',saveDC:19,damage:55,condition:'Stunned',condition2:'Poisoned',atkBonus:12}}},
   {id:'celestial',name:'Celestial Plane',num:'VII',reqLvl:18,kills:22,
-   bgSky:'bg-celestial-sky',bgGround:'bg-ground-celestial',showTrees:false,
+   bgImg:'zone-7',bgSky:'bg-celestial-sky',bgGround:'bg-ground-celestial',showTrees:false,
    story:{title:'The Celestial Plane',
      text:'"Fewer candles in the windows now. Fewer names on the wall outside the inn. The town has the quality of a breath held a very long time.\n\nThe Celestial Plane is where the vote was taken three hundred years ago. Every god, every divine voice, unanimous. Seal the Unnamed. Seal whatever it loves. Erase the record. Tell the world it was heroism.\n\nAll of them scattered afterward — unable to look at what they had agreed to. All except one.\n\nAuranthos, the Blind God, blinded itself rather than watch the aftermath of its own hand. It has been here since, in a palace of white stone it cannot see, tended by creatures of light that do not understand what they serve.\n\nIt has been waiting for this conversation. It will try to kill you first. That is not malice. It is simply the only way it knows how to begin something it has been dreading for three centuries."'},
    enemies:[
@@ -107,7 +107,7 @@ const ZONES = [
      special:{name:'Divine Judgement',desc:'Blinding light — WIS save DC19 or Frightened + 40 dmg',saveType:'wis',saveDC:19,damage:40,condition:'Frightened'},
      phase2:{name:'Celestial Collapse',desc:'Reality unmakes itself — 65 dmg, WIS save DC20 or Stunned + Burning',saveType:'wis',saveDC:20,damage:65,condition:'Stunned',condition2:'Burning',atkBonus:14}}},
   {id:'shadowrealm',name:'The Shadow Realm',num:'VIII',reqLvl:20,kills:24,
-   bgSky:'bg-shadowrealm-sky',bgGround:'bg-ground-shadow',showTrees:false,
+   bgImg:'zone-8',bgSky:'bg-shadowrealm-sky',bgGround:'bg-ground-shadow',showTrees:false,
    story:{title:'The Shadow Realm',
      text:'"They came to the Gate at dawn. All of them — Rook, Elspeth, Seraphine, Aldric, Father Oswin, Kit. They did not plan it. They simply all ended up there, in the cold, before you left.\n\nElspeth took your hand. She said: You have come back every time. I do not know what you are doing down there. But whatever it is — finish it.\n\nThe Shadow Realm is not a place you built. It grew. Three centuries of the Unnamed\'s grief crystallised into landscape — shadow architecture, frozen light, the shape of a life lived alone in the dark. The Hollow Empress is the last thing standing between you and what you came for.\n\nShe is not the Unnamed. She is what three hundred years of waiting looks like from the outside.\n\nShe will not speak. She will not recognise you. She was not built for recognition. She was built so that the last step would have to be earned.\n\nYou have been earning it since the moment you arrived in Elderfen."'},
    enemies:[
@@ -135,7 +135,7 @@ const BRANCH_ZONES = [
   {
     id:'catacombs', name:'The Catacombs', icon:'💀', unlocksAfter:2,
     mapId:'catacombs',
-    bgSky:'bg-woods-sky', bgGround:'bg-ground-outpost', showTrees:false,
+    bgImg:'branch-catacombs',bgSky:'bg-woods-sky', bgGround:'bg-ground-outpost', showTrees:false,
     mechanic:'gauntlet', // no campfire, 5 fights straight
     story:{
       title:'The Catacombs',
@@ -158,7 +158,7 @@ const BRANCH_ZONES = [
   {
     id:'fungalwarren', name:'The Fungal Warren', icon:'🍄', unlocksAfter:0,
     mapId:'fungalwarren',
-    bgSky:'bg-woods-sky', bgGround:'bg-ground-woods', showTrees:false,
+    bgImg:'branch-fungal',bgSky:'bg-woods-sky', bgGround:'bg-ground-woods', showTrees:false,
     mechanic:'poison_spreading', // enemies start fight with Poisoned stacks that can spread
     story:{
       title:'The Fungal Warren',
@@ -181,7 +181,7 @@ const BRANCH_ZONES = [
   {
     id:'sunkenvault', name:'The Sunken Vault', icon:'💰', unlocksAfter:1,
     mapId:'sunkenvault',
-    bgSky:'bg-outpost-sky', bgGround:'bg-ground-outpost', showTrees:false,
+    bgImg:'branch-sunken',bgSky:'bg-outpost-sky', bgGround:'bg-ground-outpost', showTrees:false,
     mechanic:'double_loot', // all gold/item drops doubled, but enemies hit 25% harder
     story:{
       title:'The Sunken Vault',
@@ -204,7 +204,7 @@ const BRANCH_ZONES = [
   {
     id:'ashenwastes', name:'The Ashen Wastes', icon:'🔥', unlocksAfter:3,
     mapId:'ashenwastes',
-    bgSky:'bg-outpost-sky', bgGround:'bg-ground-outpost', showTrees:false,
+    bgImg:'branch-ashen',bgSky:'bg-outpost-sky', bgGround:'bg-ground-outpost', showTrees:false,
     mechanic:'event_combat', // random campfire event before each fight instead of normal flow
     story:{
       title:'The Ashen Wastes',

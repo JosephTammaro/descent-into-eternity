@@ -74,9 +74,17 @@ function setupGameUI(){
   document.getElementById('resLbl').textContent=cls.res.substring(0,3).toUpperCase();
 
   // BG
-  document.getElementById('bgSky').className='bg-layer '+z.bgSky;
+  const _bgImg=document.getElementById('bgImage');
+  const _bgSky=document.getElementById('bgSky');
+  if(_bgImg){
+    _bgImg.style.backgroundImage=z.bgImg?"url('backgrounds/"+z.bgImg+".png')":'none';
+    if(_bgSky) _bgSky.style.opacity=z.bgImg?'0.15':'1';
+  }
+  if(_bgSky) _bgSky.className='bg-layer '+z.bgSky;
+  // Hide ground/trees CSS layers when PNG is present — PNG already provides environment
+  document.getElementById('bgGround').style.display=z.bgImg?'none':'';
   document.getElementById('bgGround').className='bg-layer '+z.bgGround;
-  document.getElementById('bgTrees').style.display=z.showTrees?'block':'none';
+  document.getElementById('bgTrees').style.display=(z.showTrees&&!z.bgImg)?'block':'none';
   document.getElementById('battleStage').setAttribute('data-zone', z.id);
 
   // ── Zone color grading — tint the entire game screen based on depth ──
