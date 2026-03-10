@@ -429,7 +429,7 @@ function showReactionPrompt(title, onReact, onSkip){
   document.getElementById('reactPromptTitle').textContent=title;
 
   btnsEl.innerHTML=available.map(sk=>
-    `<button class="react-btn" onclick="useReaction('${sk.id}')">${sk.icon} ${sk.name}<br><span style="color:var(--dim);font-size:9px;">${sk.desc}</span></button>`
+    `<button class="react-btn" onclick="useReaction('${sk.id}')">${iconHTML(sk.icon)} ${sk.name}<br><span style="color:var(--dim);font-size:9px;">${sk.desc}</span></button>`
   ).join('')+`<button class="react-btn skip" onclick="skipReaction()">Skip</button>`;
 
   prompt.style.display='block';

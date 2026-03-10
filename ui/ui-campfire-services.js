@@ -6,48 +6,48 @@
 const CRAFT_RECIPES=[
   // ── BASIC POTIONS ──────────────────────────────────────────────────
   {cat:'basic',req:{herb:2},
-   result:{id:'hpPotion',name:'Healing Potion',icon:'🧪',type:'consumable',slot:null,rarity:'common',stats:{heal:15},value:10},
+   result:{id:'hpPotion',name:'Healing Potion',icon:'heart-bottle',type:'consumable',slot:null,rarity:'common',stats:{heal:15},value:10},
    desc:'2 Herbs → Healing Potion (15 HP)'},
   {cat:'basic',req:{herb:3,fang:1},
-   result:{id:'strongPotion',name:'Strong Potion',icon:'⚗️',type:'consumable',slot:null,rarity:'uncommon',stats:{heal:35},value:28},
+   result:{id:'strongPotion',name:'Strong Potion',icon:'flask',type:'consumable',slot:null,rarity:'uncommon',stats:{heal:35},value:28},
    desc:'3 Herbs + 1 Fang → Strong Potion (35 HP)'},
   {cat:'basic',req:{bone:3},
-   result:{id:'antidote',name:'Antidote',icon:'💊',type:'consumable',slot:null,rarity:'common',stats:{heal:5,clearPoison:1},value:8},
+   result:{id:'antidote',name:'Antidote',icon:'syringe',type:'consumable',slot:null,rarity:'common',stats:{heal:5,clearPoison:1},value:8},
    desc:'3 Bones → Antidote (clears Poison)'},
   {cat:'basic',req:{herb:1,bone:2},
-   result:{id:'burnSalve',name:'Burn Salve',icon:'🫙',type:'consumable',slot:null,rarity:'common',stats:{heal:8,clearBurn:1},value:10},
+   result:{id:'burnSalve',name:'Burn Salve',icon:'potion',type:'consumable',slot:null,rarity:'common',stats:{heal:8,clearBurn:1},value:10},
    desc:'1 Herb + 2 Bones → Burn Salve (clears Burning)'},
   {cat:'basic',req:{fang:2,herb:2},
-   result:{id:'swiftnessDraft',name:'Swiftness Draft',icon:'💨',type:'consumable',slot:null,rarity:'uncommon',stats:{heal:10,tempAtk:5},value:22},
+   result:{id:'swiftnessDraft',name:'Swiftness Draft',icon:'boot-stomp',type:'consumable',slot:null,rarity:'uncommon',stats:{heal:10,tempAtk:5},value:22},
    desc:'2 Fangs + 2 Herbs → Swiftness Draft (+5 ATK, 10 HP)'},
   // ── ADVANCED POTIONS ───────────────────────────────────────────────
   {cat:'advanced',req:{ghostEssence:2,bone:2},
-   result:{id:'elixir',name:'Elixir of Life',icon:'✨',type:'consumable',slot:null,rarity:'rare',stats:{heal:60},value:75},
+   result:{id:'elixir',name:'Elixir of Life',icon:'sunbeams',type:'consumable',slot:null,rarity:'rare',stats:{heal:60},value:75},
    desc:'2 Ghost Essence + 2 Bones → Elixir of Life (60 HP)'},
   {cat:'advanced',req:{voidShard:2,ghostEssence:1},
-   result:{id:'voidElixir',name:'Void Elixir',icon:'🌀',type:'consumable',slot:null,rarity:'rare',stats:{heal:40,tempDef:8},value:65},
+   result:{id:'voidElixir',name:'Void Elixir',icon:'fluffy-swirl',type:'consumable',slot:null,rarity:'rare',stats:{heal:40,tempDef:8},value:65},
    desc:'2 Void Shards + 1 Ghost Essence → Void Elixir (40 HP, +8 DEF)'},
   {cat:'advanced',req:{demonAsh:1,fang:2},
-   result:{id:'rageDraught',name:'Rage Draught',icon:'🔥',type:'consumable',slot:null,rarity:'rare',stats:{heal:20,tempAtk:12},value:80},
+   result:{id:'rageDraught',name:'Rage Draught',icon:'fire',type:'consumable',slot:null,rarity:'rare',stats:{heal:20,tempAtk:12},value:80},
    desc:'1 Demon Ash + 2 Fangs → Rage Draught (+12 ATK, 20 HP)'},
   {cat:'advanced',req:{frostCrystal:1,herb:3},
-   result:{id:'frostShield',name:'Frost Shield',icon:'🧊',type:'consumable',slot:null,rarity:'rare',stats:{heal:15,tempDef:15},value:85},
+   result:{id:'frostShield',name:'Frost Shield',icon:'frost-emblem',type:'consumable',slot:null,rarity:'rare',stats:{heal:15,tempDef:15},value:85},
    desc:'1 Frost Crystal + 3 Herbs → Frost Shield (+15 DEF, 15 HP)'},
   {cat:'advanced',req:{ironCore:2,bone:2},
-   result:{id:'ironSkin',name:'Iron Skin',icon:'🛡️',type:'consumable',slot:null,rarity:'uncommon',stats:{heal:5,tempDef:12},value:45},
+   result:{id:'ironSkin',name:'Iron Skin',icon:'round-shield',type:'consumable',slot:null,rarity:'uncommon',stats:{heal:5,tempDef:12},value:45},
    desc:'2 Iron Cores + 2 Bones → Iron Skin (+12 DEF, 5 HP)'},
   // ── LEGENDARY BREWS ────────────────────────────────────────────────
   {cat:'legendary',req:{celestialDust:1,ghostEssence:2,herb:2},
-   result:{id:'celestialDraught',name:'Celestial Draught',icon:'⭐',type:'consumable',slot:null,rarity:'epic',stats:{heal:100},value:150},
+   result:{id:'celestialDraught',name:'Celestial Draught',icon:'crystal-cluster',type:'consumable',slot:null,rarity:'epic',stats:{heal:100},value:150},
    desc:'1 Celestial Dust + 2 Ghost Essence + 2 Herbs → Celestial Draught (100 HP)'},
   {cat:'legendary',req:{shadowEssence:1,voidShard:2,demonAsh:1},
-   result:{id:'shadowBlood',name:'Shadow Blood',icon:'🌑',type:'consumable',slot:null,rarity:'epic',stats:{heal:40,tempAtk:12,tempDef:6},value:200},
+   result:{id:'shadowBlood',name:'Shadow Blood',icon:'moon-sun',type:'consumable',slot:null,rarity:'epic',stats:{heal:40,tempAtk:12,tempDef:6},value:200},
    desc:'1 Shadow Essence + 2 Void Shards + 1 Demon Ash → Shadow Blood (60 HP, +20 ATK, +10 DEF)'},
   {cat:'legendary',req:{frostCrystal:2,ironCore:2},
-   result:{id:'titanBlood',name:"Titan's Blood",icon:'💪',type:'consumable',slot:null,rarity:'epic',stats:{heal:35,tempAtk:10,tempDef:12},value:180},
+   result:{id:'titanBlood',name:"Titan's Blood",icon:'muscle-up',type:'consumable',slot:null,rarity:'epic',stats:{heal:35,tempAtk:10,tempDef:12},value:180},
    desc:"2 Frost Crystals + 2 Iron Cores → Titan's Blood (50 HP, +15 ATK, +20 DEF)"},
   {cat:'legendary',req:{celestialDust:2,shadowEssence:1},
-   result:{id:'etherFlask',name:'Ether Flask',icon:'🌈',type:'consumable',slot:null,rarity:'legendary',stats:{heal:80},value:300},
+   result:{id:'etherFlask',name:'Ether Flask',icon:'feather-wing',type:'consumable',slot:null,rarity:'legendary',stats:{heal:80},value:300},
    desc:'2 Celestial Dust + 1 Shadow Essence → Ether Flask (FULL heal)'},
 ];
 
@@ -206,7 +206,7 @@ function cfShopHTML(cat){
     <div style="border:2px solid var(--border2);background:rgba(0,0,0,0.3);padding:10px 12px;margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:${tierColor};">${tierLabel}</span>
-        <span style="font-size:13px;color:var(--dim);">🪙 ${totalDonated} donated</span>
+        <span style="font-size:13px;color:var(--dim);">${iconHTML('gold-bar')} ${totalDonated} donated</span>
       </div>
       ${shopTier < 3 ? `
         <div style="font-size:12px;color:var(--dim);margin-bottom:8px;">
@@ -216,7 +216,7 @@ function cfShopHTML(cat){
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           ${[10,25,50,100].filter(amt=>amt<=G.gold).map(amt=>
-            `<button class="btn" style="font-size:8px;padding:5px 10px;border-color:#3a5a8a;color:#6aafea;" onclick="cfDonateWizard(${amt})">Donate 🪙${amt}</button>`
+            `<button class="btn" style="font-size:8px;padding:5px 10px;border-color:#3a5a8a;color:#6aafea;" onclick="cfDonateWizard(${amt})">Donate ${iconHTML('gold-bar')}${amt}</button>`
           ).join('')}
           ${G.gold<=0?'<span style="font-size:12px;color:var(--dim);">No gold to donate.</span>':''}
         </div>
@@ -299,12 +299,12 @@ function cfShopHTML(cat){
     const setDef=isSet&&SET_BONUSES[item.set];
     const statsLine=Object.entries(item.stats).filter(([k,v])=>v).map(([k,v])=>`+${v} ${statLabel(k)}`).join(' · ');
     return `<div class="shop-item ${canBuy?'':'cant'}" onclick="${canBuy?`cfBuyItem(${i})`:''}">
-      <div class="si-icon-wrap"><span class="si-icon">${item.icon}</span></div>
+      <div class="si-icon-wrap"><span class="si-icon">${iconHTML(item.icon)}</span></div>
       <div class="si-info">
         <span class="si-name" style="color:${color}">${item.name}${isSet?`<span class="shop-set-badge">SET</span>`:''}</span>
         <div class="si-meta-row">
           <span class="si-stats-inline">${statsLine}</span>
-          <span class="si-cost">${priceMult<1?'<span style="color:var(--green2);">':''}🪙${price}${priceMult<1?'</span>':''}</span>
+          <span class="si-cost">${priceMult<1?'<span style="color:var(--green2);">':''}${iconHTML('gold-bar')}${price}${priceMult<1?'</span>':''}</span>
         </div>
       </div>
     </div>`;
@@ -318,7 +318,7 @@ function cfShopHTML(cat){
     if(item){
       const statsStr=Object.entries(item.stats).filter(([k,v])=>v).map(([k,v])=>`${v>0?'+':''}${v} ${statLabel(k)}`).join(' · ')||'No stats';
       return `<div class="shop-eq-slot has-item" onmouseenter="showShopEqTooltip(event,'${s.k}')" onmouseleave="hideInvTooltip()">
-        <span class="shop-eq-icon">${item.icon}</span>
+        <span class="shop-eq-icon">${iconHTML(item.icon)}</span>
         <span class="shop-eq-lbl filled" style="color:${rColor}" title="${item.name}">${item.name.length>7?item.name.substring(0,7)+'…':item.name}</span>
       </div>`;
     } else {
@@ -365,7 +365,7 @@ function cfShopHTML(cat){
   return `<div>
     <div class="shop-header">
       <div class="shop-header-left">
-        <div class="shop-gold">🪙 ${G.gold} gold</div>
+        <div class="shop-gold">${iconHTML('gold-bar')} ${G.gold} gold</div>
         <div style="font-size:11px;color:var(--gold);margin-bottom:4px;font-style:italic;">${npc.greeting}</div>
         <div style="font-size:12px;color:${npcColor};line-height:1.7;max-width:340px;margin-bottom:4px;">${npcQuote}</div>
         ${!bossDefeated?`<div style="font-size:11px;color:var(--red2);margin-top:4px;cursor:pointer;text-decoration:underline;" onclick="this.nextSibling.style.display=this.nextSibling.style.display==='block'?'none':'block';this.textContent=this.textContent.includes('▼')?'⚔ Boss Intel ▲':'⚔ Boss Intel ▼'">⚔ Boss Intel ▼</div><div style="display:none;background:rgba(60,0,0,.3);border:1px solid var(--red2);padding:8px 10px;font-size:12px;color:#e08080;line-height:1.8;max-width:340px;margin-top:4px;">${npc.boss}</div>`:''}
@@ -450,11 +450,11 @@ function cfDonateWizard(amount){
   AUDIO.sfx.loot();
   G._shopStock=null; // A1: restock on tier change
   if(newTotal===650||tier===2){
-    log('🧙 The wizard grins. "Rare wares, unlocked for you." — Tier II shop unlocked!','l');
+    log('Malachar grins. "Rare wares, unlocked for you." — Tier II shop unlocked!','l');
   } else if(newTotal>=2500&&tier===3){
-    log('🧙 "You have my full inventory. Take what you need." — Tier III shop unlocked!','l');
+    log('"You have my full inventory. Take what you need." — Tier III shop unlocked!','l');
   } else {
-    log('🧙 "A generous soul. I shall remember." ('+newTotal+'g total donated)','l');
+    log('"A generous soul. I shall remember." ('+newTotal+'g total donated)','l');
   }
   cfRenderTab('shop');
 }
@@ -471,7 +471,7 @@ function cfInventoryHTML(){
     const stats=it?Object.entries(it.stats).filter(([,v])=>v).map(([k,v])=>`${v>0?'+':''}${v} ${statLabel(k)}`).join(' · '):'empty';
     return `<div class="cf-eq-row ${it?'cf-eq-filled':''}" onclick="${it?`cfUnequipAt('${s.k}')`:''}">
       <span class="cf-eq-slot-lbl">${s.l}</span>
-      ${it?`<span class="cf-eq-icon">${it.icon}</span><span class="cf-eq-name" style="color:${col}">${it.name}</span><span class="cf-eq-stats">${stats}</span><span class="cf-eq-unequip">✕</span>`
+      ${it?`<span class="cf-eq-icon">${iconHTML(it.icon)}</span><span class="cf-eq-name" style="color:${col}">${it.name}</span><span class="cf-eq-stats">${stats}</span><span class="cf-eq-unequip">✕</span>`
           :`<span class="cf-eq-name" style="color:var(--dim);font-style:italic;">— empty —</span>`}
     </div>`;
   }).join('');
@@ -488,13 +488,13 @@ function cfInventoryHTML(){
       ondragover="cfInvDragOver(event,${i})"
       ondrop="cfInvDrop(event,${i})"
       ondragleave="cfInvDragLeave(event)"
-    >${item.icon}${(item.qty||1)>1?`<div class="inv-qty">${item.qty}</div>`:''}</div>`;
+    >${iconHTML(item.icon)}${(item.qty||1)>1?`<div class="inv-qty">${item.qty}</div>`:''}</div>`;
   }).join('');
 
   return `<div class="cf-inv-panel">
-    <div class="cf-inv-section-title">⚔ EQUIPPED</div>
+    <div class="cf-inv-section-title">${iconHTML('crossed-swords')} EQUIPPED</div>
     <div class="cf-eq-list">${eqHTML}</div>
-    <div class="cf-inv-section-title" style="margin-top:14px;">🎒 INVENTORY</div>
+    <div class="cf-inv-section-title" style="margin-top:14px;">${iconHTML('wooden-sign')} INVENTORY</div>
     <div class="cf-inv-grid">${invHTML}</div>
     <div id="cfItemDetail" class="cf-item-detail"></div>
   </div>`;
@@ -578,24 +578,24 @@ function cfItemAction(idx){
   if(item.slot){
     // Equippable — show equip + sell + salvage buttons
     const salvVal=Math.floor(item.value*({common:0.30,uncommon:0.40,rare:0.50,epic:0.50,legendary:0.60}[item.rarity]||0.30));
-    if(d){d.innerHTML=`<span style="color:${col}">${item.icon} ${item.name}</span>
+    if(d){d.innerHTML=`<span style="color:${col}">${iconHTML(item.icon)} ${item.name}</span>
       <span style="color:var(--dim);font-size:9px;margin-left:6px;">${stats||''}</span>
       <button class="btn btn-green" style="padding:5px 14px;font-size:7px;margin-left:10px;" onclick="cfEquipItem(${idx})">EQUIP</button>
-      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:6px;border-color:#5a3a1a;color:#c8a84b;" onclick="cfSellItem(${idx})">SELL 🪙${Math.floor(item.value*.5)}</button>
-      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:6px;border-color:#3a5a3a;color:#6aea6a;" onclick="cfSalvageItem(${idx})">♻ SALVAGE 🪙${salvVal}</button>
+      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:6px;border-color:#5a3a1a;color:#c8a84b;" onclick="cfSellItem(${idx})">SELL ${iconHTML('gold-bar')}${Math.floor(item.value*.5)}</button>
+      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:6px;border-color:#3a5a3a;color:#6aea6a;" onclick="cfSalvageItem(${idx})">${iconHTML('cycle')} SALVAGE ${iconHTML('gold-bar')}${salvVal}</button>
     `;}
   } else if(item.stats&&item.stats.heal){
     // Consumable
-    if(d){d.innerHTML=`<span style="color:${col}">${item.icon} ${item.name}</span>
+    if(d){d.innerHTML=`<span style="color:${col}">${iconHTML(item.icon)} ${item.name}</span>
       <span style="color:var(--dim);font-size:9px;margin-left:6px;">Heals ${item.stats.heal} HP</span>
       <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:10px;border-color:var(--green2);color:var(--green2);" onclick="cfUsePotion(${idx})">USE</button>
-      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:6px;border-color:#5a3a1a;color:#c8a84b;" onclick="cfSellItem(${idx})">SELL 🪙${Math.floor(item.value*.5)}</button>
+      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:6px;border-color:#5a3a1a;color:#c8a84b;" onclick="cfSellItem(${idx})">SELL ${iconHTML('gold-bar')}${Math.floor(item.value*.5)}</button>
     `;}
   } else {
     // Material or other
-    if(d){d.innerHTML=`<span style="color:${col}">${item.icon} ${item.name}</span>
+    if(d){d.innerHTML=`<span style="color:${col}">${iconHTML(item.icon)} ${item.name}</span>
       <span style="color:var(--dim);font-size:9px;margin-left:6px;">${item.type||'material'}</span>
-      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:10px;border-color:#5a3a1a;color:#c8a84b;" onclick="cfSellItem(${idx})">SELL 🪙${Math.floor((item.value||2)*.5)}</button>
+      <button class="btn" style="padding:5px 14px;font-size:7px;margin-left:10px;border-color:#5a3a1a;color:#c8a84b;" onclick="cfSellItem(${idx})">SELL ${iconHTML('gold-bar')}${Math.floor((item.value||2)*.5)}</button>
     `;}
   }
 }
@@ -615,7 +615,7 @@ function cfEquipItem(idx){
 function cfUsePotion(idx){
   const item=G.inventory[idx];
   if(!item||!item.stats||!item.stats.heal)return;
-  heal(item.stats.heal,item.name+' 🧪');
+  heal(item.stats.heal,item.name);
   item.qty=(item.qty||1)-1;
   if(item.qty<=0)G.inventory[idx]=null;
   renderAll();
@@ -657,7 +657,7 @@ function cfSalvageItem(idx){
   if(matPool.length){
     const matId=matPool[Math.floor(Math.random()*matPool.length)];
     const mat=ITEMS.find(i=>i.id===matId);
-    if(mat){addItem({...mat,qty:1});resultMsg+=' + '+mat.icon+' '+mat.name;}
+    if(mat){addItem({...mat,qty:1});resultMsg+=' + '+mat.name;}
   }
 
   // Temp buff from rare+ items
@@ -685,7 +685,7 @@ function cfEventHTML(){
   // Locked until the player takes a long rest
   if(!G.eventUnlockedByRest&&!G.eventUsedThisRest){
     return `<div class="event-panel" style="text-align:center;padding:24px 16px;">
-      <div style="font-size:28px;margin-bottom:12px;filter:grayscale(1);opacity:0.4;">🎲</div>
+      <div style="font-size:28px;margin-bottom:12px;filter:grayscale(1);opacity:0.4;">${iconHTML('perspective-dice-six')}</div>
       <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim);margin-bottom:10px;line-height:1.8;">FATE AWAITS</div>
       <div style="font-size:13px;color:var(--dim);line-height:1.7;max-width:280px;margin:0 auto;">Take a Long Rest first — the world reveals its mysteries only to those who sleep beneath the stars.</div>
     </div>`;
@@ -744,8 +744,8 @@ function cfResolveEventClassSet(){
   const el=document.getElementById('evResult');
   if(addItem(item)){
     G.totalItems++;AUDIO.sfx.loot();
-    const result=`✦ You received: ${item.icon} ${item.name}! (${setDef?.name||item.set} — ${3-available.length+1}/3 pieces)`;
-    if(el){el.textContent=result;el.className='ev-result show';}
+    const result=`✦ You received: ${iconHTML(item.icon)} ${item.name}! (${setDef?.name||item.set} — ${3-available.length+1}/3 pieces)`;
+    if(el){el.innerHTML=result;el.className='ev-result show';}
     document.querySelectorAll('.ev-choice').forEach(b=>b.disabled=true);
     G.eventUsedThisRest=true;
     G._lastEventResult=result;
@@ -776,7 +776,7 @@ function quickUsePotion(){
   if(idx===-1){log('No potions in inventory!','s');return;}
   const item=G.inventory[idx];
   const qpHeal=G._branchSwiftHands?Math.ceil(item.stats.heal*1.5):item.stats.heal;
-  heal(qpHeal,item.name+' 🧪');
+  heal(qpHeal,item.name);
   item.qty=(item.qty||1)-1;
   if(item.qty<=0)G.inventory[idx]=null;
   G.bonusUsed=true; // costs your bonus action

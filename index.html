@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Descent into Eternity v4.0</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rpg-awesome@0.2.0/css/rpg-awesome.min.css">
 <link rel="stylesheet" href="css/styles-base.css">
 <link rel="stylesheet" href="css/styles-title.css">
 <link rel="stylesheet" href="css/styles-intro.css">
@@ -51,7 +52,6 @@
         <span class="title-word" style="--i:0">DESCENT</span><br>
         <span class="title-word" style="--i:1">INTO ETERNITY</span>
       </h1>
-      <div class="title-sub" id="titleSub">A TACTICAL DUNGEON CRAWLER</div>
     </div>
 
     <!-- Tagline from lore -->
@@ -63,22 +63,8 @@
     <!-- Menu (hidden until keypress) -->
     <div class="title-menu" id="titleMenu">
       <div class="title-btns">
-        <button class="title-btn" onclick="beginDescent()" id="beginBtn">⚔ &nbsp; BEGIN DESCENT</button>
-        <button class="title-btn title-btn-sm" onclick="openHelp()">? &nbsp; HOW TO PLAY</button>
-      </div>
-      <div class="title-audio-panel" id="titleAudioPanel">
-        <div class="title-audio-row">
-          <span class="audio-vol-label">🎵 MUSIC</span>
-          <input class="audio-slider" type="range" min="0" max="100" value="25" id="titleMusicSlider" oninput="onMusicVol(this.value)">
-          <span class="audio-vol-num" id="titleMusicVolNum">25</span>
-          <button class="audio-mute-btn" id="titleMuteMusicBtn" onclick="toggleMuteMusic()">MUTE</button>
-        </div>
-        <div class="title-audio-row">
-          <span class="audio-vol-label">💥 SFX</span>
-          <input class="audio-slider" type="range" min="0" max="100" value="25" id="titleSfxSlider" oninput="onSfxVol(this.value)">
-          <span class="audio-vol-num" id="titleSfxVolNum">25</span>
-          <button class="audio-mute-btn" id="titleMuteSfxBtn" onclick="toggleMuteSfx()">MUTE</button>
-        </div>
+        <button class="title-btn" onclick="beginDescent()" id="beginBtn"><i class="ra ra-broadsword" aria-hidden="true"></i> &nbsp; BEGIN DESCENT</button>
+        <button class="title-btn title-btn-sm" onclick="openHelp()"><i class="ra ra-scroll-quill" aria-hidden="true"></i> &nbsp; HOW TO PLAY</button>
       </div>
     </div>
   </div>
@@ -120,7 +106,7 @@
     transition:opacity 0.25s ease;
   " onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.25'">
     <div style="text-align:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(200,168,75,0.15);">
-      <div style="font-size:11px;color:rgba(200,168,75,0.4);letter-spacing:3px;">⚔ LOADOUT</div>
+      <div style="font-size:11px;color:rgba(200,168,75,0.4);letter-spacing:3px;"><i class="ra ra-crossed-swords" aria-hidden="true"></i> LOADOUT</div>
     </div>
     <div style="font-size:8px;color:#444;text-align:center;padding:8px 0;line-height:2.2;">Prepare for your descent.<br>Buffs &amp; gear will appear here.</div>
   </div>
@@ -200,7 +186,7 @@
 <div id="prepareOverlay" class="prepare-overlay">
   <div class="prepare-box">
     <div class="prepare-titlebar">
-      <span class="prepare-title">⚔ PREPARE FOR DESCENT</span>
+      <span class="prepare-title"><i class="ra ra-crossed-swords" aria-hidden="true"></i> PREPARE FOR DESCENT</span>
       <button class="prepare-close" onclick="closePrepareScreen()">✕ CANCEL</button>
     </div>
     <div class="prepare-zone-label" id="prepareZoneLabel"></div>
@@ -226,7 +212,7 @@
     <div class="prepare-footer">
       <button class="prepare-change-class-btn" onclick="changeClassFromPrepare()">↺ CHANGE CLASS</button>
       <div class="prepare-footer-tip">Click items to move between stash and loadout. Starter weapon is locked in.</div>
-      <button class="prepare-descend-btn" onclick="doDescend()">⚔ DESCEND</button>
+      <button class="prepare-descend-btn" onclick="doDescend()"><i class="ra ra-crossed-swords" aria-hidden="true"></i> DESCEND</button>
     </div>
   </div>
 </div>
@@ -235,7 +221,7 @@
 <div id="screen-saveSlots" class="screen">
   <div class="slot-screen-header">
     <button class="slot-back-btn" onclick="showScreen('title')">◀ BACK</button>
-    <div class="slot-screen-title">⚔ SELECT YOUR RUN</div>
+    <div class="slot-screen-title"><i class="ra ra-crossed-swords" aria-hidden="true"></i> SELECT YOUR RUN</div>
   </div>
   <div id="saveSlotsContainer" class="save-slots-grid"></div>
 </div>
@@ -252,9 +238,9 @@
     <div class="slot-detail-actions" id="slotDetailActions"></div>
     <!-- Tabs -->
     <div class="slot-detail-tabs">
-      <div class="sdt-tab active" onclick="slotDetailTab('overview',this)">📜 OVERVIEW</div>
-      <div class="sdt-tab" onclick="slotDetailTab('graces',this)">✨ GRACES</div>
-      <div class="sdt-tab" onclick="slotDetailTab('achievements',this)">🏆 ACHIEVEMENTS</div>
+      <div class="sdt-tab active" onclick="slotDetailTab('overview',this)"><i class="ra ra-scroll-unfurled" aria-hidden="true"></i> OVERVIEW</div>
+      <div class="sdt-tab" onclick="slotDetailTab('graces',this)"><i class="ra ra-trophy" aria-hidden="true"></i> GRACES</div>
+      <div class="sdt-tab" onclick="slotDetailTab('achievements',this)"><i class="ra ra-trophy" aria-hidden="true"></i> ACHIEVEMENTS</div>
     </div>
     <div class="slot-detail-content" id="slotDetailContent"></div>
   </div>
@@ -267,7 +253,7 @@
     <p style="font-size:12px;color:var(--dim);margin-bottom:18px;">This name will represent your legacy across all runs on this slot.</p>
     <input id="adventurerNameInput" type="text" maxlength="20" placeholder="Enter name..." style="width:100%;background:#111;border:2px solid var(--gold-dim);color:var(--parchment);font-family:'Press Start 2P',monospace;font-size:10px;padding:10px 12px;box-sizing:border-box;margin-bottom:16px;outline:none;" onkeydown="if(event.key==='Enter')confirmAdventurerName()">
     <div class="obox-btns">
-      <button class="btn btn-gold" onclick="confirmAdventurerName()">⚔ BEGIN</button>
+      <button class="btn btn-gold" onclick="confirmAdventurerName()"><i class="ra ra-broadsword" aria-hidden="true"></i> BEGIN</button>
     </div>
   </div>
 </div>
@@ -277,7 +263,7 @@
     <h3>ARE YOU CERTAIN?</h3>
     <p id="confirmMsg">You have chosen the Fighter.<br>This path cannot be changed.</p>
     <div class="obox-btns">
-      <button class="btn btn-gold" onclick="doConfirmClass()">⚔ COMMIT</button>
+      <button class="btn btn-gold" onclick="doConfirmClass()"><i class="ra ra-broadsword" aria-hidden="true"></i> COMMIT</button>
       <button class="btn btn-red" onclick="closeOverlay('confirmOverlay')">✗ RECONSIDER</button>
     </div>
   </div>
@@ -362,13 +348,13 @@
       <span class="topbar-zone-name" id="topbarZoneName"></span>
       <span class="topbar-zone-progress" id="topbarZoneProgress"></span>
     </div>
-    <div class="topbar-gold"><span class="gold-icon">🪙</span> <span id="goldVal">0</span></div>
+    <div class="topbar-gold"><span class="gold-icon"><i class="ra ra-gold-bar" aria-hidden="true"></i></span> <span id="goldVal">0</span></div>
     <div class="topbar-btns">
       <button class="topbar-btn" onclick="togglePause()" id="pauseBtn">⏸ PAUSE <span class="kb-hint">ESC</span></button>
-      <button class="topbar-btn" onclick="showMap()">🗺 MAP <span class="kb-hint">M</span></button>
-      <button class="topbar-btn" onclick="openHelp()">? HELP <span class="kb-hint">H</span></button>
+      <button class="topbar-btn" onclick="showMap()"><i class="ra ra-compass" aria-hidden="true"></i> MAP <span class="kb-hint">M</span></button>
+      <button class="topbar-btn" onclick="openHelp()"><i class="ra ra-scroll-unfurled" aria-hidden="true"></i> HELP <span class="kb-hint">H</span></button>
       <div class="audio-panel-wrap" id="audioPanelWrap">
-        <button class="topbar-btn" id="audioToggleBtn" onclick="toggleAudioPanel()" title="Sound Settings">🔊</button>
+        <button class="topbar-btn" id="audioToggleBtn" onclick="toggleAudioPanel()" title="Sound Settings">♪</button>
         <div class="audio-panel" id="audioPanel">
           <div class="audio-panel-title">⚙ AUDIO SETTINGS</div>
           <div class="audio-vol-row">
@@ -382,8 +368,8 @@
             <span class="audio-vol-num" id="sfxVolNum">25</span>
           </div>
           <div class="audio-mute-row">
-            <button class="audio-mute-btn" id="muteMusicBtn" onclick="toggleMuteMusic()">🎵 MUSIC</button>
-            <button class="audio-mute-btn" id="muteSfxBtn" onclick="toggleMuteSfx()">💥 SFX</button>
+            <button class="audio-mute-btn" id="muteMusicBtn" onclick="toggleMuteMusic()">♪ MUSIC</button>
+            <button class="audio-mute-btn" id="muteSfxBtn" onclick="toggleMuteSfx()">&#x266B; SFX</button>
           </div>
         </div>
       </div>
@@ -451,14 +437,14 @@
           <div id="frozenSoldierHpWrap" style="display:none;">
             <div style="position:relative;width:60px;height:14px;background:#0a1520;border:2px solid #4a8abf;box-shadow:0 0 8px rgba(74,138,191,0.4);overflow:hidden;margin-bottom:2px;">
               <div id="frozenSoldierHpFill" style="height:100%;width:100%;background:linear-gradient(90deg,#1a4a6a,#4a8abf);transition:width 0.25s;"></div>
-              <div id="frozenSoldierHpText" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:5px;color:#fff;text-shadow:1px 1px 0 #000;pointer-events:none;">💀 --</div>
+              <div id="frozenSoldierHpText" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:5px;color:#fff;text-shadow:1px 1px 0 #000;pointer-events:none;"><i class="ra ra-skull" aria-hidden="true"></i> --</div>
             </div>
           </div>
           <div id="humanHpBarWrap" class="fighter-hp-bar"><div class="fighter-hp-fill" id="playerHpFill" style="width:100%;background:var(--green2)"></div></div>
           <div id="bearHpBarWrap" style="display:none;">
             <div id="bearHpTrack" style="position:relative;width:90px;height:22px;background:#1a0800;border:3px solid #cd853f;box-shadow:0 0 12px #cd853f;overflow:hidden;margin-bottom:2px;">
               <div id="bearHpFill" style="height:100%;width:100%;background:linear-gradient(90deg,#5a2e00,#cd853f);transition:width 0.25s;"></div>
-              <div id="bearHpText" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:6px;color:#fff;text-shadow:1px 1px 0 #000;pointer-events:none;">🐻 -- / --</div>
+              <div id="bearHpText" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:6px;color:#fff;text-shadow:1px 1px 0 #000;pointer-events:none;"><i class="ra ra-pawprint" aria-hidden="true"></i> -- / --</div>
             </div>
           </div>
           <div class="fighter-name-tag" id="playerNameTag">HERO</div>
@@ -483,7 +469,7 @@
 
         <!-- Reaction prompt -->
         <div id="reactPrompt" style="display:none;" class="react-prompt">
-          <div class="react-prompt-title" id="reactPromptTitle">⚡ INCOMING ATTACK — REACT?</div>
+          <div class="react-prompt-title" id="reactPromptTitle"><i class="ra ra-lightning-bolt" aria-hidden="true"></i> INCOMING ATTACK — REACT?</div>
           <div class="react-prompt-btns" id="reactPromptBtns"></div>
           <div class="react-timer-bar"><div class="react-timer-fill" id="reactTimerFill" style="width:100%"></div></div>
         </div>
@@ -493,7 +479,7 @@
       <div class="action-bar">
         <!-- Row 1: turn state + AE pips + utility buttons -->
         <div class="ab-strip">
-          <div class="turn-state your-turn" id="turnState">⚔ YOUR TURN</div>
+          <div class="turn-state your-turn" id="turnState"><i class="ra ra-crossed-swords" aria-hidden="true"></i> YOUR TURN</div>
           <div class="ae-row" id="aeRow">
             <div class="ae-pip avail" id="pip-action">ACT</div>
             <div class="ae-pip avail" id="pip-bonus">BON</div>
@@ -501,14 +487,14 @@
           </div>
           <div id="spellSlotInline" style="display:none;align-items:center;gap:2px;margin-left:6px;padding:2px 6px;border-left:1px solid #333;"></div>
           <div class="ab-util-btns">
-            <button class="ab-util-btn potion-btn" id="quickPotionBtn" onclick="quickUsePotion()" title="Use Healing Potion [P]"><span class="ab-util-icon">🧪</span><span class="ab-util-lbl">POTION</span><span class="kb-hint">P</span></button>
-            <button class="ab-util-btn campfire-btn" id="quickCampBtn" onclick="quickCampfire()" title="Rest at campfire"><span class="ab-util-icon">🔥</span><span id="campProgress" class="ab-util-lbl" style="display:block;color:var(--dim);"></span><span class="ab-util-lbl" id="campBtnLabel">CAMP</span></button>
+            <button class="ab-util-btn potion-btn" id="quickPotionBtn" onclick="quickUsePotion()" title="Use Healing Potion [P]"><span class="ab-util-icon"><i class="ra ra-heart-bottle" aria-hidden="true"></i></span><span class="ab-util-lbl">POTION</span><span class="kb-hint">P</span></button>
+            <button class="ab-util-btn campfire-btn" id="quickCampBtn" onclick="quickCampfire()" title="Rest at campfire"><span class="ab-util-icon"><i class="ra ra-campfire" aria-hidden="true"></i></span><span id="campProgress" class="ab-util-lbl" style="display:block;color:var(--dim);"></span><span class="ab-util-lbl" id="campBtnLabel">CAMP</span></button>
           </div>
         </div>
         <!-- Row 2: skill groups + end turn -->
         <div class="ab-skills-row">
           <div class="ab-skill-group">
-            <div class="ab-group-label">⚔ ACTION</div>
+            <div class="ab-group-label"><i class="ra ra-crossed-swords" aria-hidden="true"></i> ACTION</div>
             <div class="ab-group-btns" id="actionSkills"></div>
           </div>
           <div class="ab-group-divider"></div>
@@ -518,13 +504,13 @@
           </div>
           <div class="ab-group-divider"></div>
           <div class="ab-skill-group">
-            <div class="ab-group-label">⚡ REACT <span id="reactWhenLabel" style="color:var(--dim);font-size:8px;">(enemy turn)</span></div>
+            <div class="ab-group-label"><i class="ra ra-lightning-bolt" aria-hidden="true"></i> REACT <span id="reactWhenLabel" style="color:var(--dim);font-size:8px;">(enemy turn)</span></div>
             <div class="ab-group-btns" id="reactionSkills"></div>
           </div>
           <div class="ab-end-turn-wrap">
-            <button class="end-turn-btn" id="exitWildShapeBtn" onclick="exitWildShape()" style="display:none;background:linear-gradient(135deg,#1a2e0a,#2a5a1a);border-color:#5a8a2a;font-size:6px;padding:6px 8px;margin-bottom:4px;">🌿 EXIT SHAPE</button>
+            <button class="end-turn-btn" id="exitWildShapeBtn" onclick="exitWildShape()" style="display:none;background:linear-gradient(135deg,#1a2e0a,#2a5a1a);border-color:#5a8a2a;font-size:6px;padding:6px 8px;margin-bottom:4px;"><i class="ra ra-leaf" aria-hidden="true"></i> EXIT SHAPE</button>
             <button class="end-turn-btn" id="endTurnBtn" onclick="playerEndTurn()">END TURN ▶ <span class="kb-hint">SPACE</span></button>
-            <button class="end-turn-btn" id="nextEnemyBtn" onclick="handleNextEnemy()" style="display:none;background:linear-gradient(135deg,#1a3a1a,#2a5a2a);border-color:#2d6b3a;">⚔ NEXT ▶</button>
+            <button class="end-turn-btn" id="nextEnemyBtn" onclick="handleNextEnemy()" style="display:none;background:linear-gradient(135deg,#1a3a1a,#2a5a2a);border-color:#2d6b3a;"><i class="ra ra-crossed-swords" aria-hidden="true"></i> NEXT ▶</button>
           </div>
         </div>
       </div>
@@ -575,7 +561,7 @@
 
 <div id="deathOverlay" role="dialog" aria-modal="true" aria-label="Death" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0);align-items:center;justify-content:center;flex-direction:column;pointer-events:all;">
   <div id="deathOverlayInner" style="text-align:center;opacity:0;transform:scale(0.7);">
-    <div style="font-size:64px;filter:drop-shadow(0 0 20px #ff2200);animation:death-skull-pulse 1.5s ease-in-out infinite;">💀</div>
+    <div style="font-size:64px;filter:drop-shadow(0 0 20px #ff2200);animation:death-skull-pulse 1.5s ease-in-out infinite;"><i class="ra ra-skull" style="color:#cc0000;" aria-hidden="true"></i></div>
     <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:#cc0000;text-shadow:0 0 20px #ff0000,4px 4px 0 #000;letter-spacing:4px;margin:12px 0 8px;">YOU DIED</div>
     <div id="deathOverlaySub" style="font-family:'Press Start 2P',monospace;font-size:9px;color:#884444;letter-spacing:2px;">RETREATING TO CAMPFIRE...</div>
   </div>
@@ -585,7 +571,7 @@
 <div id="salvageOverlay" class="salvage-overlay">
   <div class="salvage-box">
     <div class="salvage-titlebar">
-      <span class="salvage-title">⚔ SALVAGE ONE ITEM</span>
+      <span class="salvage-title"><i class="ra ra-crossed-swords" aria-hidden="true"></i> SALVAGE ONE ITEM</span>
     </div>
     <div class="salvage-subtitle">Choose one item (rare or below) to carry back to Elderfen — it will be added to your stash.</div>
     <div id="salvageGrid" class="salvage-grid"></div>
@@ -602,7 +588,7 @@
   <div class="death-bg"></div>
   <div class="death-scanlines"></div>
   <div class="death-content">
-    <div class="death-skull">💀</div>
+    <div class="death-skull"><i class="ra ra-skull" aria-hidden="true"></i></div>
     <div class="death-title">YOU DIED</div>
     <div class="death-sub" id="deathSub">WARRIOR — ZONE 1 — LEVEL 1</div>
     <div class="death-epitaph" id="deathEpitaph"></div>
@@ -614,7 +600,7 @@
       <div id="deathHighlightContent"></div>
     </div>
     <div class="death-btn-row">
-      <button id="deathRetryBtn" class="death-btn death-btn-retry" onclick="deathReturnToTown()">⚔ RETURN TO ELDERFEN</button>
+      <button id="deathRetryBtn" class="death-btn death-btn-retry" onclick="deathReturnToTown()"><i class="ra ra-crossed-swords" aria-hidden="true"></i> RETURN TO ELDERFEN</button>
       <button class="death-btn death-btn-title" onclick="deathGoToMenu()">☰ MAIN MENU</button>
     </div>
   </div>
@@ -646,12 +632,12 @@
     <div class="cf-lives" id="cfLives"></div>
   </div>
   <div class="cf-tabs" id="cfTabs">
-    <div class="cf-tab active" onclick="cfSwitchTab('rest',this)">😴 REST</div>
-    <div class="cf-tab" onclick="cfSwitchTab('event',this)">🎲 EVENT</div>
-    <div class="cf-tab" onclick="cfSwitchTab('inventory',this)">🎒 INV</div>
-    <div class="cf-tab" onclick="cfSwitchTab('craft',this)">⚒ CRAFT</div>
-    <div class="cf-tab" onclick="cfSwitchTab('shop',this)">🛒 SHOP</div>
-    <div class="cf-tab" onclick="cfSwitchTab('codex',this)">📖 CODEX</div>
+    <div class="cf-tab active" onclick="cfSwitchTab('rest',this)"><i class="ra ra-campfire" aria-hidden="true"></i> REST</div>
+    <div class="cf-tab" onclick="cfSwitchTab('event',this)"><i class="ra ra-perspective-dice-six" aria-hidden="true"></i> EVENT</div>
+    <div class="cf-tab" onclick="cfSwitchTab('inventory',this)"><i class="ra ra-wooden-sign" aria-hidden="true"></i> INV</div>
+    <div class="cf-tab" onclick="cfSwitchTab('craft',this)"><i class="ra ra-anvil" aria-hidden="true"></i> CRAFT</div>
+    <div class="cf-tab" onclick="cfSwitchTab('shop',this)"><i class="ra ra-gold-bar" aria-hidden="true"></i> SHOP</div>
+    <div class="cf-tab" onclick="cfSwitchTab('codex',this)"><i class="ra ra-book" aria-hidden="true"></i> CODEX</div>
   </div>
   <div class="cf-content"><div class="cf-content-inner" id="cfContent"></div></div>
   <div class="cf-continue-wrap">
@@ -703,22 +689,22 @@
 <!-- HELP OVERLAY -->
 <div id="help-overlay" role="dialog" aria-modal="true" aria-label="Help">
   <div class="help-box">
-    <div class="help-title">⚔ HOW TO PLAY — DESCENT INTO ETERNITY</div>
+    <div class="help-title"><i class="ra ra-crossed-swords" aria-hidden="true"></i> HOW TO PLAY — DESCENT INTO ETERNITY</div>
 
     <!-- Tab nav -->
     <div class="help-tabs">
-      <button class="help-tab active" onclick="switchHelpTab('combat',this)">⚔ COMBAT</button>
-      <button class="help-tab" onclick="switchHelpTab('classes',this)">🧙 CLASSES</button>
+      <button class="help-tab active" onclick="switchHelpTab('combat',this)"><i class="ra ra-crossed-swords" aria-hidden="true"></i> COMBAT</button>
+      <button class="help-tab" onclick="switchHelpTab('classes',this)"><i class="ra ra-scroll-unfurled" aria-hidden="true"></i> CLASSES</button>
       <button class="help-tab" onclick="switchHelpTab('progression',this)">📈 PROGRESS</button>
       <button class="help-tab" onclick="switchHelpTab('town',this)">🏘 TOWN</button>
-      <button class="help-tab" onclick="switchHelpTab('gear',this)">🎒 GEAR</button>
+      <button class="help-tab" onclick="switchHelpTab('gear',this)"><i class="ra ra-wooden-sign" aria-hidden="true"></i> GEAR</button>
       <button class="help-tab" onclick="switchHelpTab('tips',this)">💡 TIPS</button>
     </div>
 
     <!-- COMBAT TAB -->
     <div class="help-pane active" id="help-pane-combat">
       <div class="help-section">
-        <h3>⚔ THE BASICS</h3>
+        <h3><i class="ra ra-crossed-swords" aria-hidden="true"></i> THE BASICS</h3>
         <p>You are an adventurer descending into ancient evil. Each fight is <span class="help-hl">turn-based</span> — you act first, then the enemy responds. Survive long enough to slay the zone boss, then push deeper.</p>
       </div>
       <div class="help-section">
@@ -788,56 +774,56 @@
       </div>
       <div class="help-class-grid">
         <div class="help-class-card">
-          <div class="help-class-icon">⚔️</div>
+          <div class="help-class-icon"><i class="ra ra-crossed-swords" aria-hidden="true"></i></div>
           <div class="help-class-name">FIGHTER</div>
           <div class="help-class-res">Resource: Momentum</div>
           <div class="help-class-sub">Subclass: Champion — expanded crit range, Surge Strike unlocked</div>
           <div class="help-class-tip">Surge Strike is your finisher — and it gives a free Bonus Action on a crit. Use Second Wind between fights to conserve potions. Ultimate: <em>Action Surge</em> — a full extra turn at reduced costs.</div>
         </div>
         <div class="help-class-card">
-          <div class="help-class-icon">🔮</div>
+          <div class="help-class-icon"><i class="ra ra-blast" aria-hidden="true"></i></div>
           <div class="help-class-name">WIZARD</div>
           <div class="help-class-res">Resource: Spell Slots</div>
           <div class="help-class-sub">Subclass: Evoker — Evocation spells deal maximum damage</div>
           <div class="help-class-tip">Spell slots are finite until you rest. Never waste a Level 3 slot on trash. Cantrips (Fire Bolt) are always free. Ultimate: <em>Time Stop</em> — 3 free actions while the enemy is frozen.</div>
         </div>
         <div class="help-class-card">
-          <div class="help-class-icon">🗡️</div>
+          <div class="help-class-icon"><i class="ra ra-plain-dagger" aria-hidden="true"></i></div>
           <div class="help-class-name">ROGUE</div>
           <div class="help-class-res">Resource: Combo Points</div>
           <div class="help-class-sub">Subclass: Thief — Pickpocket lets you steal gold, potions, or materials</div>
           <div class="help-class-tip">Build Combo Points with basic attacks, spend on Sneak Attack. Always fight with Advantage. Ultimate: <em>Vanishing Act</em> — go untargetable for 2 rounds; next attack auto-crits.</div>
         </div>
         <div class="help-class-card">
-          <div class="help-class-icon">🛡️</div>
+          <div class="help-class-icon"><i class="ra ra-round-shield" aria-hidden="true"></i></div>
           <div class="help-class-name">PALADIN</div>
           <div class="help-class-res">Resource: Holy Power</div>
           <div class="help-class-sub">Subclass: Oath of Devotion — Sacred Weapon and Holy Nimbus</div>
           <div class="help-class-tip">Divine Smite on crits — always. Lay on Hands is your emergency heal pool. Divine Shield can fully negate a hit. Ultimate: <em>Divine Intervention</em> — massive AoE radiant damage and a full self-heal.</div>
         </div>
         <div class="help-class-card">
-          <div class="help-class-icon">🏹</div>
+          <div class="help-class-icon"><i class="ra ra-crossbow" aria-hidden="true"></i></div>
           <div class="help-class-name">RANGER</div>
           <div class="help-class-res">Resource: Focus</div>
           <div class="help-class-sub">Subclass: Beast Master — companion attacks and Pack Hunt strike together</div>
           <div class="help-class-tip">Apply Hunter's Mark turn 1, every fight — it multiplies your output. Beast's Aid intercepts hits for you. Ultimate: <em>Hail of Arrows</em> — AoE volley that Marks and Restrains all enemies.</div>
         </div>
         <div class="help-class-card">
-          <div class="help-class-icon">💢</div>
+          <div class="help-class-icon"><i class="ra ra-axe-swing" aria-hidden="true"></i></div>
           <div class="help-class-name">BARBARIAN</div>
           <div class="help-class-res">Resource: Rage</div>
           <div class="help-class-sub">Subclass: Berserker — Frenzy auto-attacks on every turn while raging</div>
           <div class="help-class-tip">Rage before the first hit lands — it's both your offense and defense. Reckless Attack hits hard but costs HP; save it for when you're healthy. Ultimate: <em>World Breaker</em> — shockwave that deals double damage to conditioned enemies.</div>
         </div>
         <div class="help-class-card">
-          <div class="help-class-icon">✝️</div>
+          <div class="help-class-icon"><i class="ra ra-ankh" aria-hidden="true"></i></div>
           <div class="help-class-name">CLERIC</div>
           <div class="help-class-res">Resource: Devotion</div>
           <div class="help-class-sub">Subclass: Life Domain — Preserve Life heals for massive amounts</div>
           <div class="help-class-tip">Channel Divinity often beats spending Devotion charges. Sacred Flame is your free damage cantrip. Spiritual Weapon deals passive damage each turn. Ultimate: <em>Miracle</em> — full heal yourself and blast all enemies with radiant damage.</div>
         </div>
         <div class="help-class-card">
-          <div class="help-class-icon">🌿</div>
+          <div class="help-class-icon"><i class="ra ra-leaf" aria-hidden="true"></i></div>
           <div class="help-class-name">DRUID</div>
           <div class="help-class-res">Resource: Nature's Charge</div>
           <div class="help-class-sub">Subclass: Circle of the Moon — Elemental Form and Elemental Strike</div>
@@ -868,7 +854,7 @@
         </ul>
       </div>
       <div class="help-section">
-        <h3>✨ GRACES</h3>
+        <h3><i class="ra ra-trophy" aria-hidden="true"></i> GRACES</h3>
         <ul>
           <li><span class="help-hl">Graces</span> are powerful passive bonuses earned by completing achievements and challenges.</li>
           <li>Equip them at the <span class="help-hl">Grace Vault</span> in Elderfen (beside the dungeon gate). Each grace slot can hold one grace.</li>
@@ -1010,7 +996,7 @@
     </div>
 
     <div style="text-align:center;margin-top:20px;">
-      <button class="btn btn-gold" onclick="closeHelp()">GOT IT — LET'S GO ⚔</button>
+      <button class="btn btn-gold" onclick="closeHelp()">GOT IT — LET'S GO <i class="ra ra-broadsword" aria-hidden="true"></i></button>
     </div>
   </div>
 </div>
@@ -1104,7 +1090,7 @@ function switchHelpTab(id, btn) {
 <div id="screen-graces" class="screen" style="flex-direction:column;align-items:center;justify-content:flex-start;">
   <div class="slot-screen-header" style="width:100%;max-width:900px;">
     <button class="slot-back-btn" onclick="showScreen('slotDetail');slotDetailTab('overview',document.querySelectorAll('.sdt-tab')[0]);">◀ BACK</button>
-    <div class="slot-screen-title">✨ GRACES</div>
+    <div class="slot-screen-title"><i class="ra ra-trophy" aria-hidden="true"></i> GRACES</div>
   </div>
   <div id="graceScreenContent" style="overflow-y:auto;max-height:calc(100vh - 80px);width:100%;padding:0 16px 24px;display:flex;flex-direction:column;align-items:center;"></div>
 </div>
@@ -1120,7 +1106,7 @@ function switchHelpTab(id, btn) {
 
 <!-- ACHIEVEMENT TOAST -->
 <div id="achToast">
-  <span id="achToastIcon">🏆</span>
+  <span id="achToastIcon"><i class="ra ra-trophy" aria-hidden="true"></i></span>
   <div class="ach-toast-text">
     <div class="ach-toast-label">ACHIEVEMENT UNLOCKED</div>
     <div id="achToastTitle"></div>
@@ -1151,7 +1137,7 @@ function switchHelpTab(id, btn) {
 <div id="invTooltip" class="inv-tooltip"></div>
 
 <!-- COMBAT EQUIP TOAST -->
-<div id="combatEquipToast">⚔ CANNOT EQUIP IN COMBAT</div>
+<div id="combatEquipToast"><i class="ra ra-crossed-swords" aria-hidden="true"></i> CANNOT EQUIP IN COMBAT</div>
 
 <!-- SHOP BUY EQUIP PROMPT -->
 <div id="shopBuyPrompt" class="shop-buy-prompt">
@@ -1162,8 +1148,8 @@ function switchHelpTab(id, btn) {
     <div class="shop-buy-stats" id="sbpStats"></div>
     <div style="font-size:13px;color:var(--dim);margin-bottom:14px;">Equip it now or save for later?</div>
     <div class="shop-buy-btns">
-      <button class="shop-buy-btn sbb-equip" onclick="shopBuyEquip()">⚔ EQUIP NOW</button>
-      <button class="shop-buy-btn sbb-bag" onclick="shopBuyKeep()">🎒 INTO BAG</button>
+      <button class="shop-buy-btn sbb-equip" onclick="shopBuyEquip()"><i class="ra ra-crossed-swords" aria-hidden="true"></i> EQUIP NOW</button>
+      <button class="shop-buy-btn sbb-bag" onclick="shopBuyKeep()"><i class="ra ra-wooden-sign" aria-hidden="true"></i> INTO BAG</button>
     </div>
   </div>
 </div>
@@ -1198,8 +1184,8 @@ function switchHelpTab(id, btn) {
 
     <div class="bug-section-label">CATEGORY</div>
     <div class="bug-cat-row">
-      <button class="bug-cat-btn active" data-cat="Combat"      onclick="selectBugCategory(this)">⚔ Combat</button>
-      <button class="bug-cat-btn"        data-cat="Skills"      onclick="selectBugCategory(this)">✨ Skills</button>
+      <button class="bug-cat-btn active" data-cat="Combat"      onclick="selectBugCategory(this)"><i class="ra ra-crossed-swords" aria-hidden="true"></i> Combat</button>
+      <button class="bug-cat-btn"        data-cat="Skills"      onclick="selectBugCategory(this)"><i class="ra ra-broadsword" aria-hidden="true"></i> Skills</button>
       <button class="bug-cat-btn"        data-cat="UI"          onclick="selectBugCategory(this)">🖥 UI</button>
       <button class="bug-cat-btn"        data-cat="Progression" onclick="selectBugCategory(this)">📈 Progress</button>
       <button class="bug-cat-btn"        data-cat="Other"       onclick="selectBugCategory(this)">❓ Other</button>
@@ -1356,11 +1342,11 @@ function switchHelpTab(id, btn) {
 <!-- Choice screen: "Do Tutorial" vs "Skip Tutorial" -->
 <div id="dtChoiceOverlay" style="display:none">
   <div id="dtChoiceCard">
-    <div id="dtChoiceIcon">⚔</div>
+    <div id="dtChoiceIcon"><i class="ra ra-crossed-swords" aria-hidden="true"></i></div>
     <div id="dtChoiceTitle">FIRST DUNGEON</div>
     <div id="dtChoiceSub">You're about to enter the dungeon for the first time.</div>
     <div id="dtChoiceBtns">
-      <button id="dtDoTutorial" onclick="_dtDoTutorial()">⚔ DO TUTORIAL</button>
+      <button id="dtDoTutorial" onclick="_dtDoTutorial()"><i class="ra ra-crossed-swords" aria-hidden="true"></i> DO TUTORIAL</button>
       <button id="dtSkipTutorial" onclick="_dtSkipAll()">⏭ SKIP TUTORIAL</button>
     </div>
   </div>

@@ -57,7 +57,7 @@ function _renderSkillKit(){
       state==='selected' ? `onclick="prepSelectSkill('${sk.id}','')"` :
       `onclick="prepSelectSkill('${sk.id}','')"`;
     return `<div class="prep-kit-card prep-kit-${state}" ${clickAttr}>
-      <span class="prep-kit-icon">${sk.icon}</span>
+      <span class="prep-kit-icon">${iconHTML(sk.icon)}</span>
       <span class="prep-kit-name">${sk.name}</span>
       <span class="prep-kit-desc">${sk.desc}</span>
       <div class="prep-kit-tags">
@@ -88,14 +88,14 @@ function _renderSkillKit(){
       function tagRow(s){ return `<div class="prep-kit-tags"><span class="prep-kit-tag" style="color:${typeColor};border-color:${typeBorder};">${type.toUpperCase()}</span>${s.cost>0?`<span class="prep-kit-tag">${s.cost}${cls.res.charAt(0)}</span>`:''}${s.cd>0?`<span class="prep-kit-tag">CD ${s.cd}</span>`:s.charges?`<span class="prep-kit-tag">×${s.charges}</span>`:''}</div>`; }
       rows.push(`<div class="prep-kit-row">
         <div class="prep-kit-card prep-kit-${baseState}" onclick="prepSelectSkill('${sk.id}','${alt.id}')">
-          <span class="prep-kit-icon">${sk.icon}</span>
+          <span class="prep-kit-icon">${iconHTML(sk.icon)}</span>
           <span class="prep-kit-name">${sk.name}</span>
           <span class="prep-kit-desc">${sk.desc}</span>
           ${tagRow(sk)}
         </div>
         <div class="prep-kit-vs">VS</div>
         <div class="prep-kit-card prep-kit-${altState}" onclick="prepSelectSkill('${alt.id}','${sk.id}')">
-          <span class="prep-kit-icon">${alt.icon}</span>
+          <span class="prep-kit-icon">${iconHTML(alt.icon)}</span>
           <span class="prep-kit-name">${alt.name}</span>
           <span class="prep-kit-desc">${alt.desc}</span>
           ${tagRow(alt)}
@@ -160,7 +160,7 @@ function _renderPrepareScreen(){
         const statsStr = Object.entries(item.stats||{}).filter(([k,v])=>v&&k!=='heal').map(([k,v])=>`+${v} ${k}`).join(' ');
         const healStr = item.stats&&item.stats.heal ? `heals ${item.stats.heal}HP` : '';
         return `<div class="prepare-item" onclick="prepMoveToLoadout(${i})" title="${item.name}${statsStr||healStr?' · '+(statsStr||healStr):''}">
-          <span class="prepare-item-icon">${item.icon}</span>
+          <span class="prepare-item-icon">${iconHTML(item.icon)}</span>
           <span class="prepare-item-name" style="color:${col}">${item.name}</span>
           <span class="prepare-item-stat">${statsStr||healStr}</span>
         </div>`;
@@ -174,7 +174,7 @@ function _renderPrepareScreen(){
     // Starter weapon always shown first, locked
     const starterSlot = G && G.equipped && G.equipped.weapon
       ? `<div class="prepare-item prepare-item-locked" title="Starter weapon — locked in">
-          <span class="prepare-item-icon">${G.equipped.weapon.icon}</span>
+          <span class="prepare-item-icon">${iconHTML(G.equipped.weapon.icon)}</span>
           <span class="prepare-item-name" style="color:#9a8868">${G.equipped.weapon.name}</span>
           <span class="prepare-item-stat" style="color:var(--dim)">STARTER</span>
         </div>`
@@ -184,7 +184,7 @@ function _renderPrepareScreen(){
       const statsStr = Object.entries(item.stats||{}).filter(([k,v])=>v&&k!=='heal').map(([k,v])=>`+${v} ${k}`).join(' ');
       const healStr = item.stats&&item.stats.heal ? `heals ${item.stats.heal}HP` : '';
       return `<div class="prepare-item prepare-item-loaded" onclick="prepMoveToStash(${i})" title="Click to return to stash">
-        <span class="prepare-item-icon">${item.icon}</span>
+        <span class="prepare-item-icon">${iconHTML(item.icon)}</span>
         <span class="prepare-item-name" style="color:${col}">${item.name}</span>
         <span class="prepare-item-stat">${statsStr||healStr}</span>
       </div>`;
@@ -670,7 +670,7 @@ function _dlgMirelaShop(){
     const buyable = canAfford && !stashFull;
     const discStr = _disc>0 ? `<span class="ms-card-orig">${item.value}</span>` : '';
     return `<div class="ms-card ${buyable?'ms-card-buy':'ms-card-dim'}" onclick="${buyable?`townBuyFromMirela('${item.id}')`:''}" title="${!canAfford?'Not enough gold':stashFull?'Stash full':'Click to buy'}">
-      <div class="ms-card-icon">${item.icon}</div>
+      <div class="ms-card-icon">${iconHTML(item.icon)}</div>
       <div class="ms-card-body">
         <div class="ms-card-name" style="color:${col}">${item.name}</div>
         <div class="ms-card-stats">${desc}</div>
@@ -707,7 +707,7 @@ function _dlgMirelaShop(){
   ];
 
   const stashPips = stash.length > 0
-    ? stash.map(s=>`<span class="ms-stash-pip" title="${s.name}" style="color:${rc[s.rarity]||'#888'}">${s.icon}</span>`).join('')
+    ? stash.map(s=>`<span class="ms-stash-pip" title="${s.name}" style="color:${rc[s.rarity]||'#888'}">${iconHTML(s.icon)}</span>`).join('')
     : '<span class="ms-stash-empty">Empty</span>';
 
   return `
@@ -748,7 +748,7 @@ function townBuyFromMirela(itemId){
   // Add to stash
   if(typeof addToStash==='function') addToStash({...item, qty:1});
 
-  if(typeof log==='function' && midRun) log(`🛍 Bought ${item.icon} ${item.name} — sent to stash.`,'l');
+  if(typeof log==='function' && midRun) log(`🛍 Bought ${item.name} — sent to stash.`,'l');
 
   // Refresh dialog
   document.getElementById('townDialogContent').innerHTML = _dlgMirelaShop();
@@ -773,7 +773,7 @@ function _dlgStash(){
     const statsStr = Object.entries(item.stats||{}).filter(([k,v])=>v&&k!=='heal').map(([k,v])=>`+${v} ${k}`).join(' · ');
     const healStr = item.stats&&item.stats.heal ? `heals ${item.stats.heal} HP` : '';
     return `<div class="stash-dlg-item">
-      <span class="stash-dlg-icon">${item.icon}</span>
+      <span class="stash-dlg-icon">${iconHTML(item.icon)}</span>
       <div class="stash-dlg-info">
         <span class="stash-dlg-name" style="color:${col}">${item.name}</span>
         <span class="stash-dlg-rar" style="color:${col}">${item.rarity.toUpperCase()}</span>

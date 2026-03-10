@@ -354,21 +354,21 @@ function buildTitleSlotCard(slot, data){
     const zoneLine     = currentZone ? currentZone : (zonesCleared > 0 ? zonesCleared+' zone'+(zonesCleared>1?'s':'')+' cleared' : 'No runs yet');
 
     const graceIconsHtml = uniqueIcons.length
-      ? `<div class="tsc-grace-icons">${uniqueIcons.map(ic=>`<span class="tsc-grace-pip">${ic}</span>`).join('')}</div>`
+      ? `<div class="tsc-grace-icons">${uniqueIcons.map(ic=>`<span class="tsc-grace-pip">${iconHTML(ic)}</span>`).join('')}</div>`
       : '';
 
     card.innerHTML =
-      `<button class="tsc-del-corner" onclick="event.stopPropagation();slotDelete(${slot})" title="Delete slot">🗑</button>`+
+      `<button class="tsc-del-corner" onclick="event.stopPropagation();slotDelete(${slot})" title="Delete slot">✕</button>`+
       `<div class="tsc-card-top">`+
         `<div class="tsc-adventurer-name">${adventurerName}</div>`+
         `<div class="tsc-card-meta">`+
           graceIconsHtml+
-          `<span class="tsc-meta-pill">✨ ${allGraces.length}</span>`+
-          `<span class="tsc-meta-pill">🏆 ${achCount}</span>`+
+          `<span class="tsc-meta-pill">${iconHTML('trophy')} ${allGraces.length}</span>`+
+          `<span class="tsc-meta-pill">${iconHTML('trophy')} ${achCount}</span>`+
         `</div>`+
       `</div>`+
       `<div class="tsc-card-bottom">`+
-        `<span class="tsc-zone-badge">📍 ${zoneLine}</span>`+
+        `<span class="tsc-zone-badge">&#x25BA; ${zoneLine}</span>`+
         `<span class="tsc-open-hint">VIEW ▶</span>`+
       `</div>`;
 
@@ -445,17 +445,17 @@ function renderSlotOverview(data){
   const activeZone = s ? ((typeof ZONES!=='undefined'&&ZONES[s.zoneIdx]) ? ZONES[s.zoneIdx].name : 'Zone '+(s.zoneIdx+1)) : '—';
   const lives = s && s.lives !== undefined ? s.lives : null;
   const livesHtml = lives !== null
-    ? Array.from({length:3},(_,i)=>`<span style="font-size:14px;${i>=lives?'filter:grayscale(1) brightness(0.4)':'filter:drop-shadow(0 0 3px rgba(255,60,60,.6))'}">❤️</span>`).join('')
+    ? Array.from({length:3},(_,i)=>`<span style="font-size:14px;${i>=lives?'filter:grayscale(1) brightness(0.4)':'filter:drop-shadow(0 0 3px rgba(255,60,60,.6))'}">${iconHTML('health')}</span>`).join('')
     : '';
 
   return `
     <div class="sdo-stat-grid">
-      <div class="sdo-stat"><span class="sdo-stat-icon">⚔️</span><span class="sdo-stat-val">${kills}</span><span class="sdo-stat-lbl">kills</span></div>
-      <div class="sdo-stat"><span class="sdo-stat-icon">👑</span><span class="sdo-stat-val">${zonesCleared}</span><span class="sdo-stat-lbl">bosses</span></div>
-      <div class="sdo-stat"><span class="sdo-stat-icon">💥</span><span class="sdo-stat-val">${crits}</span><span class="sdo-stat-lbl">crits</span></div>
-      <div class="sdo-stat"><span class="sdo-stat-icon">🪙</span><span class="sdo-stat-val">${gold}</span><span class="sdo-stat-lbl">gold</span></div>
-      <div class="sdo-stat"><span class="sdo-stat-icon">✨</span><span class="sdo-stat-val">${graceCount}</span><span class="sdo-stat-lbl">graces</span></div>
-      <div class="sdo-stat"><span class="sdo-stat-icon">🏆</span><span class="sdo-stat-val">${achCount}</span><span class="sdo-stat-lbl">achievements</span></div>
+      <div class="sdo-stat"><span class="sdo-stat-icon">${iconHTML('crossed-swords')}</span><span class="sdo-stat-val">${kills}</span><span class="sdo-stat-lbl">kills</span></div>
+      <div class="sdo-stat"><span class="sdo-stat-icon">${iconHTML('crown')}</span><span class="sdo-stat-val">${zonesCleared}</span><span class="sdo-stat-lbl">bosses</span></div>
+      <div class="sdo-stat"><span class="sdo-stat-icon">${iconHTML('explosion')}</span><span class="sdo-stat-val">${crits}</span><span class="sdo-stat-lbl">crits</span></div>
+      <div class="sdo-stat"><span class="sdo-stat-icon">${iconHTML('gold-bar')}</span><span class="sdo-stat-val">${gold}</span><span class="sdo-stat-lbl">gold</span></div>
+      <div class="sdo-stat"><span class="sdo-stat-icon">${iconHTML('trophy')}</span><span class="sdo-stat-val">${graceCount}</span><span class="sdo-stat-lbl">graces</span></div>
+      <div class="sdo-stat"><span class="sdo-stat-icon">${iconHTML('trophy')}</span><span class="sdo-stat-val">${achCount}</span><span class="sdo-stat-lbl">achievements</span></div>
     </div>
     <div style="font-size:11px;color:var(--dim);margin-bottom:12px;">
       ${runs} run${runs!==1?'s':''} completed &nbsp;·&nbsp; ⏱ ${timeStr} played
@@ -1553,7 +1553,7 @@ function renderGraceScreen(){
       <div style="font-family:'Press Start 2P',monospace;font-size:clamp(6px,0.7vw,9px);color:#666;letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;">SLOT ${i+1}</div>`;
     if(eq){
       const statsStr=Object.entries(eq.stats).map(([k,v])=>`+${v} <span style="color:#555">${typeof statLabel==='function'?statLabel(k):k}</span>`).join(' &nbsp; ');
-      html+=`<div style="font-size:clamp(32px,4.5vw,52px);margin-bottom:10px;filter:drop-shadow(0 0 10px ${rc});">${eq.icon}</div>
+      html+=`<div style="font-size:clamp(32px,4.5vw,52px);margin-bottom:10px;filter:drop-shadow(0 0 10px ${rc});">${iconHTML(eq.icon)}</div>
         <div style="font-family:'Press Start 2P',monospace;font-size:clamp(8px,1vw,12px);color:${rc};line-height:1.7;margin-bottom:6px;">${eq.name}</div>
         <div style="font-family:'Press Start 2P',monospace;font-size:clamp(6px,0.7vw,8px);color:#555;margin-bottom:12px;">${eq.rarity.toUpperCase()}</div>
         <div style="font-size:clamp(12px,1.3vw,16px);color:#999;margin-bottom:8px;line-height:1.8;">${statsStr}</div>`;
@@ -1700,8 +1700,8 @@ function graceSellInventory(graceId){
   if(!g) return;
   showGenericConfirm(
     'SELL GRACE?',
-    'Sell '+g.name+' for 🪙'+GRACE_SELL_VALUES[g.rarity]+'? This cannot be undone.',
-    '💰 SELL',
+    'Sell '+g.name+' for '+GRACE_SELL_VALUES[g.rarity]+'g? This cannot be undone.',
+    'SELL',
     ()=>{ sellGraceFromInventory(graceId); if(_graceSelectedId===graceId) _graceSelectedId=null; renderGraceScreen(); }
   );
 }
@@ -1710,8 +1710,8 @@ function graceSellEquipped(slotKey){
   if(!g) return;
   showGenericConfirm(
     'SELL GRACE?',
-    'Sell '+g.name+' for 🪙'+GRACE_SELL_VALUES[g.rarity]+'? This cannot be undone.',
-    '💰 SELL',
+    'Sell '+g.name+' for '+GRACE_SELL_VALUES[g.rarity]+'g? This cannot be undone.',
+    'SELL',
     ()=>{ sellGraceEquipped(slotKey); renderGraceScreen(); }
   );
 }

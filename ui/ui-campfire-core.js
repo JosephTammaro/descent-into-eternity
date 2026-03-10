@@ -211,23 +211,23 @@ function cfRestHTML(){
     ${cfSceneHTML()}
     <p style="font-size:17px;color:var(--parchment);margin-bottom:16px;">Take a Long Rest to restore HP, ${G.classId==='wizard'?'spell slots':'resources'}, and clear conditions.</p>
     <div class="rest-preview">
-      <div class="rest-item">❤️ HP<span>Restore to ${Math.floor(G.maxHp * Math.min(1.0, (G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken ? 0.40 : 0.75) + (G._campfireHealBonus||0)))} / ${G.maxHp}</span></div>
-      ${G.classId==='wizard'?`<div class="rest-item">🔮 Spell Slots<span>All restored</span></div>`:`<div class="rest-item">◈ ${CLASSES[G.classId].res}<span>Fully refilled</span></div>`}
-      <div class="rest-item">⚠️ Conditions<span>All cleared</span></div>
+      <div class="rest-item">${iconHTML('health')} HP<span>Restore to ${Math.floor(G.maxHp * Math.min(1.0, (G._rareEventFlags&&G._rareEventFlags.lastCampfireWeaken ? 0.40 : 0.75) + (G._campfireHealBonus||0)))} / ${G.maxHp}</span></div>
+      ${G.classId==='wizard'?`<div class="rest-item">${iconHTML('blast')} Spell Slots<span>All restored</span></div>`:`<div class="rest-item">◈ ${CLASSES[G.classId].res}<span>Fully refilled</span></div>`}
+      <div class="rest-item">⚠ Conditions<span>All cleared</span></div>
     </div>
     ${G._longRestUsed
       ? `<div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim);margin-bottom:12px;line-height:1.8;">✓ ALREADY RESTED<br><span style="color:var(--dim);">You may only rest once per campfire.</span></div>`
-      : `<button class="btn btn-green" style="font-size:9px;padding:12px 28px;" onclick="cfDoRest()">😴 TAKE LONG REST</button>`
+      : `<button class="btn btn-green" style="font-size:9px;padding:12px 28px;" onclick="cfDoRest()">TAKE LONG REST</button>`
     }
     <div id="restResult" style="margin-top:12px;font-size:16px;color:var(--green2);display:none;"></div>
     ${G.classId==='ranger'&&G._favoredTerrain?`
     <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c8a46a;margin-bottom:10px;">🌿 FAVORED TERRAIN</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c8a46a;margin-bottom:10px;">${iconHTML('leaf')} FAVORED TERRAIN</div>
       ${G._favoredTerrainActive
         ?`<div style="font-size:13px;color:var(--green2);">✓ ${G._favoredTerrainName} chosen — +15% damage in next fight!</div>`
         :`<div style="font-size:13px;color:var(--dim);margin-bottom:8px;">Choose your terrain for +15% damage in the next fight:</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-          ${['🌲 Forest','⛰ Mountains','🌊 Coastline','🌑 Underdark','🔥 Lava Fields'].map(t=>`<button class="btn" style="font-size:10px;padding:8px 12px;" onclick="cfFavoredTerrain('${t}')">${t}</button>`).join('')}
+          ${[['Forest',iconHTML('pine-tree')],['Mountains',iconHTML('mountains')],['Coastline',iconHTML('beam-wake')],['Underdark',iconHTML('moon-sun')],['Lava Fields',iconHTML('fire')]].map(([name,ic])=>`<button class="btn" style="font-size:10px;padding:8px 12px;" onclick="cfFavoredTerrain('${name}')">${ic} ${name}</button>`).join('')}
         </div>`
       }
     </div>`:''
@@ -286,7 +286,7 @@ function cfFavoredTerrain(terrain){
   G._favoredTerrainActive=true;
   G._favoredTerrainName=terrain;
   cfRenderTab('rest');
-  log('🌿 Favored Terrain: '+terrain+' chosen! +15% damage in next fight.','s');
+  log('Favored Terrain: '+terrain+' chosen! +15% damage in next fight.','s');
 }
 
 // ── CLASS-SPECIFIC CAMPFIRE ACTIONS ───────────────────────────────
@@ -305,60 +305,60 @@ function cfClassActionHTML(){
 
   const actions={
     wizard:{
-      icon:'📚', title:'INSCRIBE SCROLL',
+      icon:'book', title:'INSCRIBE SCROLL',
       desc:'Choose one spell — it costs no slots next fight (once).',
       flag:'_inscribeScroll',
       doneText:'✓ Scroll of '+( G._inscribeScrollSpell||'?')+' ready — one free cast next fight!',
       btn:'cfInscribeScrollMenu()',
-      btnLabel:'✍ INSCRIBE SCROLL',
+      btnLabel:iconHTML('quill-ink')+' INSCRIBE SCROLL',
     },
     rogue:{
-      icon:'🎯', title:'CASE THE TARGET',
+      icon:'target-arrows', title:'CASE THE TARGET',
       desc:'Study enemy weaknesses — they start with -3 DEF next fight.',
       flag:'_caseTarget',
       doneText:'✓ Target cased — enemy DEF -3 next fight!',
       btn:"cfClassAction('_caseTarget')",
-      btnLabel:'🎯 CASE THE TARGET',
+      btnLabel:iconHTML('target-arrows')+' CASE THE TARGET',
     },
     fighter:{
-      icon:'🪖', title:'WAR READINESS',
+      icon:'helmet', title:'WAR READINESS',
       desc:'Drill through the night — Second Wind has no cooldown next fight.',
       flag:'_warReadiness',
       doneText:'✓ Battle-ready — Second Wind is unlimited next fight!',
       btn:"cfClassAction('_warReadiness')",
-      btnLabel:'🪖 PREPARE FOR BATTLE',
+      btnLabel:iconHTML('helmet')+' PREPARE FOR BATTLE',
     },
     paladin:{
-      icon:'🕯', title:'OATH RENEWAL',
+      icon:'candle-fire', title:'OATH RENEWAL',
       desc:'Renew your sacred vow — next Divine Smite auto-crits, costs no Holy Power.',
       flag:'_oathRenewal',
       doneText:'✓ Oath renewed — next Smite is a free crit!',
       btn:"cfClassAction('_oathRenewal')",
-      btnLabel:'🕯 RENEW OATH',
+      btnLabel:iconHTML('candle-fire')+' RENEW OATH',
     },
     barbarian:{
-      icon:'💀', title:'BLOOD OFFERING',
+      icon:'skull', title:'BLOOD OFFERING',
       desc:'Sacrifice 15% max HP — Rage is free next fight, +20% dmg below 50% HP.',
       flag:'_bloodOffering',
       doneText:'✓ Offering made — rage and fury await!',
       btn:"cfClassAction('_bloodOffering')",
-      btnLabel:'💀 MAKE OFFERING',
+      btnLabel:iconHTML('skull')+' MAKE OFFERING',
     },
     cleric:{
-      icon:'🌅', title:'DAWN BLESSING',
+      icon:'sunbeams', title:'DAWN BLESSING',
       desc:'Sanctify yourself — gain a 30 HP divine barrier before HP next fight.',
       flag:'_dawnBlessing',
       doneText:'✓ Blessed — 30 HP divine barrier ready!',
       btn:"cfClassAction('_dawnBlessing')",
-      btnLabel:'🌅 INVOKE DAWN',
+      btnLabel:iconHTML('sunbeams')+' INVOKE DAWN',
     },
     druid:{
-      icon:'🌿', title:'WILD ATTUNEMENT',
+      icon:'leaf', title:'WILD ATTUNEMENT',
       desc:'Attune to nature — next Wild Shape gains +50% temp HP and never expires.',
       flag:'_wildAttunement',
       doneText:'✓ Attuned — Wild Shape empowered next fight!',
       btn:"cfClassAction('_wildAttunement')",
-      btnLabel:'🌿 ATTUNE TO NATURE',
+      btnLabel:iconHTML('leaf')+' ATTUNE TO NATURE',
     },
   };
 
@@ -373,7 +373,7 @@ function cfClassActionHTML(){
   const done=!!(cls==='wizard'?G._inscribeScroll:G[a.flag]);
   return`
   <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
-    <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c8a46a;margin-bottom:8px;">${a.icon} ${a.title}</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c8a46a;margin-bottom:8px;">${iconHTML(a.icon)} ${a.title}</div>
     <div style="font-size:13px;color:var(--dim);margin-bottom:10px;">${a.desc}</div>
     ${done
       ?`<div style="font-size:13px;color:var(--green2);">${a.doneText}</div>`
@@ -392,7 +392,7 @@ function cfInscribeScrollMenuHTML(){
       ?`<div style="font-size:13px;color:var(--green2);">✓ Scroll of <strong>${chosen}</strong> ready — casts free next fight!</div>`
       :`<div style="font-size:13px;color:var(--dim);margin-bottom:8px;">Choose a spell to inscribe (costs no slot next fight):</div>
        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
-         ${spells.map(sk=>`<button class="btn" style="font-size:10px;padding:7px 11px;" onclick="cfInscribeScroll('${sk.id}','${sk.name}')">${sk.icon||'📜'} ${sk.name}</button>`).join('')}
+         ${spells.map(sk=>`<button class="btn" style="font-size:10px;padding:7px 11px;" onclick="cfInscribeScroll('${sk.id}','${sk.name}')">${iconHTML(sk.icon)||iconHTML('scroll-unfurled')} ${sk.name}</button>`).join('')}
        </div>`
     }
   </div>`;
@@ -422,17 +422,17 @@ function cfClassAction(flag){
       return;
     }
     G.hp-=cost;
-    log('💀 Blood Offering: -'+cost+' HP sacrificed. Fury awaits!','c');
+    log('Blood Offering: -'+cost+' HP sacrificed. Fury awaits!','c');
   }
   G[flag]=true;
   cfRenderTab('rest');
   const msgs={
-    _caseTarget:'🎯 Target cased — enemy DEF reduced next fight!',
-    _warReadiness:'🪖 Battle-ready — Second Wind has no cooldown next fight!',
-    _oathRenewal:'🕯 Oath renewed — next Divine Smite is a free crit!',
-    _bloodOffering:'💀 Blood Offering accepted — rage and power await!',
-    _dawnBlessing:'🌅 Dawn Blessing invoked — 30 HP divine barrier next fight!',
-    _wildAttunement:'🌿 Wild Attunement — empowered Wild Shape next fight!',
+    _caseTarget:'Target cased — enemy DEF reduced next fight!',
+    _warReadiness:'Battle-ready — Second Wind has no cooldown next fight!',
+    _oathRenewal:'Oath renewed — next Divine Smite is a free crit!',
+    _bloodOffering:'Blood Offering accepted — rage and power await!',
+    _dawnBlessing:'Dawn Blessing invoked — 30 HP divine barrier next fight!',
+    _wildAttunement:'Wild Attunement — empowered Wild Shape next fight!',
   };
   log(msgs[flag]||'Class action activated.','s');
   renderAll();
@@ -440,24 +440,24 @@ function cfClassAction(flag){
 
 function cfCraftHTML(){
   const allMats=[
-    {id:'herb',icon:'🌿',name:'Dried Herb'},
-    {id:'fang',icon:'🦷',name:'Wolf Fang'},
-    {id:'bone',icon:'🦴',name:'Bone Fragment'},
-    {id:'voidShard',icon:'💎',name:'Void Shard'},
-    {id:'ghostEssence',icon:'👻',name:'Ghost Essence'},
-    {id:'ironCore',icon:'⚙️',name:'Iron Core'},
-    {id:'demonAsh',icon:'🔥',name:'Demon Ash'},
-    {id:'frostCrystal',icon:'🧊',name:'Frost Crystal'},
-    {id:'celestialDust',icon:'✨',name:'Celestial Dust'},
-    {id:'shadowEssence',icon:'🌑',name:'Shadow Essence'},
+    {id:'herb',icon:'leaf',name:'Dried Herb'},
+    {id:'fang',icon:'wolf-head',name:'Wolf Fang'},
+    {id:'bone',icon:'bone-bite',name:'Bone Fragment'},
+    {id:'voidShard',icon:'crystal-ball',name:'Void Shard'},
+    {id:'ghostEssence',icon:'skull',name:'Ghost Essence'},
+    {id:'ironCore',icon:'cog',name:'Iron Core'},
+    {id:'demonAsh',icon:'fire',name:'Demon Ash'},
+    {id:'frostCrystal',icon:'frost-emblem',name:'Frost Crystal'},
+    {id:'celestialDust',icon:'crystal-cluster',name:'Celestial Dust'},
+    {id:'shadowEssence',icon:'moon-sun',name:'Shadow Essence'},
   ];
   const matCounts={};
   allMats.forEach(m=>matCounts[m.id]=countMaterial(m.id));
   const hasMats=allMats.filter(m=>matCounts[m.id]>0);
   const cats=[
-    {k:'basic',l:'🧪 Basic'},
-    {k:'advanced',l:'⚗️ Advanced'},
-    {k:'legendary',l:'⭐ Legendary'},
+    {k:'basic',l:`${iconHTML('potion')} Basic`},
+    {k:'advanced',l:`${iconHTML('flask')} Advanced`},
+    {k:'legendary',l:`${iconHTML('trophy')} Legendary`},
   ];
   const _craftCat=window._craftCat||'basic';
   const filtered=CRAFT_RECIPES.filter(r=>r.cat===_craftCat);
@@ -466,7 +466,7 @@ function cfCraftHTML(){
       <div>
         <div class="panel-title" style="margin-bottom:8px;">YOUR MATERIALS</div>
         ${hasMats.length?hasMats.map(m=>`
-          <div class="mat-item">${m.icon} ${m.name} <span class="mat-qty">×${matCounts[m.id]}</span></div>
+          <div class="mat-item">${iconHTML(m.icon)} ${m.name} <span class="mat-qty">×${matCounts[m.id]}</span></div>
         `).join(''):'<div style="font-size:14px;color:var(--dim);padding:4px 0;">No materials yet. Defeat enemies to gather them.</div>'}
       </div>
       <div>
@@ -481,7 +481,7 @@ function cfCraftHTML(){
         const canCraft=Object.entries(r.req).every(([k,v])=>(matCounts[k]||0)>=v);
         const rarColor={common:'#6a5838',uncommon:'var(--green2)',rare:'var(--blue2)',epic:'#9b54bd',legendary:'var(--gold)'}[r.result.rarity]||'#888';
         return`<div class="recipe-card ${canCraft?'':'cant'}" onclick="${canCraft?`cfDoCraft(${i})`:''}">
-          <div class="recipe-name" style="color:${rarColor}">${r.result.icon} ${r.result.name}</div>
+          <div class="recipe-name" style="color:${rarColor}">${iconHTML(r.result.icon)} ${r.result.name}</div>
           <div class="recipe-req">${r.desc}</div>
           <div class="recipe-result">${canCraft?'✓ Craft now':'✗ Missing mats'}</div>
         </div>`;

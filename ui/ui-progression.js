@@ -152,7 +152,7 @@ function showNextLevelUp(){
       <div style="display:flex;flex-direction:column;gap:5px;text-align:left;max-height:160px;overflow-y:auto;">
         ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`
           <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid var(--border);padding:5px 8px;border-radius:2px;">
-            <span style="font-size:16px;flex-shrink:0;">${sk.icon}</span>
+            <span style="font-size:16px;flex-shrink:0;">${iconHTML(sk.icon)}</span>
             <div style="flex:1;min-width:0;">
               <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--parchment);">${sk.name}
                 <span style="color:${typeColor[sk.type]||'var(--dim)'};margin-left:4px;">[${typeLabel[sk.type]||sk.type.toUpperCase()}]</span>

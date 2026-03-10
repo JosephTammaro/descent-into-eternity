@@ -47,7 +47,7 @@ function enterZone(){
   // Phase B: Show modifier announcement, THEN spawn first enemy
   if(G._activeModifier){
     showModifierAnnouncement(()=>{
-      if(typeof log==='function') log(G._activeModifier.icon+' '+G._activeModifier.name+': '+G._activeModifier.desc,'s');
+      if(typeof log==='function') log(G._activeModifier.name+': '+G._activeModifier.desc,'s');
       spawnEnemy();
     });
   } else {
@@ -218,7 +218,7 @@ function renderCompanions(){
         if(pct<30) fhpFill.style.background='linear-gradient(90deg,#6a1a1a,#bf4a4a)';
         else fhpFill.style.background='linear-gradient(90deg,#1a4a6a,#4a8abf)';
       }
-      if(fhpText)fhpText.textContent='💀 '+fs.hp;
+      if(fhpText)fhpText.innerHTML=iconHTML('skull')+' '+fs.hp;
     } else {
       fwrap.classList.remove('active');
       if(fhpWrap)fhpWrap.style.display='none';
@@ -238,30 +238,30 @@ function renderRareBuffStrip(){
 
   // Phase B: Active zone modifier
   if(G._activeModifier){
-    buffs.push({icon:G._activeModifier.icon, tip:G._activeModifier.name+': '+G._activeModifier.desc, curse:false, isMod:true});
+    buffs.push({icon:iconHTML(G._activeModifier.icon), tip:G._activeModifier.name+': '+G._activeModifier.desc, curse:false, isMod:true});
   }
 
-  if(flags.cursedForge)       buffs.push({icon:'🔨',tip:'Cursed Forge: enemies +10% dmg',curse:true});
-  if(flags.bloodPact)         buffs.push({icon:'💉',tip:'Blood Pact: boss drops 2× loot',curse:false});
-  if(flags.bloodPactGold)     buffs.push({icon:'🪙',tip:'Blood Pact: bonus boss item',curse:false});
-  if(flags.vexaraCrown)       buffs.push({icon:'👑',tip:'Crimson Crown: -5 HP/fight, enemies -10% HP',curse:true});
-  if(flags.satchelSaved)      buffs.push({icon:'📦',tip:'Stranger\'s Satchel: auto-heal at <25% HP',curse:false});
-  if(G._divineEvasionReady)   buffs.push({icon:'👁',tip:'Divine Evasion: dodge next attack',curse:false});
-  if(flags.empressBossBonus)  buffs.push({icon:'🌑',tip:'Lullaby: +25% dmg vs Malvaris',curse:false});
-  if(flags.doppelgangerBoss)  buffs.push({icon:'🪞',tip:'Doppelganger: extra boss enemy',curse:true});
-  if(flags.gateFragmentBoss)  buffs.push({icon:'🚪',tip:'Gate Fragment: boss starts -10% HP',curse:false});
-  if(flags.finalHorn)         buffs.push({icon:'📯',tip:'Final Horn: +1 enemy/fight, enemies -15% HP',curse:true});
-  if(flags.enemyFirstStrike)  buffs.push({icon:'⚡',tip:'First Strike: enemy attacks first',curse:true});
-  if(flags.tempAtkBonus)      buffs.push({icon:'⚔️',tip:getOffensiveStatLabel(G)+' +'+flags.tempAtkBonus.value+' (this zone)',curse:false});
-  if(flags._cursedDebuff)     buffs.push({icon:'☠️',tip:'Cursed: -3 '+getOffensiveStatLabel(G)+', -3 DEF ('+flags._cursedDebuff+' fights)',curse:true});
-  if(flags._chilledDebuff)    buffs.push({icon:'❄️',tip:'Chilled: -3 DEF ('+flags._chilledDebuff+' fights)',curse:true});
+  if(flags.cursedForge)       buffs.push({icon:iconHTML('anvil'),tip:'Cursed Forge: enemies +10% dmg',curse:true});
+  if(flags.bloodPact)         buffs.push({icon:iconHTML('syringe'),tip:'Blood Pact: boss drops 2× loot',curse:false});
+  if(flags.bloodPactGold)     buffs.push({icon:iconHTML('gold-bar'),tip:'Blood Pact: bonus boss item',curse:false});
+  if(flags.vexaraCrown)       buffs.push({icon:iconHTML('crown'),tip:'Crimson Crown: -5 HP/fight, enemies -10% HP',curse:true});
+  if(flags.satchelSaved)      buffs.push({icon:iconHTML('wooden-sign'),tip:'Stranger\'s Satchel: auto-heal at <25% HP',curse:false});
+  if(G._divineEvasionReady)   buffs.push({icon:iconHTML('eye-shield'),tip:'Divine Evasion: dodge next attack',curse:false});
+  if(flags.empressBossBonus)  buffs.push({icon:iconHTML('moon-sun'),tip:'Lullaby: +25% dmg vs Malvaris',curse:false});
+  if(flags.doppelgangerBoss)  buffs.push({icon:iconHTML('mirror'),tip:'Doppelganger: extra boss enemy',curse:true});
+  if(flags.gateFragmentBoss)  buffs.push({icon:iconHTML('metal-gate'),tip:'Gate Fragment: boss starts -10% HP',curse:false});
+  if(flags.finalHorn)         buffs.push({icon:iconHTML('horn-call'),tip:'Final Horn: +1 enemy/fight, enemies -15% HP',curse:true});
+  if(flags.enemyFirstStrike)  buffs.push({icon:iconHTML('lightning-bolt'),tip:'First Strike: enemy attacks first',curse:true});
+  if(flags.tempAtkBonus)      buffs.push({icon:iconHTML('crossed-swords'),tip:getOffensiveStatLabel(G)+' +'+flags.tempAtkBonus.value+' (this zone)',curse:false});
+  if(flags._cursedDebuff)     buffs.push({icon:iconHTML('skull'),tip:'Cursed: -3 '+getOffensiveStatLabel(G)+', -3 DEF ('+flags._cursedDebuff+' fights)',curse:true});
+  if(flags._chilledDebuff)    buffs.push({icon:iconHTML('frost-emblem'),tip:'Chilled: -3 DEF ('+flags._chilledDebuff+' fights)',curse:true});
   // Phase B: Ancestral Fury stacks
-  if(G._ancestralStacks > 0)  buffs.push({icon:'👻',tip:'Ancestral Fury: +'+G._ancestralStacks*2+' '+getOffensiveStatLabel(G)+', enemies +'+G._ancestralStacks+'% dmg',curse:false});
+  if(G._ancestralStacks > 0)  buffs.push({icon:iconHTML('player-pain'),tip:'Ancestral Fury: +'+G._ancestralStacks*2+' '+getOffensiveStatLabel(G)+', enemies +'+G._ancestralStacks+'% dmg',curse:false});
   // Salvage buffs
   if(G._salvageBuffs&&G._salvageBuffs.length){
     G._salvageBuffs.forEach(b=>{
       const lbl = b.stat==='atk' ? getOffensiveStatLabel(G) : b.stat.toUpperCase();
-      buffs.push({icon:'♻️',tip:'Salvage: '+lbl+' +'+b.value+' (this zone)',curse:false});
+      buffs.push({icon:iconHTML('cycle'),tip:'Salvage: '+lbl+' +'+b.value+' (this zone)',curse:false});
     });
   }
 
@@ -280,7 +280,7 @@ function showUnlockToast(def){
   toast.className='unlock-toast';
   const typeLabel={modifier:'MODIFIER UNLOCKED',event:'EVENT UNLOCKED',item:'ITEM UNLOCKED',grace:'GRACE UNLOCKED',title:'TITLE UNLOCKED'};
   toast.innerHTML=`
-    <div class="unlock-toast-icon">${def.icon||'🔓'}</div>
+    <div class="unlock-toast-icon">${iconHTML(def.icon)||iconHTML('trophy')}</div>
     <div class="unlock-toast-body">
       <div class="unlock-toast-label">${typeLabel[def.type]||'UNLOCKED'}</div>
       <div class="unlock-toast-name">${def.name}</div>
@@ -301,7 +301,7 @@ function renderModifierHud(){
   }
   const mod=G._activeModifier;
   el.style.display='inline-flex';
-  el.innerHTML=`${mod.icon} ${mod.name.toUpperCase()} <span class="mod-hud-tip">${mod.desc}</span>`;
+  el.innerHTML=`${iconHTML(mod.icon)} ${mod.name.toUpperCase()} <span class="mod-hud-tip">${mod.desc}</span>`;
 }
 
 // ── Phase B: Full-screen modifier announcement ──────────
@@ -372,7 +372,7 @@ function renderLives(){
   if(!G) return;
   const lives = G.lives !== undefined ? G.lives : 3;
   const hearts = Array.from({length:3},(_,i)=>
-    `<span class="life-heart${i>=lives?' lost':''}">❤️</span>`
+    `<span class="life-heart${i>=lives?' lost':''}"><i class="ra ra-health" aria-hidden="true"></i></span>`
   ).join('');
   // Combat zone bar display
   const el = document.getElementById('livesDisplay');
@@ -380,7 +380,7 @@ function renderLives(){
   // Campfire display
   const cfEl = document.getElementById('cfLives');
   if(cfEl){
-    const label = lives===3?'FULL LIVES':lives===0?'⚠ LAST CHANCE':lives+' LIVES REMAINING';
+    const label = lives===3?'FULL LIVES':lives===0?'! LAST CHANCE':lives+' LIVES REMAINING';
     const color = lives===3?'var(--green2)':lives===1?'var(--red2)':'var(--gold)';
     cfEl.innerHTML = `<span class="cf-lives-label" style="color:${color}">${hearts} &nbsp; ${label}</span>`;
   }
@@ -397,37 +397,37 @@ function renderStatusStrip(){
   const badge = (icon,label,cls) => `<span class="status-badge ${cls}">${icon} ${label}</span>`;
 
   // ── Active combat states ──
-  if(G.raging) badges.push(badge('🔥','RAGING','sb-buff'));
-  if(G.wildShapeActive&&G.wildShapeHp>0) badges.push(badge('🐻','WILD SHAPE','sb-buff'));
-  if(G._elementalForm) badges.push(badge('🔥','ELEMENTAL','sb-buff'));
-  if(G.hunterMarked) badges.push(badge('🎯','MARKED','sb-buff'));
-  if(G.concentrating==='hunters_mark') badges.push(badge('🎯','CONCENTRATING','sb-buff'));
-  if(G.spiritualWeaponActive) badges.push(badge('✝️','SPIRIT WPN '+G.spiritualWeaponTurns+'t','sb-blue'));
-  if(G.mirrorImages>0) badges.push(badge('🔮','MIRROR x'+G.mirrorImages,'sb-blue'));
-  if(G._timeStopActive) badges.push(badge('⏱','TIME STOP','sb-gold'));
-  if(G._arcaneTranscendence) badges.push(badge('✨','TRANSCEND','sb-gold'));
-  if(G._bardInspiration) badges.push(badge('🎵','INSPIRED','sb-buff'));
-  if(G._shadowStep) badges.push(badge('🌑','SHADOW STEP','sb-buff'));
-  if(G._poisonBlade) badges.push(badge('☠','POISON BLADE','sb-buff'));
-  if(G._primalAvatar||( G.sx&&G.sx.primalAvatar>0)) badges.push(badge('🌿','PRIMAL AVATAR','sb-buff'));
-  if(G._dawnBlessing) badges.push(badge('🌅','DAWN BLESSING','sb-gold'));
-  if(G.dawnBlessingShield>0) badges.push(badge('🛡','SHIELD '+G.dawnBlessingShield,'sb-gold'));
-  if(G.holyWardHp>0) badges.push(badge('📿','HOLY WARD '+G.holyWardHp,'sb-gold'));
-  if(G._feralCharge) badges.push(badge('⚡','FERAL CHARGE','sb-buff'));
-  if(G._branchIronSkin) badges.push(badge('🛡','IRON SKIN','sb-buff'));
-  if(G._branchBattleHardened) badges.push(badge('⚔','BATTLE HARDEN','sb-buff'));
-  if(G._branchDeathDefiant) badges.push(badge('💀','DEATH DEFIANT','sb-buff'));
-  if(G._branchRelentlessHeal) badges.push(badge('💚','RELENTLESS','sb-buff'));
-  if(G._branchSixthSense) badges.push(badge('👁','SIXTH SENSE','sb-buff'));
+  if(G.raging) badges.push(badge(iconHTML('fire'),'RAGING','sb-buff'));
+  if(G.wildShapeActive&&G.wildShapeHp>0) badges.push(badge(iconHTML('pawprint'),'WILD SHAPE','sb-buff'));
+  if(G._elementalForm) badges.push(badge(iconHTML('fire-ring'),'ELEMENTAL','sb-buff'));
+  if(G.hunterMarked) badges.push(badge(iconHTML('target-arrows'),'MARKED','sb-buff'));
+  if(G.concentrating==='hunters_mark') badges.push(badge(iconHTML('target-arrows'),'CONCENTRATING','sb-buff'));
+  if(G.spiritualWeaponActive) badges.push(badge(iconHTML('ankh'),'SPIRIT WPN '+G.spiritualWeaponTurns+'t','sb-blue'));
+  if(G.mirrorImages>0) badges.push(badge(iconHTML('mirror'),'MIRROR x'+G.mirrorImages,'sb-blue'));
+  if(G._timeStopActive) badges.push(badge(iconHTML('hourglass'),'TIME STOP','sb-gold'));
+  if(G._arcaneTranscendence) badges.push(badge(iconHTML('energise'),'TRANSCEND','sb-gold'));
+  if(G._bardInspiration) badges.push(badge('♪','INSPIRED','sb-buff'));
+  if(G._shadowStep) badges.push(badge(iconHTML('moon-sun'),'SHADOW STEP','sb-buff'));
+  if(G._poisonBlade) badges.push(badge(iconHTML('skull'),'POISON BLADE','sb-buff'));
+  if(G._primalAvatar||( G.sx&&G.sx.primalAvatar>0)) badges.push(badge(iconHTML('leaf'),'PRIMAL AVATAR','sb-buff'));
+  if(G._dawnBlessing) badges.push(badge(iconHTML('sunbeams'),'DAWN BLESSING','sb-gold'));
+  if(G.dawnBlessingShield>0) badges.push(badge(iconHTML('round-shield'),'SHIELD '+G.dawnBlessingShield,'sb-gold'));
+  if(G.holyWardHp>0) badges.push(badge(iconHTML('ankh'),'HOLY WARD '+G.holyWardHp,'sb-gold'));
+  if(G._feralCharge) badges.push(badge(iconHTML('lightning-bolt'),'FERAL CHARGE','sb-buff'));
+  if(G._branchIronSkin) badges.push(badge(iconHTML('round-shield'),'IRON SKIN','sb-buff'));
+  if(G._branchBattleHardened) badges.push(badge(iconHTML('crossed-swords'),'BATTLE HARDEN','sb-buff'));
+  if(G._branchDeathDefiant) badges.push(badge(iconHTML('skull'),'DEATH DEFIANT','sb-buff'));
+  if(G._branchRelentlessHeal) badges.push(badge(iconHTML('health-increase'),'RELENTLESS','sb-buff'));
+  if(G._branchSixthSense) badges.push(badge(iconHTML('eye-shield'),'SIXTH SENSE','sb-buff'));
 
   // ── Spell slots moved to action bar inline display ──
 
   // ── Conditions (debuffs) ──
   if(G.conditions&&G.conditions.length){
     G.conditions.forEach(c=>{
-      const icons={Poisoned:'☠',Burning:'🔥',Stunned:'💫',Frightened:'😨',Restrained:'🔒'};
+      const icons={Poisoned:iconHTML('poison-cloud'),Burning:iconHTML('fire'),Stunned:iconHTML('fairy-wand'),Frightened:iconHTML('player-pain'),Restrained:iconHTML('chain')};
       const turns=G.conditionTurns&&G.conditionTurns[c]?G.conditionTurns[c]+'t':'';
-      badges.push(badge(icons[c]||'⚠',c+(turns?' '+turns:''),'sb-debuff'));
+      badges.push(badge(icons[c]||'!',c+(turns?' '+turns:''),'sb-debuff'));
     });
   }
 
@@ -589,7 +589,7 @@ function renderLeftPanel(){
   slots.forEach(slot=>{
     const item=G.equipped[slot];
     if(item){
-      html+=`<div class="pl-equip"><span class="pl-eq-icon">${item.icon}</span><span class="pl-eq-name ${rc[item.rarity]||''}">${item.name}</span></div>`;
+      html+=`<div class="pl-equip"><span class="pl-eq-icon">${iconHTML(item.icon)}</span><span class="pl-eq-name ${rc[item.rarity]||''}">${item.name}</span></div>`;
     } else {
       html+=`<div class="pl-equip"><span class="pl-eq-icon" style="opacity:0.2">·</span><span class="pl-eq-name" style="color:rgba(90,80,64,0.3)">${slot}</span></div>`;
     }
@@ -607,7 +607,7 @@ function renderLeftPanel(){
     chargeSkills.forEach(sk=>{
       const left=G.skillCharges&&G.skillCharges[sk.id]||0;
       const pips=Array.from({length:sk.charges},(_,i)=>i<left?'●':'○').join('');
-      html+=`<div class="pl-charge"><span class="pl-charge-name">${sk.icon} ${sk.name}</span><span class="pl-charge-pips">${pips}</span></div>`;
+      html+=`<div class="pl-charge"><span class="pl-charge-name">${iconHTML(sk.icon)} ${sk.name}</span><span class="pl-charge-pips">${pips}</span></div>`;
     });
   }
 
@@ -652,7 +652,7 @@ function renderShieldBar(){
       shieldLbl.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;font-family:"Press Start 2P",monospace;font-size:5px;color:#ffdd44;text-shadow:1px 1px 0 #000;pointer-events:none;z-index:2;';
       wrap.appendChild(shieldLbl);
     }
-    shieldLbl.textContent = '🛡' + totalShield;
+    shieldLbl.innerHTML = iconHTML('round-shield') + totalShield;
   } else {
     // Remove shield elements if shield is gone
     if(shieldEl) shieldEl.style.width = '0';
@@ -717,7 +717,7 @@ function renderSkillButtons(){
       return `<button class="skill-btn type-${type}${isNew?' sk-new':''}" data-skill-key="${keyNum}" ${disabled?'disabled':''} onclick="if(G._newSkills){G._newSkills=G._newSkills.filter(x=>x!=='${sk.id}');this.classList.remove('sk-new');}useSkill('${sk.id}')" title="${sk.name}: ${sk.desc} [${keyNum}]">
         ${cdBadge}
         ${keybindBadge}
-        <span class="sk-icon">${sk.icon}</span>
+        <span class="sk-icon">${iconHTML(sk.icon)}</span>
         <span class="sk-name">${sk.name}</span>
         ${dualBadge}
         ${pipHtml}
@@ -768,7 +768,7 @@ function renderSkillButtons(){
     G._auranthosBlindedBtns.forEach(idx=>{
       const btn=allBtns[idx];
       if(!btn)return;
-      btn.innerHTML='<span class="sk-icon" style="opacity:0.35">👁</span><span class="sk-name" style="color:#555;letter-spacing:1px">???</span>';
+      btn.innerHTML='<span class="sk-icon" style="opacity:0.35">'+iconHTML('eye-shield')+'</span><span class="sk-name" style="color:#555;letter-spacing:1px">???</span>';
     });
   }
 }
@@ -776,11 +776,11 @@ function renderSkillButtons(){
 function renderConditions(){
   const el=document.getElementById('condList');
   const condColors={Poisoned:'#27ae60',Burning:'#e67e22',Stunned:'#f1c40f',Frightened:'#9b59b6',Restrained:'#3498db'};
-  const condIcons={Poisoned:'☠',Burning:'🔥',Stunned:'💫',Frightened:'😨',Restrained:'🔒'};
+  const condIcons={Poisoned:iconHTML('poison-cloud'),Burning:iconHTML('fire'),Stunned:iconHTML('fairy-wand'),Frightened:iconHTML('player-pain'),Restrained:iconHTML('chain')};
   let html='';
   // Show concentration indicator for ranger
   if(G&&G.concentrating==='hunters_mark'&&G.hunterMarked){
-    html+=`<div class="cond-item" style="color:#16a085;">🎯 Concentrating (Mark)</div>`;
+    html+=`<div class="cond-item" style="color:#16a085;">${iconHTML('target-arrows')} Concentrating (Mark)</div>`;
   }
   if(!G||G.conditions.length===0){el.innerHTML=html||'<span style="color:var(--dim);font-size:14px;">None</span>';return;}
   html+=G.conditions.map(c=>{
@@ -837,28 +837,28 @@ function renderStatusPanel(){
   const add=(icon,name,desc,type)=>entries.push({icon,name,desc,type});
 
   // ── Active buffs ──────────────────────────────────────────
-  if(G.raging)                         add('🔥','RAGING',        'ATK +4, take 50% reduced damage. Cannot cast spells.','buff');
-  if(G.wildShapeActive&&G.wildShapeHp>0) add('🐻','WILD SHAPE',  'Bear form active. '+G.wildShapeHp+' HP buffer absorbs damage.','buff');
-  if(G._elementalForm)                 add('🔥','ELEMENTAL FORM','Transformed. Bonus fire damage on attacks.','buff');
-  if(G.hunterMarked)                   add('🎯','HUNTER\'S MARK','Marked target takes +1d6 bonus damage.','buff');
-  if(G.concentrating==='hunters_mark') add('🎯','CONCENTRATING', 'Maintaining Hunter\'s Mark concentration.','buff');
-  if(G.spiritualWeaponActive)          add('✝️','SPIRIT WEAPON', 'Spiritual Weapon attacks alongside you. '+G.spiritualWeaponTurns+'t remaining.','gold');
-  if(G.mirrorImages>0)                 add('🔮','MIRROR IMAGES',  G.mirrorImages+' images deflect incoming attacks.','blue');
-  if(G._timeStopActive)                add('⏱','TIME STOP',      'Extra turns frozen in time.','gold');
-  if(G._arcaneTranscendence)           add('✨','TRANSCENDENCE',  'Empowered — all spells deal bonus damage this turn.','gold');
-  if(G._bardInspiration)               add('🎵','INSPIRED',       'Bardic Inspiration active — bonus on next roll.','buff');
-  if(G._shadowStep)                    add('🌑','SHADOW STEP',    'In shadow — next attack deals bonus damage.','buff');
-  if(G._poisonBlade)                   add('☠','POISON BLADE',   'Weapon coated — attacks apply Poisoned.','buff');
-  if(G._primalAvatar||(G.sx&&G.sx.primalAvatar>0)) add('🌿','PRIMAL AVATAR','Nature bond — bonus to beast skills.','buff');
-  if(G._dawnBlessing)                  add('🌅','DAWN BLESSING',  'Blessed — heals a portion of damage dealt.','gold');
-  if(G.dawnBlessingShield>0)           add('🛡','BLESSED SHIELD', G.dawnBlessingShield+' damage blocked by divine light.','gold');
-  if(G.holyWardHp>0)                   add('📿','HOLY WARD',      G.holyWardHp+' HP ward absorbs next hit.','gold');
-  if(G._feralCharge)                   add('⚡','FERAL CHARGE',   'Charged up — next attack deals bonus damage.','buff');
-  if(G._branchIronSkin)                add('🛡','IRON SKIN',      'DEF bonus from branch reward.','buff');
-  if(G._branchBattleHardened)          add('⚔','BATTLE HARDENED',getOffensiveStatLabel(G)+' bonus from branch reward.','buff');
-  if(G._branchDeathDefiant)            add('💀','DEATH DEFIANT',  'Survive one killing blow at 1 HP.','buff');
-  if(G._branchRelentlessHeal)          add('💚','RELENTLESS HEAL','Regenerate HP each turn.','buff');
-  if(G._branchSixthSense)              add('👁','SIXTH SENSE',    'Boss damage reduced by 20%.','buff');
+  if(G.raging)                         add(iconHTML('fire'),'RAGING',        'ATK +4, take 50% reduced damage. Cannot cast spells.','buff');
+  if(G.wildShapeActive&&G.wildShapeHp>0) add(iconHTML('pawprint'),'WILD SHAPE',  'Bear form active. '+G.wildShapeHp+' HP buffer absorbs damage.','buff');
+  if(G._elementalForm)                 add(iconHTML('fire-ring'),'ELEMENTAL FORM','Transformed. Bonus fire damage on attacks.','buff');
+  if(G.hunterMarked)                   add(iconHTML('target-arrows'),'HUNTER\'S MARK','Marked target takes +1d6 bonus damage.','buff');
+  if(G.concentrating==='hunters_mark') add(iconHTML('target-arrows'),'CONCENTRATING', 'Maintaining Hunter\'s Mark concentration.','buff');
+  if(G.spiritualWeaponActive)          add(iconHTML('ankh'),'SPIRIT WEAPON', 'Spiritual Weapon attacks alongside you. '+G.spiritualWeaponTurns+'t remaining.','gold');
+  if(G.mirrorImages>0)                 add(iconHTML('mirror'),'MIRROR IMAGES',  G.mirrorImages+' images deflect incoming attacks.','blue');
+  if(G._timeStopActive)                add(iconHTML('hourglass'),'TIME STOP',      'Extra turns frozen in time.','gold');
+  if(G._arcaneTranscendence)           add(iconHTML('energise'),'TRANSCENDENCE',  'Empowered — all spells deal bonus damage this turn.','gold');
+  if(G._bardInspiration)               add('♪','INSPIRED',       'Bardic Inspiration active — bonus on next roll.','buff');
+  if(G._shadowStep)                    add(iconHTML('moon-sun'),'SHADOW STEP',    'In shadow — next attack deals bonus damage.','buff');
+  if(G._poisonBlade)                   add(iconHTML('skull'),'POISON BLADE',   'Weapon coated — attacks apply Poisoned.','buff');
+  if(G._primalAvatar||(G.sx&&G.sx.primalAvatar>0)) add(iconHTML('leaf'),'PRIMAL AVATAR','Nature bond — bonus to beast skills.','buff');
+  if(G._dawnBlessing)                  add(iconHTML('sunbeams'),'DAWN BLESSING',  'Blessed — heals a portion of damage dealt.','gold');
+  if(G.dawnBlessingShield>0)           add(iconHTML('round-shield'),'BLESSED SHIELD', G.dawnBlessingShield+' damage blocked by divine light.','gold');
+  if(G.holyWardHp>0)                   add(iconHTML('ankh'),'HOLY WARD',      G.holyWardHp+' HP ward absorbs next hit.','gold');
+  if(G._feralCharge)                   add(iconHTML('lightning-bolt'),'FERAL CHARGE',   'Charged up — next attack deals bonus damage.','buff');
+  if(G._branchIronSkin)                add(iconHTML('round-shield'),'IRON SKIN',      'DEF bonus from branch reward.','buff');
+  if(G._branchBattleHardened)          add(iconHTML('crossed-swords'),'BATTLE HARDENED',getOffensiveStatLabel(G)+' bonus from branch reward.','buff');
+  if(G._branchDeathDefiant)            add(iconHTML('skull'),'DEATH DEFIANT',  'Survive one killing blow at 1 HP.','buff');
+  if(G._branchRelentlessHeal)          add(iconHTML('health-increase'),'RELENTLESS HEAL','Regenerate HP each turn.','buff');
+  if(G._branchSixthSense)              add(iconHTML('eye-shield'),'SIXTH SENSE',    'Boss damage reduced by 20%.','buff');
 
   // ── Spell slots moved to action bar inline display ──
 
@@ -903,7 +903,7 @@ function renderStatusPanel(){
     Frightened:'ATK reduced while frightened.',
     Restrained:'Losing your action this turn.',
   };
-  const condIcons={Poisoned:'☠',Burning:'🔥',Stunned:'💫',Frightened:'😨',Restrained:'🔒'};
+  const condIcons={Poisoned:iconHTML('poison-cloud'),Burning:iconHTML('fire'),Stunned:iconHTML('fairy-wand'),Frightened:iconHTML('player-pain'),Restrained:iconHTML('chain')};
   if(G.conditions&&G.conditions.length){
     G.conditions.forEach(c=>{
       const turns=G.conditionTurns&&G.conditionTurns[c]?' ('+G.conditionTurns[c]+'t)':'';
@@ -914,23 +914,23 @@ function renderStatusPanel(){
   // ── Rare event buffs & debuffs ──────────────────────────
   const flags = G._rareEventFlags || {};
   if(flags.cursedForge)        add('🔨','CURSED FORGE',      'Enemies deal +10% damage this run.','debuff');
-  if(flags.bloodPact)          add('💉','BLOOD PACT',        'Next boss drops 2× loot.','buff');
-  if(flags.bloodPactGold)      add('🪙','BLOOD PACT GOLD',   'Next boss drops a bonus item.','buff');
-  if(flags.vexaraCrown)        add('👑','CRIMSON CROWN',      '-5 HP per fight, enemies have −10% HP this zone.','gold');
-  if(flags.satchelSaved)       add('📦','STRANGER\'S SATCHEL','Auto-heal when dropping below 25% HP.','buff');
-  if(G._divineEvasionReady)    add('👁','DIVINE EVASION',     'Will dodge the next incoming attack.','buff');
-  if(flags.empressBossBonus)   add('🌑','LULLABY',           '+25% damage against Malvaris.','buff');
-  if(flags.doppelgangerBoss)   add('🪞','DOPPELGANGER',      'An extra enemy appears during the boss fight.','debuff');
+  if(flags.bloodPact)          add(iconHTML('syringe'),'BLOOD PACT',        'Next boss drops 2× loot.','buff');
+  if(flags.bloodPactGold)      add(iconHTML('gold-bar'),'BLOOD PACT GOLD',   'Next boss drops a bonus item.','buff');
+  if(flags.vexaraCrown)        add(iconHTML('crown'),'CRIMSON CROWN',      '-5 HP per fight, enemies have −10% HP this zone.','gold');
+  if(flags.satchelSaved)       add(iconHTML('wooden-sign'),'STRANGER\'S SATCHEL','Auto-heal when dropping below 25% HP.','buff');
+  if(G._divineEvasionReady)    add(iconHTML('eye-shield'),'DIVINE EVASION',     'Will dodge the next incoming attack.','buff');
+  if(flags.empressBossBonus)   add(iconHTML('moon-sun'),'LULLABY',           '+25% damage against Malvaris.','buff');
+  if(flags.doppelgangerBoss)   add(iconHTML('mirror'),'DOPPELGANGER',      'An extra enemy appears during the boss fight.','debuff');
   if(flags.gateFragmentBoss)   add('🚪','GATE FRAGMENT',     'Boss starts at 90% HP.','buff');
-  if(flags.finalHorn)          add('📯','FINAL HORN',         '+1 enemy per fight, but enemies have −15% HP.','gold');
-  if(flags.enemyFirstStrike)   add('⚡','FIRST STRIKE',       'Enemies attack first each fight.','debuff');
-  if(flags.tempAtkBonus)       add('⚔️',getOffensiveStatLabel(G)+' BONUS',         '+'+flags.tempAtkBonus.value+' '+getOffensiveStatLabel(G)+' this zone.','buff');
-  if(flags._cursedDebuff)      add('☠️','CURSED',            '-3 '+getOffensiveStatLabel(G)+', -3 DEF. '+flags._cursedDebuff+' fight'+(flags._cursedDebuff>1?'s':'')+' remaining.','debuff');
-  if(flags._chilledDebuff)     add('❄️','CHILLED',           '-3 DEF. '+flags._chilledDebuff+' fight'+(flags._chilledDebuff>1?'s':'')+' remaining.','debuff');
-  if(flags.unstableBuff)       add('⚠️','UNSTABLE',          '+'+flags.unstableBuff.atk+' '+getOffensiveStatLabel(G)+', +'+flags.unstableBuff.def+' DEF, +'+flags.unstableBuff.hp+' HP. Fading.','gold');
-  if(flags.alliedSkeletons&&flags.alliedSkeletons>0) add('💀','ALLIED SKELETONS','×'+flags.alliedSkeletons+' skeleton'+(flags.alliedSkeletons>1?'s':'')+' absorbing hits.','buff');
-  if(flags.frozenSoldier)      add('🧊','FROZEN SOLDIER',    'A freed soldier fights alongside you.','buff');
-  if(flags.lastCampfireWeaken) add('🔥','LAST CAMPFIRE',     'Next campfire rest only heals 50%.','gold');
+  if(flags.finalHorn)          add(iconHTML('horn-call'),'FINAL HORN',         '+1 enemy per fight, but enemies have −15% HP.','gold');
+  if(flags.enemyFirstStrike)   add(iconHTML('lightning-bolt'),'FIRST STRIKE',       'Enemies attack first each fight.','debuff');
+  if(flags.tempAtkBonus)       add(iconHTML('crossed-swords'),getOffensiveStatLabel(G)+' BONUS',         '+'+flags.tempAtkBonus.value+' '+getOffensiveStatLabel(G)+' this zone.','buff');
+  if(flags._cursedDebuff)      add(iconHTML('skull'),'CURSED',            '-3 '+getOffensiveStatLabel(G)+', -3 DEF. '+flags._cursedDebuff+' fight'+(flags._cursedDebuff>1?'s':'')+' remaining.','debuff');
+  if(flags._chilledDebuff)     add(iconHTML('frost-emblem'),'CHILLED',           '-3 DEF. '+flags._chilledDebuff+' fight'+(flags._chilledDebuff>1?'s':'')+' remaining.','debuff');
+  if(flags.unstableBuff)       add('!','UNSTABLE',          '+'+flags.unstableBuff.atk+' '+getOffensiveStatLabel(G)+', +'+flags.unstableBuff.def+' DEF, +'+flags.unstableBuff.hp+' HP. Fading.','gold');
+  if(flags.alliedSkeletons&&flags.alliedSkeletons>0) add(iconHTML('skull'),'ALLIED SKELETONS','×'+flags.alliedSkeletons+' skeleton'+(flags.alliedSkeletons>1?'s':'')+' absorbing hits.','buff');
+  if(flags.frozenSoldier)      add(iconHTML('frost-emblem'),'FROZEN SOLDIER',    'A freed soldier fights alongside you.','buff');
+  if(flags.lastCampfireWeaken) add(iconHTML('fire'),'LAST CAMPFIRE',     'Next campfire rest only heals 50%.','gold');
   // Salvage temp buffs
   if(G._salvageBuffs&&G._salvageBuffs.length){
     G._salvageBuffs.forEach(b=>{
@@ -973,7 +973,7 @@ function renderStatusPanel(){
     }
     // Dynamic: Predator buff active
     if(G._predatorBuff&&G._predatorBuff.turns>0){
-      add('🐺','FIRST STRIKE', '+20% damage. '+G._predatorBuff.turns+' turn'+(G._predatorBuff.turns>1?'s':'')+' remaining.','buff');
+      add(iconHTML('wolf-head'),'FIRST STRIKE', '+20% damage. '+G._predatorBuff.turns+' turn'+(G._predatorBuff.turns>1?'s':'')+' remaining.','buff');
     }
   }
 

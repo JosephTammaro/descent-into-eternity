@@ -75,7 +75,7 @@ function renderInlineCharSheet(){
       </div>
       <div class="csi-col">
         ${section('EQUIPMENT')}
-        ${['weapon','armor','ring','offhand','helmet','gloves','boots','amulet'].map(slot=>{const item=G.equipped[slot];return row(slot.toUpperCase(),item?item.icon+' '+item.name:'—',item?rarityColor[item.rarity]:'var(--dim)');}).join('')}
+        ${['weapon','armor','ring','offhand','helmet','gloves','boots','amulet'].map(slot=>{const item=G.equipped[slot];return row(slot.toUpperCase(),item?iconHTML(item.icon)+' '+item.name:'—',item?rarityColor[item.rarity]:'var(--dim)');}).join('')}
         ${section('SAVING THROWS')}
         ${(cls.saves||[]).map(s=>row(s.toUpperCase()+' Save','+'+( md(G.stats[s])+G.profBonus),'var(--gold2)')).join('')}
         ${section('CONDITIONS')}
@@ -89,9 +89,9 @@ function renderInlineCharSheet(){
       </div>
       <div class="csi-col">
         ${section('TALENTS')}
-        ${G.talents.length?G.talents.map(t=>{const td=(TALENT_POOLS[G.classId]||[]).find(p=>p.name===t);return`<div class="csi-talent"><div class="csi-talent-name">${td?td.icon:''} ${t}</div><div class="csi-talent-desc">${td?td.desc:''}</div></div>`;}).join(''):'<div style="color:var(--dim);font-size:12px;padding:4px;">None yet.</div>'}
+        ${G.talents.length?G.talents.map(t=>{const td=(TALENT_POOLS[G.classId]||[]).find(p=>p.name===t);return`<div class="csi-talent"><div class="csi-talent-name">${td?iconHTML(td.icon):''} ${t}</div><div class="csi-talent-desc">${td?td.desc:''}</div></div>`;}).join(''):'<div style="color:var(--dim);font-size:12px;padding:4px;">None yet.</div>'}
         ${section('CLASS SKILLS')}
-        ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`<div class="csi-talent"><div class="csi-talent-name">${sk.icon} ${sk.name} <span style="color:var(--dim);font-size:5px;">[${sk.type.toUpperCase()}]</span></div><div class="csi-talent-desc">${sk.desc}</div></div>`).join('')}
+        ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`<div class="csi-talent"><div class="csi-talent-name">${iconHTML(sk.icon)} ${sk.name} <span style="color:var(--dim);font-size:5px;">[${sk.type.toUpperCase()}]</span></div><div class="csi-talent-desc">${sk.desc}</div></div>`).join('')}
         ${(()=>{
           if(typeof getEquippedGraces!=='function') return '';
           const graces = getEquippedGraces(G.classId).filter(Boolean);
@@ -136,7 +136,7 @@ function renderCharSheet(){
     </div>
     <div class="cs-panel">
       <div class="panel-title">EQUIPMENT</div>
-      ${['weapon','armor','ring','offhand','helmet','gloves','boots','amulet'].map(slot=>{const item=G.equipped[slot];return`<div class="cs-row"><span style="color:var(--dim)">${slot.toUpperCase()}</span><span style="color:${item?rarityColor[item.rarity]:'var(--dim)'}">${item?item.icon+' '+item.name:'—'}</span></div>`;}).join('')}
+      ${['weapon','armor','ring','offhand','helmet','gloves','boots','amulet'].map(slot=>{const item=G.equipped[slot];return`<div class="cs-row"><span style="color:var(--dim)">${slot.toUpperCase()}</span><span style="color:${item?rarityColor[item.rarity]:'var(--dim)'}">${item?iconHTML(item.icon)+' '+item.name:'—'}</span></div>`;}).join('')}
       <div class="panel-title" style="margin-top:6px;">SAVES</div>
       ${(cls.saves||[]).map(s=>`<div class="cs-row"><span>${s.toUpperCase()} Save</span><span class="cs-val">+${md(G.stats[s])+G.profBonus}</span></div>`).join('')}
       <div class="panel-title" style="margin-top:6px;">CONDITIONS</div>
@@ -144,9 +144,9 @@ function renderCharSheet(){
     </div>
     <div class="cs-panel">
       <div class="panel-title">TALENTS</div>
-      ${G.talents.length?G.talents.map(t=>{const td=(TALENT_POOLS[G.classId]||[]).find(p=>p.name===t);return`<div class="talent-entry"><div class="te-name">${td?td.icon:''} ${t}</div><div class="te-desc">${td?td.desc:''}</div></div>`;}).join(''):'<div class="talent-entry"><div class="te-desc" style="color:var(--dim)">No talents yet. Gain one at every 3rd level.</div></div>'}
+      ${G.talents.length?G.talents.map(t=>{const td=(TALENT_POOLS[G.classId]||[]).find(p=>p.name===t);return`<div class="talent-entry"><div class="te-name">${td?iconHTML(td.icon):''} ${t}</div><div class="te-desc">${td?td.desc:''}</div></div>`;}).join(''):'<div class="talent-entry"><div class="te-desc" style="color:var(--dim)">No talents yet. Gain one at every 3rd level.</div></div>'}
       <div class="panel-title" style="margin-top:6px;">CLASS SKILLS</div>
-      ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`<div class="talent-entry"><div class="te-name">${sk.icon} ${sk.name}</div><div class="te-desc">${sk.desc} [${sk.type}]</div></div>`).join('')}
+      ${cls.skills.filter(sk=>(!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId))&&(!sk.ultimateOnly||G.ultimateUnlocked)&&(!G.skillLoadout||G.skillLoadout.includes(sk.id)||sk.ultimateOnly)).map(sk=>`<div class="talent-entry"><div class="te-name">${iconHTML(sk.icon)} ${sk.name}</div><div class="te-desc">${sk.desc} [${sk.type}]</div></div>`).join('')}
     </div>
   `;
 }

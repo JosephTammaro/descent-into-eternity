@@ -1,5 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
+/* ── RPG AWESOME ICONS ──────────────────────────────────────
+   iconHTML('broadsword') → <i class="ra ra-broadsword"></i>
+   Used for item/skill icons only. Emoji still used for zone/modifier/buff icons.
+────────────────────────────────────────────────────────── */
+.ra { color: var(--gold); display:inline-block; vertical-align:middle; line-height:1; }
+.sk-icon .ra   { font-size:1.5em; }
+.ib-icon .ra   { font-size:1.4em; }
+.pl-eq-icon .ra{ font-size:1.2em; }
+.si-icon .ra   { font-size:1.6em; }
+.cf-eq-icon .ra{ font-size:1.3em; }
+.salvage-item-icon .ra { font-size:1.8em; }
+.prep-kit-icon .ra { font-size:1.3em; }
+
 /* ── PALETTE ─────────────────────────────────────────────── */
 :root {
   --bg:       #0e0c0a;

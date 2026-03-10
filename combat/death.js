@@ -634,7 +634,7 @@ function showDeathScreen(){
     <div class="death-stat-row"><span class="death-stat-label">Flawless Wins</span><span class="death-stat-val">${G.flawlessWins||0}</span></div>
     <div class="death-stat-row"><span class="death-stat-label">Time Played</span><span class="death-stat-val">${typeof formatPlayTime==='function'?formatPlayTime(G.playTime||0):'—'}</span></div>
     <div class="death-stat-row"><span class="death-stat-label">Cause of Death</span><span class="death-stat-val death-cause">${G.causeOfDeath||'Unknown'}</span></div>
-    <div class="death-stat-row"><span class="death-stat-label">Best Item</span><span class="death-stat-val">${bestItem?bestItem.icon+' '+bestItem.name:'None'}</span></div>
+    <div class="death-stat-row"><span class="death-stat-label">Best Item</span><span class="death-stat-val">${bestItem?iconHTML(bestItem.icon)+' '+bestItem.name:'None'}</span></div>
   `;
 
   // ── Run highlight — best moment ──
@@ -929,7 +929,7 @@ function showSalvagePrompt(onDone){
     const healStr = c.item.stats&&c.item.stats.heal ? `Heals ${c.item.stats.heal} HP` : '';
     const src = c.source==='equipped' ? `<span class="salvage-badge">EQUIPPED</span>` : '';
     return `<div class="salvage-item" id="salvItem${i}" onclick="selectSalvage(${i})">
-      <span class="salvage-item-icon">${c.item.icon}</span>
+      <span class="salvage-item-icon">${iconHTML(c.item.icon)}</span>
       <div class="salvage-item-info">
         <span class="salvage-item-name" style="color:${col}">${c.item.name} ${src}</span>
         <span class="salvage-item-rarity" style="color:${col}">${c.item.rarity.toUpperCase()}</span>

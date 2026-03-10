@@ -62,7 +62,7 @@ function renderInventory(){
       ondrop="mainInvDrop(event,${i})"
       ondragleave="mainInvDragLeave(event)"
       onmouseenter="showInvTooltip(event,${i})" onmouseleave="hideInvTooltip()"
-    >${item.icon}${(item.qty||1)>1?`<div class="inv-qty">${item.qty}</div>`:''}</div>`;
+    >${iconHTML(item.icon)}${(item.qty||1)>1?`<div class="inv-qty">${item.qty}</div>`:''}</div>`;
   }).join('');
 }
 
@@ -123,7 +123,7 @@ function renderEquipSlots(){
       onclick="unequip('${s.k}')"
       ${G.equipped[s.k]?`onmouseenter="showEqTooltip(event,'${s.k}')" onmouseleave="hideInvTooltip()"`:''}
       title="${G.currentEnemy&&G.roundNum>0?'Cannot change gear mid-combat':''}">
-      <div class="eq-icon">${G.equipped[s.k]?G.equipped[s.k].icon:'+'}</div>
+      <div class="eq-icon">${G.equipped[s.k]?iconHTML(G.equipped[s.k].icon):'+'}</div>
       <div class="eq-lbl">${G.equipped[s.k]?G.equipped[s.k].name.substring(0,8):s.l}</div>
     </div>
   `).join('');
@@ -153,7 +153,7 @@ function openItemModal(idx){
   document.getElementById('ibTitle').textContent=item.name;
   document.getElementById('ibTitle').style.color=rc;
   document.getElementById('ibBody').innerHTML=`
-    <div class="ib-icon">${item.icon}</div>
+    <div class="ib-icon">${iconHTML(item.icon)}</div>
     <div class="ib-stats">
       <div class="ib-name" style="color:${rc}">${item.name}</div>
       <div class="ib-rar" style="color:${rc}">${item.rarity.toUpperCase()} ${item.type}</div>
@@ -347,7 +347,7 @@ function dropLoot(enemy){
       const item={...available[Math.floor(Math.random()*available.length)]};
       if(addItem(item)){
         G.totalItems++;AUDIO.sfx.loot();
-        log('✦ CLASS SET ITEM: '+item.icon+' '+item.name+' ['+item.set.toUpperCase()+']','l');
+        log('✦ CLASS SET ITEM: '+item.name+' ['+item.set.toUpperCase()+']','l');
         log('⚠ Equip all 3 '+SET_BONUSES[item.set].name+' pieces for the set bonus!','s');
         return;
       }
@@ -372,7 +372,7 @@ function dropLoot(enemy){
   if(!filtered.length)filtered=pool.filter(i=>i.rarity==='common');
   if(!filtered.length)return;
   const item={...filtered[Math.floor(Math.random()*filtered.length)]};
-  if(addItem(item)){G.totalItems++;AUDIO.sfx.loot();log('🎁 Found: '+item.icon+' '+item.name+' ['+item.rarity.toUpperCase()+']','l');}
+  if(addItem(item)){G.totalItems++;AUDIO.sfx.loot();log('🎁 Found: '+item.name+' ['+item.rarity.toUpperCase()+']','l');}
 }
 
 function buyUpgrade(id){

@@ -439,13 +439,13 @@ function spawnEnemy(){
     if(fx.startDmgPct){
       const cdmg=Math.max(1,Math.floor(G.maxHp*fx.startDmgPct));
       if(typeof _dev_godMode==='undefined'||!_dev_godMode) G.hp=Math.max(1,G.hp-cdmg);
-      log('☠️ Cursed Ground: -'+cdmg+' HP from the corrupted earth.','c');
+      log('Cursed Ground: -'+cdmg+' HP from the corrupted earth.','c');
       if(typeof renderHUD==='function') renderHUD();
     }
     // Cursed Ground: enemies start Weakened
     if(fx.enemyWeakenTurns){
       G.currentEnemies.forEach(e=>{e._weakened=fx.enemyWeakenTurns;});
-      log('☠️ The curse weakens all enemies for '+fx.enemyWeakenTurns+' turns.','s');
+      log('The curse weakens all enemies for '+fx.enemyWeakenTurns+' turns.','s');
     }
     // Predator and Prey: first attacker gets buff (player goes first normally)
     if(fx.initiativeBuff){
@@ -609,7 +609,7 @@ function spawnEnemy(){
   if(ref._cursedDebuff&&ref._cursedDebuff>0){
     ref._cursedDebuff--;
     if(ref._cursedDebuff<=0){addOffensiveStat(G,3);G.def+=3;delete ref._cursedDebuff;log('The curse lifts.','s');}
-    else log('☠ Cursed: −3 '+getOffensiveStatLabel(G)+'/DEF ('+ref._cursedDebuff+' fights left)','c');
+    else log('Cursed: −3 '+getOffensiveStatLabel(G)+'/DEF ('+ref._cursedDebuff+' fights left)','c');
   }
   // Chilled debuff tick-down
   if(ref._chilledDebuff&&ref._chilledDebuff>0){
@@ -783,7 +783,7 @@ function renderEnemyArea(){
     // Intent badge on each card
     let intentHtml='';
     const d=_getIntentDisplay(e);
-    if(d)intentHtml=`<div class="enemy-card-intent${d.cls==='intent-special'||d.cls==='intent-blocked'?' '+d.cls:''}">${d.icon}</div>`;
+    if(d)intentHtml=`<div class="enemy-card-intent${d.cls==='intent-special'||d.cls==='intent-blocked'?' '+d.cls:''}">${typeof iconHTML==='function'?iconHTML(d.icon):d.icon}</div>`;
 
     card.appendChild(spriteCanvas);
     card.insertAdjacentHTML('beforeend', hpBar+hpTxt+name+arrow+intentHtml);
@@ -795,12 +795,12 @@ function renderEnemyArea(){
 //  ENEMY INTENT DISPLAY
 // ══════════════════════════════════════════════════════════
 const _INTENT_DISPLAY={
-  striking: {icon:'⚔', label:'STRIKING',  cls:'intent-attack'},
-  defending:{icon:'🛡', label:'DEFENDING', cls:'intent-defend'},
-  poisoning:{icon:'☠', label:'POISONING', cls:'intent-status'},
-  burning:  {icon:'🔥',label:'BURNING',   cls:'intent-status'},
-  stunning: {icon:'💫',label:'STUNNING',  cls:'intent-status'},
-  casting:  {icon:'✨', label:'CASTING',   cls:'intent-cast'},
+  striking: {icon:'crossed-swords', label:'STRIKING',  cls:'intent-attack'},
+  defending:{icon:'round-shield',   label:'DEFENDING', cls:'intent-defend'},
+  poisoning:{icon:'skull',          label:'POISONING', cls:'intent-status'},
+  burning:  {icon:'fire',           label:'BURNING',   cls:'intent-status'},
+  stunning: {icon:'lightning-bolt', label:'STUNNING',  cls:'intent-status'},
+  casting:  {icon:'crystal-wand',   label:'CASTING',   cls:'intent-cast'},
 };
 
 function _rollIntentForEnemy(e){
@@ -820,39 +820,39 @@ function _rollIntentForEnemy(e){
 function _getIntentDisplay(e){
   if(!e)return null;
   const isRestrained=e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
-  if(isRestrained)return{icon:'🔗',label:'RESTRAINED',cls:'intent-blocked'};
+  if(isRestrained)return{icon:'crossed-bones',label:'RESTRAINED',cls:'intent-blocked'};
   // Zareth charging override — show charging intent during wind-up
-  if(e._chargingBlast>0)return{icon:'⚡',label:'CHARGING...',cls:'intent-special'};
+  if(e._chargingBlast>0)return{icon:'lightning-bolt',label:'CHARGING...',cls:'intent-special'};
   if(e.isBoss&&G.roundNum>0){
     // ── Per-boss mechanic overrides (highest priority) ──
     // Vexara — Crimson Brand fires on brandRound
     if(e.id==='vexara'&&e.brandRound&&G.roundNum===e.brandRound&&!e._brandApplied)
-      return{icon:'🔥',label:'CRIMSON BRAND',cls:'intent-special'};
+      return{icon:'fire',label:'CRIMSON BRAND',cls:'intent-special'};
     // Grakthar — Rally fires next enemy turn if HP already below threshold
     if(e.id==='grakthar'&&!e._rallyUsed&&e.hp<=e.maxHp*0.6)
-      return{icon:'⚔',label:'RALLYING GARRISON',cls:'intent-special'};
+      return{icon:'crossed-swords',label:'RALLYING GARRISON',cls:'intent-special'};
     // Valdris — Last Stand (check 30% first, then 65% bulwark)
     if(e.id==='valdris'&&!e._lastStand&&e.hp<=e.maxHp*0.3)
-      return{icon:'💢',label:'LAST STAND',cls:'intent-special'};
+      return{icon:'sword',label:'LAST STAND',cls:'intent-special'};
     if(e.id==='valdris'&&!e._bulwarkUsed&&e.hp<=e.maxHp*0.65)
-      return{icon:'❄',label:'SUMMON SOLDIERS',cls:'intent-special'};
+      return{icon:'frost-emblem',label:'SUMMON SOLDIERS',cls:'intent-special'};
     // Auranthos — Divine Blindness on its interval
     if(e.id==='auranthos'){
       const bInterval=e.phaseTriggered?2:3;
-      if(G.roundNum%bInterval===0) return{icon:'👁',label:'DIVINE BLINDNESS',cls:'intent-special'};
+      if(G.roundNum%bInterval===0) return{icon:'eye-shield',label:'DIVINE BLINDNESS',cls:'intent-special'};
     }
     // Malvaris — specific trigger overrides, then always show Grief Aura
     if(e.id==='malvaris'){
-      if(!e._soulDrainUsed&&e.hp<=e.maxHp*0.25)return{icon:'🌑',label:'SOUL DRAIN',cls:'intent-special'};
-      if(!e._splitUsed&&e.hp<=e.maxHp*0.5)return{icon:'🌑',label:'SHADOW SPLIT',cls:'intent-special'};
-      return{icon:'🌑',label:'GRIEF AURA + STRIKE',cls:'intent-special'};
+      if(!e._soulDrainUsed&&e.hp<=e.maxHp*0.25)return{icon:'death-skull',label:'SOUL DRAIN',cls:'intent-special'};
+      if(!e._splitUsed&&e.hp<=e.maxHp*0.5)return{icon:'moon-sun',label:'SHADOW SPLIT',cls:'intent-special'};
+      return{icon:'moon-sun',label:'GRIEF AURA + STRIKE',cls:'intent-special'};
     }
     // ── Generic boss special interval ──
     const interval=e.phaseTriggered?2:3;
     if(G.roundNum%interval===0){
       const sp=e.phaseTriggered&&e.phase2?e.phase2:e.special;
       const spName=sp&&sp.name?sp.name.toUpperCase():'SPECIAL ATTACK';
-      return{icon:'💥',label:spName,cls:'intent-special'};
+      return{icon:'explosion',label:spName,cls:'intent-special'};
     }
     return _INTENT_DISPLAY.striking;
   }
@@ -867,7 +867,7 @@ function updateEnemyIntent(){
   }
   const d=_getIntentDisplay(G.currentEnemy);
   if(!d){el.innerHTML='';el.className='enemy-intent';return;}
-  el.innerHTML=d.icon+' '+d.label;
+  el.innerHTML=(typeof iconHTML==='function'?iconHTML(d.icon):d.icon)+' '+d.label;
   el.className='enemy-intent '+d.cls;
 }
 

@@ -14,6 +14,18 @@
 // ================================================================
 
 // ══════════════════════════════════════════════════════════
+//  ICON HELPER
+// ══════════════════════════════════════════════════════════
+// Converts RPG-Awesome class names to <i> HTML. Falls through
+// to emoji for zone/modifier/buff icons that aren't ra- names.
+function iconHTML(icon){
+  if(!icon) return '';
+  if(/^[a-z][a-z0-9-]*$/.test(icon))
+    return '<i class="ra ra-'+icon+'" aria-hidden="true"></i>';
+  return icon;
+}
+
+// ══════════════════════════════════════════════════════════
 //  CONDITIONS
 // ══════════════════════════════════════════════════════════
 function addCondition(cond,turns=2){
@@ -627,7 +639,7 @@ function showGraveyard(){
             <span>🏆 ${e.bossesKilled} bosses</span>
             <span>⏱ ${timeStr}</span>
           </div>
-          ${e.bestItem?'<div class="gy-card-item" style="color:'+rCol+'">'+e.bestItem.icon+' '+e.bestItem.name+'</div>':''}
+          ${e.bestItem?'<div class="gy-card-item" style="color:'+rCol+'">'+iconHTML(e.bestItem.icon)+' '+e.bestItem.name+'</div>':''}
         </div>
         <div class="gy-card-date">${dateStr}</div>
       `;
