@@ -66,11 +66,12 @@ function spawnGoldBurst(sourceEl){
   const sr=sourceEl.getBoundingClientRect();
   const cx=Math.round(sr.left+sr.width/2);
   const cy=Math.round(sr.top+sr.height/2);
-  const n=5+Math.floor(Math.random()*3);
+  const n=10+Math.floor(Math.random()*5);
   for(let i=0;i<n;i++){
     const coin=document.createElement('div');
     coin.textContent='🪙';
-    coin.style.cssText='position:fixed;pointer-events:none;font-size:18px;z-index:99998;left:'+cx+'px;top:'+cy+'px;transform:translate(-50%,-50%);opacity:1;transition:none;';
+    coin.className='gold-sparkle-coin';
+    coin.style.cssText='position:fixed;pointer-events:none;font-size:26px;z-index:99998;left:'+cx+'px;top:'+cy+'px;transform:translate(-50%,-50%);opacity:1;transition:none;';
     document.body.appendChild(coin);
     const ang=(Math.PI*2*i/n)+(Math.random()-0.5)*0.9;
     const dist=40+Math.random()*50;

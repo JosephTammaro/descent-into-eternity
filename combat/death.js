@@ -41,7 +41,7 @@ function onEnemyDied(){
   // If we're in a branch, hand off to branch system
   if(G._inBranch){
     AUDIO.sfx.enemyDeath();
-    animEl('enemySprite','die-anim',700);
+    animEl('enemySprite','die-anim',1300);
     if(window.Anim) Anim.enemyDeath();
     const _eSprite=document.getElementById('enemySprite');
     if(_eSprite)_eSprite.classList.remove('phase2-glow');
@@ -56,7 +56,7 @@ function onEnemyDied(){
     log('+'+xp+' XP, +'+gold+'🪙','l');
     if(Math.random()<(G._branchScavenger?0.42:0.3))dropLoot(e);
     if(!e.isBoss&&G.xp>=G.xpNeeded&&!levelUpShowing){G.xp-=G.xpNeeded;doLevelUp();}
-    setTimeout(()=>onBranchEnemyDefeated(), 800);
+    setTimeout(()=>onBranchEnemyDefeated(), 1400);
     return;
   }
   // Clear stale reaction flags on enemy death
@@ -73,8 +73,8 @@ function onEnemyDied(){
     }
   }
   G._singleEnemyDying=true;
-  animEl('enemySprite','die-anim',700);
-  setTimeout(()=>{G._singleEnemyDying=false;const s=document.getElementById('enemySprite');if(s){s.classList.remove('die-anim');s.style.opacity='0';}},710);
+  animEl('enemySprite','die-anim',1300);
+  setTimeout(()=>{G._singleEnemyDying=false;const s=document.getElementById('enemySprite');if(s){s.classList.remove('die-anim');s.style.opacity='0';}},1310);
   if(window.Anim) Anim.enemyDeath();
   // Clean up phase 2 glow/nametag if it was active
   const _eSprite=document.getElementById('enemySprite');

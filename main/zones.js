@@ -167,7 +167,7 @@ function handleNextEnemy(){
   if(!G) return;
   // Zone transition wipe — dark edge flash before new enemy
   const _wipeStage=document.getElementById('battleStage');
-  if(_wipeStage){_wipeStage.classList.remove('zone-scene-wipe');void _wipeStage.offsetWidth;_wipeStage.classList.add('zone-scene-wipe');setTimeout(()=>_wipeStage.classList.remove('zone-scene-wipe'),500);}
+  if(_wipeStage){_wipeStage.classList.remove('zone-scene-wipe');void _wipeStage.offsetWidth;_wipeStage.classList.add('zone-scene-wipe');setTimeout(()=>_wipeStage.classList.remove('zone-scene-wipe'),1100);}
   // Branch zones use their own spawner
   if(G._inBranch){ spawnBranchEnemy(); return; }
   // Don't trigger rare events if boss is ready, or already had one this zone
@@ -740,7 +740,7 @@ function renderEnemyArea(){
       const dSprData=(e.isBoss||e._usesBossSprite)?BOSS_SPRITES[e.sprite]:ENEMY_SPRITES[e.sprite];
       if(dSprData) renderSprite(dSprData,7,dSprEl);
       dSprEl.style.filter=`drop-shadow(0 0 3px ${e.color||'#888'})`;
-      if(elapsed<750){
+      if(elapsed<1300){
         dSprEl.classList.add('dying-sprite');
         dSprEl.style.animationDelay=`-${elapsed}ms`;
       } else {
