@@ -404,6 +404,7 @@ function showScreen(id){
   } else if(id==='town'){
     const goldEl = document.getElementById('town-gold-display');
     if(goldEl && G) goldEl.textContent = G.gold + 'g';
+    if(typeof _startTown==='function') _startTown();
   }
   if(id !== 'town' && typeof stopTownEngine === 'function') stopTownEngine();
 }
