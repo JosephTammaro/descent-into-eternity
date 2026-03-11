@@ -467,11 +467,18 @@ function useReaction(skillId){
   // Apply reaction effect (sets sx flags that doEnemyAttack reads)
   doSkillEffect(sk.effect, sk);
   // If reaction killed the enemy (e.g. retaliation/beast counter), cancel the pending attack
-  // and restore the UI — onEnemyDied already ran and showed nextEnemyBtn
   if(!G||!G.currentEnemy||G.currentEnemy.hp<=0){
     pendingAttackCallback=null;
     window._skipCallback=null;
-    // Make sure nextEnemyBtn is visible and endTurnBtn is hidden
+    // Multi-enemy room: other enemies may still need to attack — let the queue continue
+    const stillAlive=G&&G.currentEnemies&&G.currentEnemies.some(e=>!e.dead&&e.hp>0);
+    if(stillAlive){
+      // afterEnemyActs will drain _enemyAttackQueue, then call setPlayerTurn(true) which
+      // properly resets actionUsed/bonusUsed so the player can act afterward
+      afterEnemyActs();
+      return;
+    }
+    // Room is clear — show next-enemy button
     const neb=document.getElementById('nextEnemyBtn');
     const etb=document.getElementById('endTurnBtn');
     if(neb&&neb.style.display==='none'){neb.style.display='block';}

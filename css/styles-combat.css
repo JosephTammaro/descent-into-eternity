@@ -171,7 +171,7 @@
   border:1px solid rgba(60,50,40,0.3);
   background:rgba(0,0,0,0.4);
   transition:border-color 0.2s,box-shadow 0.2s;
-  min-width:90px;position:relative;
+  min-width:110px;position:relative;
 }
 .enemy-card:hover{ border-color:rgba(200,168,75,0.3); box-shadow:0 0 8px rgba(200,168,75,0.1); }
 .enemy-card.targeted{
@@ -194,7 +194,7 @@
 .enemy-card-name{
   font-family:'Press Start 2P',monospace;font-size:7px;
   color:var(--parchment);text-align:center;line-height:1.4;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76px;
+  white-space:normal;max-width:100%;
 }
 .enemy-card-level{
   font-family:'Press Start 2P',monospace;font-size:5px;

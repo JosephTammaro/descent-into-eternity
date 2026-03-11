@@ -294,6 +294,12 @@ function onEnemyDied(){
       delete G._rareEventFlags.unstableBuff;
       log('📦 The Stranger\'s gift fades...','c');
     }
+    // Rare Event: Temp ATK Bonus (Vexara's Mirror) — remove after boss (zone-scoped)
+    if(G._rareEventFlags.tempAtkBonus&&G._rareEventFlags.tempAtkBonus.zoneIdx===G.zoneIdx){
+      removeOffensiveStat(G,G._rareEventFlags.tempAtkBonus.value);
+      delete G._rareEventFlags.tempAtkBonus;
+      log('The crimson weapon shatters.','c');
+    }
     const defeatedEnemy = G.currentEnemy;
     G.currentEnemy=null;
     G._bossSequenceActive = _firstClear; // only suppress level-up screens on first clear

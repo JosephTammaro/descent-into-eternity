@@ -165,6 +165,23 @@ function setPlayerTurn(isPlayer){
 
 function handleNextEnemy(){
   if(!G) return;
+  // Rare Event: fight skip — consume remaining skips before any spawn logic
+  if((G._rareFightSkips||0)>0){
+    G._rareFightSkips--;
+    if(!G._rareFightSkips) delete G._rareFightSkips;
+    log('You slip past — encounter bypassed.','s');
+    if(typeof renderAll==='function') renderAll();
+    if(typeof updateCampBtn==='function') updateCampBtn();
+    const neb=document.getElementById('nextEnemyBtn');
+    const etb=document.getElementById('endTurnBtn');
+    if(neb){
+      const remaining=Math.max(0,G.dungeonGoal-G.dungeonFights);
+      neb.textContent=G.campUnlocked||remaining===0?'⚔ NEXT ENEMY ▶':'⚔ NEXT ENEMY ('+(G.dungeonGoal-G.dungeonFights)+' to camp)';
+      neb.style.display='block';
+    }
+    if(etb) etb.style.display='none';
+    return;
+  }
   // Zone transition wipe — dark edge flash before new enemy
   const _wipeStage=document.getElementById('battleStage');
   if(_wipeStage){_wipeStage.classList.remove('zone-scene-wipe');void _wipeStage.offsetWidth;_wipeStage.classList.add('zone-scene-wipe');setTimeout(()=>_wipeStage.classList.remove('zone-scene-wipe'),1100);}
@@ -235,6 +252,9 @@ function showRareEvent(ev){
       }
       // Update HUD
       if(typeof renderHUD==='function') renderHUD();
+      // Update campfire button — rare events may modify dungeonFights or unlock campfire
+      if(typeof updateCampBtn==='function') updateCampBtn();
+      if(G._campReached&&typeof flashCampBtn==='function'){flashCampBtn();G._campReached=false;}
     };
     choicesDiv.appendChild(btn);
   });
@@ -243,6 +263,23 @@ function showRareEvent(ev){
 function closeRareEvent(){
   const overlay=document.getElementById('rareEventOverlay');
   if(overlay) overlay.style.display='none';
+  // Rare Event: fight skip — show Next Enemy button without spawning
+  if(G&&(G._rareFightSkips||0)>0){
+    G._rareFightSkips--;
+    if(!G._rareFightSkips) delete G._rareFightSkips;
+    log('You slip past — encounter bypassed.','s');
+    if(typeof renderAll==='function') renderAll();
+    if(typeof updateCampBtn==='function') updateCampBtn();
+    const neb=document.getElementById('nextEnemyBtn');
+    const etb=document.getElementById('endTurnBtn');
+    if(neb){
+      const remaining=Math.max(0,G.dungeonGoal-G.dungeonFights);
+      neb.textContent=G.campUnlocked||remaining===0?'⚔ NEXT ENEMY ▶':'⚔ NEXT ENEMY ('+(G.dungeonGoal-G.dungeonFights)+' to camp)';
+      neb.style.display='block';
+    }
+    if(etb) etb.style.display='none';
+    return;
+  }
   // Continue to spawn the enemy
   if(G&&G._inBranch) spawnBranchEnemy();
   else spawnEnemy();
@@ -597,6 +634,10 @@ function spawnEnemy(){
     // Weaken enemies -10% HP
     for(const en of G.currentEnemies){en.hp=Math.floor(en.hp*0.90);en.maxHp=en.hp;}
   }
+  // Final Horn: enemies start at -15% HP this zone
+  if(finalHornActive){
+    for(const en of G.currentEnemies){en.hp=Math.floor(en.hp*0.85);en.maxHp=en.hp;}
+  }
   // Frozen Soldier companion
   if(ref.frozenSoldier&&ref.frozenSoldier.zoneIdx===G.zoneIdx&&ref.frozenSoldier.hp>0){
     log('💀 Frozen Soldier stands ready! ('+ref.frozenSoldier.hp+' HP)','s');
@@ -772,7 +813,7 @@ function renderEnemyArea(){
     spriteCanvas.className='enemy-card-sprite';
     const spriteEl = document.createElement('div');
     const spriteData = (e.isBoss||e._usesBossSprite) ? BOSS_SPRITES[e.sprite] : ENEMY_SPRITES[e.sprite];
-    if(spriteData) renderSprite(spriteData, 7, spriteEl);
+    if(spriteData) renderSprite(spriteData, 10, spriteEl);
     spriteEl.style.filter=`drop-shadow(0 0 3px ${e.color||'#888'})`;
     spriteCanvas.appendChild(spriteEl);
 

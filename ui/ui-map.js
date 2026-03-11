@@ -136,6 +136,7 @@ function travelToZone(zoneIdx){
   // they are checked and deleted below after stat restoration (lines 2519-2520)
   delete ref.lastCampfireWeaken;
   delete ref.enemyFirstStrike;
+  delete G._rareFightSkips; // Clear any pending fight skips on zone transition
   // Remove temp ATK bonus from previous zone
   if(ref.tempAtkBonus && ref.tempAtkBonus.zoneIdx!==zoneIdx){
     removeOffensiveStat(G,ref.tempAtkBonus.value);

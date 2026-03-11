@@ -414,6 +414,7 @@ const RARE_EVENTS = [
    choices:[
      {text:'⏩ Skip ahead (advance 2 fights toward campfire)',outcome:(g)=>{
        g.dungeonFights=(g.dungeonFights||0)+2;
+       g._rareFightSkips=(g._rareFightSkips||0)+2;
        if(!g.campUnlocked&&g.dungeonFights>=g.dungeonGoal){
          g.campUnlocked=true; g._campReached=true;
          return '✓ The world blurs. You skip ahead — campfire is now unlocked! (Lost the gold and XP from those fights.)';
@@ -618,6 +619,7 @@ const RARE_EVENTS = [
      }},
      {text:'Seal the crack (skip next fight)',outcome:(g)=>{
        g.dungeonFights=(g.dungeonFights||0)+1;
+       g._rareFightSkips=(g._rareFightSkips||0)+1;
        if(!g.campUnlocked&&g.dungeonFights>=g.dungeonGoal){g.campUnlocked=true;g._campReached=true;}
        return '✓ The water recedes. A dry passage revealed — you bypass the next encounter. The Underdark rewards caution.';
      }},
