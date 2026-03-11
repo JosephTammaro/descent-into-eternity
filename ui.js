@@ -56,6 +56,7 @@ function addCondition(cond,turns=2){
 function removeCondition(cond){
   G.conditions=G.conditions.filter(c=>c!==cond);
   if(G.conditionTurns)delete G.conditionTurns[cond];
+  if(typeof AUDIO!=='undefined'&&AUDIO.sfx.conditionExpire) AUDIO.sfx.conditionExpire();
 }
 function addConditionEnemy(name,turns){if(!G.currentEnemy)return;if(!G.currentEnemy.conditions)G.currentEnemy.conditions=[];if(G.currentEnemy.conditions.find(c=>c.name===name))return;G.currentEnemy.conditions.push({name,turns});}
 // AoE variant — applies condition to a specific enemy object
@@ -76,7 +77,24 @@ function toggleAudioPanel(){
   if(btn)btn.style.borderColor=_audioPanelOpen?'var(--gold)':'';
 }
 
-// Close panel when clicking outside
+let _townAudioPanelOpen=false;
+function toggleTownAudioPanel(){
+  _townAudioPanelOpen=!_townAudioPanelOpen;
+  const panel=document.getElementById('townAudioPanel');
+  const btn=document.getElementById('townAudioToggleBtn');
+  if(panel)panel.classList.toggle('open',_townAudioPanelOpen);
+  if(btn)btn.style.borderColor=_townAudioPanelOpen?'var(--gold)':'';
+  if(_townAudioPanelOpen){
+    const ms=document.getElementById('musicSlider');
+    const ss=document.getElementById('sfxSlider');
+    const tms=document.getElementById('townMusicSlider');
+    const tss=document.getElementById('townSfxSlider');
+    if(ms&&tms)tms.value=ms.value;
+    if(ss&&tss)tss.value=ss.value;
+  }
+}
+
+// Close panels when clicking outside
 document.addEventListener('click',function(e){
   if(_audioPanelOpen){
     const wrap=document.getElementById('audioPanelWrap');
@@ -88,14 +106,24 @@ document.addEventListener('click',function(e){
       if(btn)btn.style.borderColor='';
     }
   }
+  if(_townAudioPanelOpen){
+    const wrap=document.getElementById('townAudioPanelWrap');
+    if(wrap&&!wrap.contains(e.target)){
+      _townAudioPanelOpen=false;
+      const panel=document.getElementById('townAudioPanel');
+      if(panel)panel.classList.remove('open');
+      const btn=document.getElementById('townAudioToggleBtn');
+      if(btn)btn.style.borderColor='';
+    }
+  }
 });
 
 function onMusicVol(v){
   const vol=Number(v)/100;
   AUDIO.setMusicVol(_musicMuted?0:vol);
   // Sync all music vol elements
-  ['musicVolNum','titleMusicVolNum'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=v;});
-  ['musicSlider','titleMusicSlider'].forEach(id=>{const el=document.getElementById(id);if(el&&el.value!=v)el.value=v;});
+  ['musicVolNum','titleMusicVolNum','townMusicVolNum'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  ['musicSlider','titleMusicSlider','townMusicSlider'].forEach(id=>{const el=document.getElementById(id);if(el&&el.value!=v)el.value=v;});
   _updateAudioIcon();
 }
 
@@ -103,8 +131,8 @@ function onSfxVol(v){
   const vol=Number(v)/100;
   AUDIO.setSfxVol(_sfxMuted?0:vol);
   // Sync all sfx vol elements
-  ['sfxVolNum','titleSfxVolNum'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=v;});
-  ['sfxSlider','titleSfxSlider'].forEach(id=>{const el=document.getElementById(id);if(el&&el.value!=v)el.value=v;});
+  ['sfxVolNum','titleSfxVolNum','townSfxVolNum'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  ['sfxSlider','titleSfxSlider','townSfxSlider'].forEach(id=>{const el=document.getElementById(id);if(el&&el.value!=v)el.value=v;});
   _updateAudioIcon();
 }
 
@@ -118,6 +146,11 @@ function updateTitleAudioBtns(){
   const ms2=document.getElementById('muteSfxBtn');
   if(mm2)mm2.classList.toggle('active',_musicMuted);
   if(ms2)ms2.classList.toggle('active',_sfxMuted);
+  // And town mute buttons
+  const mm3=document.getElementById('townMuteMusicBtn');
+  const ms3=document.getElementById('townMuteSfxBtn');
+  if(mm3)mm3.classList.toggle('active',_musicMuted);
+  if(ms3)ms3.classList.toggle('active',_sfxMuted);
 }
 function toggleMuteMusic(){
   _musicMuted=!_musicMuted;
@@ -147,12 +180,8 @@ function toggleMuteSfx(){
 }
 
 function _updateAudioIcon(){
-  const btn=document.getElementById('audioToggleBtn');
-  if(!btn)return;
-  if(_musicMuted&&_sfxMuted) btn.textContent='🔇';
-  else if(_musicMuted) btn.textContent='🎵';
-  else if(_sfxMuted) btn.textContent='💥';
-  else btn.textContent='🔊';
+  const icon=_musicMuted&&_sfxMuted?'🔇':_musicMuted?'🎵':_sfxMuted?'💥':'🔊';
+  ['audioToggleBtn','townAudioToggleBtn'].forEach(id=>{const b=document.getElementById(id);if(b)b.textContent=icon;});
 }
 
 // Keep old toggleAudio as no-op for any lingering refs

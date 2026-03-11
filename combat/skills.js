@@ -18,14 +18,14 @@ function useSkill(skillId){
     log('🐾 Claw Strike only available in Wild Shape!','s');return;
   }
   // Check locks
-  if(sk.type==='action'&&G.actionUsed){log('Action already used this turn!','s');return;}
-  if(sk.type==='bonus'&&G.bonusUsed){log('Bonus action already used!','s');return;}
-  if(sk.type==='reaction'&&G.reactionUsed){log('Reaction already used!','s');return;}
+  if(sk.type==='action'&&G.actionUsed){AUDIO.sfx.error&&AUDIO.sfx.error();log('Action already used this turn!','s');return;}
+  if(sk.type==='bonus'&&G.bonusUsed){AUDIO.sfx.error&&AUDIO.sfx.error();log('Bonus action already used!','s');return;}
+  if(sk.type==='reaction'&&G.reactionUsed){AUDIO.sfx.error&&AUDIO.sfx.error();log('Reaction already used!','s');return;}
   // Charge check for bonus/reaction skills
   if(sk.charges&&(G.skillCharges[sk.id]||0)<=0){
     // Battle Master Relentless: once per rest, Maneuver Strike or Rally can be used with 0 charges
     if(!(G.subclassId==='battle_master'&&G._battleMasterRelentless&&(sk.id==='maneuver_strike'||sk.id==='rally'))){
-      log(sk.name+' has no charges left — rest at campfire to restore!','s');return;
+      AUDIO.sfx.error&&AUDIO.sfx.error();log(sk.name+' has no charges left — rest at campfire to restore!','s');return;
     }
   }
   const now=Date.now();

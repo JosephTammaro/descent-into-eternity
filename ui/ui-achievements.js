@@ -190,6 +190,14 @@ function codexHTML(){
       ${got?'<span class="ach-check">✓</span>':''}
     </div>`;
   }).join('');
+  // Zone lore entries — all main zones up to and including current
+  const loreSections=(typeof ZONES!=='undefined'?ZONES:[]).filter((_,i)=>i<=G.zoneIdx).map(z=>{
+    return`<div style="margin-bottom:18px;padding:12px 14px;background:#0a0008;border:1px solid rgba(180,140,60,0.2);border-radius:4px;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gold);margin-bottom:8px;letter-spacing:1px;">${z.num ? 'ZONE '+z.num+' — ' : ''}${z.name.toUpperCase()}</div>
+      <div style="font-size:11px;color:#b8a880;line-height:1.75;font-style:italic;">${z.story&&z.story.text ? z.story.text : ''}</div>
+    </div>`;
+  }).join('');
+
   return`<div>
     <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gold);margin-bottom:12px;text-align:center;">
       CODEX — ${done}/${total} (${pct}%)
@@ -198,6 +206,10 @@ function codexHTML(){
       <div style="height:100%;width:${pct}%;background:var(--gold);border-radius:3px;transition:width .4s;"></div>
     </div>
     <div class="ach-grid">${rows}</div>
+    ${loreSections?`<div style="margin-top:22px;padding-top:16px;border-top:1px solid var(--border);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gold);margin-bottom:14px;text-align:center;letter-spacing:2px;">ZONE LORE</div>
+      ${loreSections}
+    </div>`:''}
   </div>`;
 }
 
@@ -316,7 +328,7 @@ function grantObjectiveReward(obj){
   G.totalObjectives=(G.totalObjectives||0)+1;
   if(G.classId==='ranger') G._lifetimeObjectivesRanger=(G._lifetimeObjectivesRanger||0)+1;
   log('★ OBJECTIVE COMPLETE: '+def.title+'! +'+def.reward.gold+'g'+(def.reward.item?' + bonus item':''),'l');
-  AUDIO.sfx.levelup&&AUDIO.sfx.levelup();
+  AUDIO.sfx.levelUp&&AUDIO.sfx.levelUp();
   checkAchievements();
   renderAll();
 }

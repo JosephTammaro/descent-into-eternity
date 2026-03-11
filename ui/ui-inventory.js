@@ -159,6 +159,7 @@ function openItemModal(idx){
       <div class="ib-rar" style="color:${rc}">${item.rarity.toUpperCase()} ${item.type}</div>
       ${Object.entries(item.stats).filter(([k,v])=>v).map(([k,v])=>`<div class="ib-stat">${v>0?'+':''}${v} ${statLabel(k)}</div>`).join('')}
       <div style="font-size:13px;color:var(--dim);margin-top:4px">Sell: 🪙${Math.floor(item.value*.5*(item.qty||1))}</div>
+      ${item.desc?`<div style="font-style:italic;color:${rc};opacity:0.85;font-size:11px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);line-height:1.6;">${item.desc}</div>`:''}
     </div>`;
   const btns=[];
   if(item.slot)btns.push(`<button class="ib-btn ib-equip" ${G.currentEnemy&&G.roundNum>0?'disabled title="Cannot equip mid-combat"':''} onclick="equipItem()">EQUIP</button>`);
@@ -190,12 +191,14 @@ function _showItemTooltip(e, item){
   const rarLabel={common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic ✦',legendary:'★ Legendary'}[item.rarity]||item.rarity;
   const statsHTML=Object.entries(item.stats).filter(([k,v])=>v).map(([k,v])=>`<div class="inv-tt-stat">${v>0?'+':''}${v} ${statLabel(k)}</div>`).join('');
   const slotLabel=item.slot?`<div class="inv-tt-sell" style="color:var(--dim);border:none;padding:0;margin-bottom:3px;">${item.slot.toUpperCase()} slot</div>`:'';
+  const descHTML=item.desc?`<div style="font-style:italic;color:${rc};opacity:0.85;font-size:10px;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.08);line-height:1.5;">${item.desc}</div>`:'';
   tt.innerHTML=`
     <span class="inv-tt-name" style="color:${rc}">${item.name}</span>
     <div class="inv-tt-rar" style="color:${rc}">${rarLabel} ${item.type}</div>
     ${slotLabel}
     ${statsHTML||'<div class="inv-tt-stat" style="color:var(--dim)">No stat bonuses</div>'}
     <div class="inv-tt-sell">Sell: 🪙${Math.floor((item.value||0)*.5*(item.qty||1))}</div>
+    ${descHTML}
   `;
   const x=Math.min(e.clientX+14, window.innerWidth-240);
   const y=Math.min(e.clientY-10, window.innerHeight-220);

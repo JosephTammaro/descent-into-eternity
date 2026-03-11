@@ -90,6 +90,29 @@
 
 <!-- ELDERFEN TOWN HUB -->
 <div id="screen-town" class="screen">
+  <div class="audio-panel-wrap" id="townAudioPanelWrap" style="position:fixed;top:14px;right:120px;z-index:500;">
+    <button id="townAudioToggleBtn" onclick="toggleTownAudioPanel()"
+      style="font-family:'Press Start 2P',monospace;font-size:8px;background:transparent;border:2px solid var(--border);color:var(--dim);padding:8px 14px;cursor:pointer;letter-spacing:1px;transition:all 0.1s;"
+      onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+      onmouseout="if(!document.getElementById('townAudioPanel').classList.contains('open')){this.style.borderColor='var(--border)';this.style.color='var(--dim)'}">♪</button>
+    <div class="audio-panel" id="townAudioPanel">
+      <div class="audio-panel-title">⚙ AUDIO SETTINGS</div>
+      <div class="audio-vol-row">
+        <span class="audio-vol-label">MUSIC</span>
+        <input class="audio-slider" type="range" min="0" max="100" value="25" id="townMusicSlider" oninput="onMusicVol(this.value)">
+        <span class="audio-vol-num" id="townMusicVolNum">25</span>
+      </div>
+      <div class="audio-vol-row">
+        <span class="audio-vol-label">SFX</span>
+        <input class="audio-slider" type="range" min="0" max="100" value="25" id="townSfxSlider" oninput="onSfxVol(this.value)">
+        <span class="audio-vol-num" id="townSfxVolNum">25</span>
+      </div>
+      <div class="audio-mute-row">
+        <button class="audio-mute-btn" id="townMuteMusicBtn" onclick="toggleMuteMusic()">♪ MUSIC</button>
+        <button class="audio-mute-btn" id="townMuteSfxBtn" onclick="toggleMuteSfx()">&#x266B; SFX</button>
+      </div>
+    </div>
+  </div>
   <button id="townPauseBtn" onclick="togglePause()" style="position:fixed;top:14px;right:14px;z-index:500;font-family:'Press Start 2P',monospace;font-size:8px;background:transparent;border:2px solid var(--border);color:var(--dim);padding:8px 14px;cursor:pointer;letter-spacing:1px;transition:all 0.1s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'">⏸ PAUSE</button>
 
   <!-- Persistent Loadout HUD -->
