@@ -18,29 +18,19 @@ function enterZone(){
   renderModifierHud();
   autoSave();
 
-  // ── Dungeon tutorial — first-ever Zone I entry ───────────
-  if(G.zoneIdx === 0){
-    let tutorialShown = false;
-    if(typeof loadSlotData==='function' && typeof activeSaveSlot!=='undefined' && activeSaveSlot){
-      const sd = loadSlotData(activeSaveSlot);
-      if(sd && sd._dungeonTutorialShown) tutorialShown = true;
+  // ── Dungeon tutorial — once per save slot (persisted via _dungeonTutorialShown) ──
+  if(G.zoneIdx === 0 && !G._tutorialDone){
+    // Check save slot — if already shown on this slot, skip forever
+    let _slotTutDone=false;
+    if(typeof loadSlotData==='function'&&typeof activeSaveSlot!=='undefined'&&activeSaveSlot){
+      const _sd=loadSlotData(activeSaveSlot);
+      if(_sd&&_sd._dungeonTutorialShown) _slotTutDone=true;
     }
-    if(!tutorialShown){
-      // Pre-spawn the Training Dummy so it is visible during the tour.
-      // G._pauseForTutorial prevents setPlayerTurn() from firing inside spawnEnemy().
-      // The choice overlay / tour will call setPlayerTurn(true) when ready.
-      G._isTutorialFight  = true;
-      G._pauseForTutorial = true;
-      spawnEnemy();
-      // Pre-populate the battle log with sample lines so the player can see it working.
-      if(typeof log==='function'){
-        log('⚔ The Training Dummy lumbers into position...','s');
-        log('📜 Battle events appear here — damage, conditions, skills used.','c');
-      }
-      if(typeof showDungeonTutorialChoice === 'function'){
-        showDungeonTutorialChoice();
-        return;
-      }
+    if(!_slotTutDone && typeof showDungeonTutorialChoice === 'function'){
+      showDungeonTutorialChoice();
+      return; // choice overlay controls what spawns next
+    } else {
+      G._tutorialDone=true; // mark on G so we don't re-check each zone entry
     }
   }
 
@@ -363,6 +353,7 @@ function renderAll(){
   renderGraceStrip();
   renderStatusPanel();
   renderModifierHud();
+  if(typeof renderRelicHud==='function') renderRelicHud();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -714,7 +705,28 @@ function renderSkillButtons(){
       const keyNum=globalSkillIdx+1;
       const keybindBadge=keyNum<=9?`<span class="sk-keybind">${keyNum}</span>`:'';
       globalSkillIdx++;
-      return `<button class="skill-btn type-${type}${isNew?' sk-new':''}" data-skill-key="${keyNum}" ${disabled?'disabled':''} onclick="if(G._newSkills){G._newSkills=G._newSkills.filter(x=>x!=='${sk.id}');this.classList.remove('sk-new');}useSkill('${sk.id}')" title="${sk.name}: ${sk.desc} [${keyNum}]">
+      // ── Custom synergy tooltip ─────────────────────────────
+      const _synergies=_getSkillSynergies(sk);
+      const _rc={common:'#888',uncommon:'var(--green2)',rare:'#4a9eda',epic:'#8b44ad',legendary:'var(--gold)'};
+      const _synergyHtml=_synergies.length
+        ?'<div class="skt-synergy-label">PROCS:</div>'+_synergies.map(r=>`<div class="skt-synergy-line" style="color:${_rc[r.rarity]||'#888'}">${iconHTML(r.icon)} ${r.name}</div>`).join('')
+        :'';
+      const _upHint=(sk.upgrade&&!(G.upgradedSkills&&G.upgradedSkills[sk.id]))
+        ?'<div class="skt-upgrade-hint">▲ Boss reward: upgradeable</div>':'';
+      const _costMeta=[
+        sk.cd?`<span class="skt-tag">CD ${sk.cd}t</span>`:'',
+        sk.cost?`<span class="skt-tag">${sk.cost} ${CLASSES[G.classId]&&CLASSES[G.classId].res||''}</span>`:'',
+        sk.charges?`<span class="skt-tag">${sk.charges} charges</span>`:'',
+        sk.slotCost?`<span class="skt-tag">L${sk.slotCost} slot</span>`:'',
+      ].filter(Boolean).join('');
+      const _tooltipHtml=`<div class="sk-tooltip">
+        <div class="skt-name">${sk.name}</div>
+        <div class="skt-desc">${sk.desc}</div>
+        ${_costMeta?'<div class="skt-meta">'+_costMeta+'</div>':''}
+        ${_synergyHtml}
+        ${_upHint}
+      </div>`;
+      return `<div class="sk-wrap"><button class="skill-btn type-${type}${isNew?' sk-new':''}" data-skill-key="${keyNum}" ${disabled?'disabled':''} onclick="if(G._newSkills){G._newSkills=G._newSkills.filter(x=>x!=='${sk.id}');this.classList.remove('sk-new');}useSkill('${sk.id}')">
         ${cdBadge}
         ${keybindBadge}
         <span class="sk-icon"${sk.iconColor?` style="color:${sk.iconColor}"`:''}}>${iconHTML(sk.icon)}</span>
@@ -722,7 +734,7 @@ function renderSkillButtons(){
         ${dualBadge}
         ${pipHtml}
         ${costLabel?`<span class="sk-cost">${costLabel}</span>`:''}
-      </button>`;
+      </button>${_tooltipHtml}</div>`;
     }).join('');
   });
 
@@ -751,6 +763,26 @@ function renderSkillButtons(){
       if(sk&&sk.ultimateOnly&&G.ultimateUnlocked&&!G._ultimateUsed&&cdLeft<=0){
         btn.classList.add('ultimate-ready');
       }
+    });
+  }
+
+  // ── Tooltip positioning (position:fixed needs explicit coords) ──
+  // Use .sk-wrap (not .skill-btn) so tooltips work on disabled buttons too
+  {
+    const allWraps=Array.from(document.querySelectorAll('.sk-wrap'));
+    allWraps.forEach(wrap=>{
+      const tip=wrap.querySelector('.sk-tooltip');
+      if(!tip) return;
+      wrap.addEventListener('mouseenter',()=>{
+        const btn=wrap.querySelector('.skill-btn')||wrap;
+        const r=btn.getBoundingClientRect();
+        const tipW=tip.offsetWidth||200;
+        let left=r.left+r.width/2-tipW/2;
+        left=Math.max(4,Math.min(left,window.innerWidth-tipW-4));
+        tip.style.left=left+'px';
+        tip.style.bottom=(window.innerHeight-r.top+6)+'px';
+        tip.style.top='auto';
+      });
     });
   }
 
@@ -1007,6 +1039,56 @@ function renderZoneBar(){
   const pct=Math.min(100,G.zoneKills/z.kills*100);
   document.getElementById('zoneFill').style.width=pct+'%';
   document.getElementById('zoneKillsTxt').textContent=Math.min(G.zoneKills,z.kills)+'/'+z.kills;
+}
+
+// ══════════════════════════════════════════════════════════
+//  RELIC HUD
+// ══════════════════════════════════════════════════════════
+function renderRelicHud(){
+  const el=document.getElementById('relicHud');
+  if(!el||!G) return;
+  const relics=G.relics||[];
+  if(!relics.length){el.style.display='none';return;}
+  el.style.display='flex';
+  const rc={common:'#888',uncommon:'var(--green2)',rare:'#4a9eda',epic:'#8b44ad',legendary:'var(--gold)'};
+  el.innerHTML=relics.map(r=>
+    `<div class="relic-pip" style="border-color:${rc[r.rarity]||'#888'}40;">
+      <span class="rp-icon" style="color:${rc[r.rarity]||'#888'};">${typeof iconHTML==='function'?iconHTML(r.icon):''}</span>
+      <div class="rp-tooltip">
+        <div class="rp-tt-name" style="color:${rc[r.rarity]||'#888'};">${r.name}</div>
+        <div class="rp-tt-rarity" style="color:${rc[r.rarity]||'#888'};">${r.rarity.toUpperCase()}</div>
+        <div class="rp-tt-desc">${r.desc}</div>
+      </div>
+    </div>`
+  ).join('');
+  // Position fixed tooltips on hover (escape overflow:hidden ancestors)
+  el.querySelectorAll('.relic-pip').forEach(pip=>{
+    const tip=pip.querySelector('.rp-tooltip');
+    if(!tip) return;
+    pip.addEventListener('mouseenter',()=>{
+      const r=pip.getBoundingClientRect();
+      const tipW=tip.offsetWidth||180;
+      let left=r.left+r.width/2-tipW/2;
+      left=Math.max(4,Math.min(left,window.innerWidth-tipW-4));
+      tip.style.left=left+'px';
+      tip.style.bottom=(window.innerHeight-r.top+6)+'px';
+      tip.style.top='auto';
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  SKILL SYNERGY HELPER
+// ══════════════════════════════════════════════════════════
+function _getSkillSynergies(sk){
+  if(!G||!G.relics||!G.relics.length) return [];
+  return G.relics.filter(r=>{
+    if(r.trigger==='on_crit')        return sk.type==='action';
+    if(r.trigger==='on_bonus_used')  return sk.type==='bonus';
+    if(r.trigger==='on_action_used') return sk.type==='action';
+    if(r.trigger==='on_kill')        return sk.type==='action';
+    return false;
+  });
 }
 
 function renderSpellSlots(){

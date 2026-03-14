@@ -719,3 +719,691 @@ function renderRunTracker(){
   el.innerHTML=html;
 }
 
+// ══════════════════════════════════════════════════════════
+//  RELIC ENGINE
+// ══════════════════════════════════════════════════════════
+
+// hasRelic(id) — check if the player currently holds a relic by id
+function hasRelic(id){ return !!(G && G.relics && G.relics.some(r=>r.id===id)); }
+
+// triggerRelic(type, context) — fire all relics whose trigger matches type
+function triggerRelic(type, context){
+  if(!G || !G.relics || !G.relics.length) return;
+  let changed = false;
+  for(const r of G.relics){
+    if(r.trigger !== type) continue;
+    switch(r.effect){
+
+      case 'heal_on_crit':
+        if(typeof heal==='function'){ heal(r.val||3, r.name); changed=true; }
+        break;
+
+      case 'kill_atk_bonus':
+        G._relicKillAtkBonus = (G._relicKillAtkBonus||0) + (r.val||1);
+        spawnFloater('+'+(r.val||1)+' ATK','s',false);
+        log(r.name+': ATK +'+(r.val||1)+' this fight!','s');
+        changed=true;
+        break;
+
+      case 'counter_dmg':
+        // Defer counter damage — dealDamageToPlayer is still in progress;
+        // calling dealToEnemy here could kill the enemy mid-attack (state corruption)
+        if(G.currentEnemy && G.currentEnemy.hp>0 && typeof dealToEnemy==='function'){
+          const _counterAmt=r.val||4;
+          const _counterName=r.name;
+          setTimeout(()=>{
+            if(G&&G.currentEnemy&&G.currentEnemy.hp>0&&typeof dealToEnemy==='function')
+              dealToEnemy(_counterAmt, false, _counterName);
+          },0);
+          changed=true;
+        }
+        break;
+
+      case 'stormcaller_charge':
+        G._relicStormcallerBonus = (G._relicStormcallerBonus||0) + (r.val||5);
+        log(r.name+': next attack +'+(r.val||5)+' damage!','s');
+        changed=true;
+        break;
+
+      case 'regen_hp':
+        if(typeof heal==='function'){ heal(r.val||2, r.name); changed=true; }
+        break;
+
+      case 'gain_resource':
+        if(G.resMax && G.res<G.resMax){ G.res=Math.min(G.resMax,G.res+(r.val||1)); spawnFloater('+'+(r.val||1)+' res','s',false); changed=true; }
+        break;
+
+      case 'gold_on_kill':
+        G.gold=(G.gold||0)+(r.val||5); G.totalGold=(G.totalGold||0)+(r.val||5);
+        spawnFloater('+'+(r.val||5)+' gp','l',false);
+        changed=true;
+        break;
+
+      case 'crit_burn':
+        if(typeof addConditionEnemy==='function'){ addConditionEnemy('Burning', r.turns||2); changed=true; }
+        break;
+
+      case 'splash_dmg': {
+        // Echo Blade — direct HP subtract to avoid death-chain recursion
+        const _deadEnemy = context && context.enemy;
+        const _splashTarget = (G.currentEnemies||[]).find(e=>!e.dead&&e.hp>0&&e!==_deadEnemy);
+        if(_splashTarget){
+          const _splashAmt = Math.max(1, Math.ceil((G.atk||1)*(r.pct||0.5)));
+          _splashTarget.hp = Math.max(1, _splashTarget.hp - _splashAmt); // cannot kill
+          spawnFloater(_splashAmt,'dmg',false);
+          log(r.name+': '+_splashAmt+' splash to '+_splashTarget.name+'!','s');
+          changed=true;
+        }
+        break;
+      }
+
+      case 'paincrest_stack':
+        if((G._relicPaincrestStacks||0) < 3){
+          G._relicPaincrestStacks = (G._relicPaincrestStacks||0) + 1;
+          spawnFloater('+3 ATK','s',false);
+          log(r.name+': ATK +3 stack (x'+(G._relicPaincrestStacks)+')','s');
+          changed=true;
+        }
+        break;
+
+      case 'refund_action_chance':
+        if(G.actionUsed && Math.random()<(r.pct||0.25)){
+          G.actionUsed=false;
+          spawnFloater('ACTION','s',false);
+          log(r.name+': momentum! Action restored.','s');
+          changed=true;
+        }
+        break;
+
+      case 'evasion_chance':
+        if(!G._relicEvasionActive && Math.random()<(r.pct||0.15)){
+          G._relicEvasionActive=true;
+          spawnFloater('DODGE','s',false);
+          log(r.name+': ready to dodge next hit!','s');
+          changed=true;
+        }
+        break;
+
+      case 'resource_on_crit':
+        if(G.resMax && G.res<G.resMax){ G.res=Math.min(G.resMax,G.res+(r.val||2)); spawnFloater('+'+(r.val||2)+' res','s',false); changed=true; }
+        break;
+
+      case 'pct_heal_on_kill':
+        if(typeof heal==='function'){
+          const _gh=Math.max(1,Math.ceil(G.maxHp*(r.pct||0.04)));
+          heal(_gh, r.name); changed=true;
+        }
+        break;
+
+      case 'crit_double_next':
+        if(!G._relicThirstingReady && !G._relicThirstingUsed){
+          G._relicThirstingReady=true;
+          spawnFloater('x2 NEXT','crit',false);
+          log(r.name+': next attack deals double damage!','s');
+          changed=true;
+        }
+        break;
+
+      case 'voidpiercer_count':
+        G._relicVoidpiercerCount=(G._relicVoidpiercerCount||0)+1;
+        if(G._relicVoidpiercerCount>=3){
+          G._relicVoidpiercerCount=0;
+          G.actionUsed=false;
+          spawnFloater('FREE ACTION','s',false);
+          log(r.name+': 3rd skill — action refunded!','s');
+          changed=true;
+        }
+        break;
+
+      case 'soulbrand_dmg_boost':
+        G._relicSoulbrandActive=true;
+        G._relicDmgMult=1+(r.pct||0.10);
+        G._relicSoulbrandTurns=2; // persists through next player turn (decremented in setPlayerTurn)
+        spawnFloater('+10% DMG','s',false);
+        log(r.name+': +10% damage until end of next turn!','s');
+        changed=true;
+        break;
+
+      case 'bone_flute_stun':
+        G._relicBoneFluteReady=true;
+        log(r.name+': next enemy will stumble in!','s');
+        changed=true;
+        break;
+
+      case 'raging_hp_drain_dmg':
+        if(G.raging && G.currentEnemy && G.currentEnemy.hp>0){
+          if(typeof _dev_godMode==='undefined'||!_dev_godMode) G.hp=Math.max(1,G.hp-2);
+          spawnFloater(2,'dmg',false);
+          if(typeof dealToEnemy==='function') dealToEnemy(6,false,r.name);
+          changed=true;
+        }
+        break;
+
+      case 'flat_dmg_reduction':
+        // Ironward is handled inline in dealDamageToPlayer — no triggerRelic call
+        break;
+
+      case 'refund_action_on_kill':
+        if(!G.actionUsed){
+          // Action already free (e.g. another relic refunded it) — skip silently
+        } else if(Math.random()<(r.pct||0.40)){
+          G.actionUsed=false;
+          spawnFloater('ACTION','s',false);
+          log(r.name+': action refunded!','s');
+          changed=true;
+        }
+        break;
+
+      case 'crit_echo_hit':
+        if(!G._relicVoidMirrorUsedThisTurn && G.currentEnemy && G.currentEnemy.hp>0 && typeof dealToEnemy==='function'){
+          G._relicVoidMirrorUsedThisTurn=true;
+          const _echoDmg = context&&context.dmg ? Math.ceil(context.dmg) : 1;
+          dealToEnemy(_echoDmg, false, r.name+' (echo)');
+          changed=true;
+        }
+        break;
+
+      case 'ashen_crown_refund':
+        if(!G._relicAshenCrownReady&&!G._relicAshenCrownUsed){
+          G._relicAshenCrownReady=true;
+          log(r.name+': first bonus action resource cost will be refunded!','s');
+          changed=true;
+        }
+        break;
+
+      case 'abyss_drain':
+        if(G.currentEnemy && G.currentEnemy.hp>0 && typeof dealToEnemy==='function'){
+          dealToEnemy(r.val||5, false, r.name);
+          if(typeof heal==='function') heal(r.val||5, r.name);
+          changed=true;
+        }
+        break;
+
+      // ── New class-specific effects ──
+
+      case 'arcane_lens_spellpower':
+        G._relicArcaneLensBonus = (G._relicArcaneLensBonus||0) + (r.val||2);
+        spawnFloater('+'+(r.val||2)+' SP','s',false);
+        log(r.name+': spell power +'+(r.val||2)+' this fight!','s');
+        changed=true;
+        break;
+
+      case 'restore_spell_slot':
+        if(G.spellSlots && G.spellSlotsMax && Math.random()<0.30){
+          if(G.spellSlots['1']<G.spellSlotsMax['1']){ G.spellSlots['1']++; spawnFloater('SLOT','s',false); log(r.name+': Level 1 spell slot restored!','s'); changed=true; }
+        }
+        break;
+
+      case 'devotion_heal':
+        if(typeof heal==='function'){ heal(r.val||4, r.name); changed=true; }
+        break;
+
+      case 'crit_poison_caster':
+        if(typeof addConditionEnemy==='function'){ addConditionEnemy('Poisoned', r.turns||2); changed=true; }
+        break;
+
+      case 'battle_scarab_def':
+        G._relicBattleScarabDef = (r.val||2);
+        G._relicBattleScarabTurns = 2;
+        spawnFloater('+2 DEF','s',false);
+        log(r.name+': +2 DEF until end of next turn!','s');
+        changed=true;
+        break;
+
+      case 'warlord_atk_surge':
+        G._relicWarlordAtkNext = (r.val||3);
+        log(r.name+': +3 ATK for the next fight!','s');
+        changed=true;
+        break;
+
+      case 'retaliation_stun':
+        if(G.currentEnemy && G.currentEnemy.hp>0 && Math.random()<(r.pct||0.20)){
+          if(!G.currentEnemy.conditions) G.currentEnemy.conditions=[];
+          if(!G.currentEnemy.conditions.find(c=>c.name==='Stunned'))
+            G.currentEnemy.conditions.push({name:'Stunned',turns:1});
+          spawnFloater('STUN','s',false);
+          log(r.name+': enemy stunned!','s');
+          changed=true;
+        }
+        break;
+
+      case 'shadow_fang_crit':
+        G._relicShadowFangCrit = 3;
+        log(r.name+': next attack has +3 crit range!','s');
+        changed=true;
+        break;
+
+      case 'quicksilver_bonus_refund':
+        if(G.bonusUsed && Math.random()<(r.pct||0.35)){
+          G.bonusUsed=false;
+          spawnFloater('BONUS','s',false);
+          log(r.name+': bonus action restored!','s');
+          changed=true;
+        }
+        break;
+
+      case 'nightrunner_evasion':
+        G._relicEvasionActive=true;
+        spawnFloater('DODGE','s',false);
+        log(r.name+': ready to dodge the next attack!','s');
+        changed=true;
+        break;
+
+      case 'radiant_heal_on_action':
+        if(typeof heal==='function'){ heal(r.val||3, r.name); changed=true; }
+        break;
+
+      case 'oath_brand_smite':
+        if(G.currentEnemy && G.currentEnemy.hp>0 && typeof dealToEnemy==='function'){
+          dealToEnemy(r.val||8, false, r.name);
+          changed=true;
+        }
+        break;
+
+      case 'verdant_regen':
+        if(typeof heal==='function'){ heal(r.val||3, r.name); changed=true; }
+        break;
+
+      case 'beastcaller_bleed':
+        if(G.currentEnemy && G.currentEnemy.hp>0 && Math.random()<0.25){
+          if(typeof addConditionEnemy==='function'){ addConditionEnemy('Bleeding', r.turns||2); changed=true; }
+        }
+        break;
+
+      case 'moonwell_resource':
+        if(G.resMax && G.res<G.resMax){
+          G.res=Math.min(G.resMax,G.res+(r.val||2));
+          spawnFloater('+'+(r.val||2)+' res','s',false);
+          log(r.name+': Nature\'s Charge restored!','s');
+          changed=true;
+        }
+        break;
+
+      case 'bloodrage_atk':
+        if(G.raging){
+          const _brStacks = (G._relicBloodrageStacks||0);
+          if(_brStacks < 5){
+            G._relicBloodrageStacks = _brStacks + 1;
+            spawnFloater('+2 ATK','s',false);
+            log(r.name+': rage fuels power! +'+(G._relicBloodrageStacks*2)+' ATK total.','s');
+            changed=true;
+          }
+        }
+        break;
+
+      case 'commanders_momentum':
+        if(G.classId==='fighter' && G.resMax && G.res<G.resMax){
+          G.res=Math.min(G.resMax,G.res+(r.val||1));
+          spawnFloater('+1 MOM','s',false);
+          log(r.name+': +1 Momentum!','s');
+          changed=true;
+        }
+        break;
+
+      case 'spell_eater_resource':
+        if(G.resMax && G.res<G.resMax){
+          G.res=Math.min(G.resMax,G.res+(r.val||3));
+          spawnFloater('+'+(r.val||3)+' res','s',false);
+          log(r.name+': pain fuels magic!','s');
+          changed=true;
+        } else if(G.spellSlots && G.spellSlotsMax){
+          // Wizard: try to restore a spell slot instead
+          if(G.spellSlots['1']<G.spellSlotsMax['1']){ G.spellSlots['1']++; spawnFloater('SLOT','s',false); changed=true; }
+        }
+        break;
+
+      case 'warmonger_heal_atk':
+        if(typeof heal==='function') heal(r.val||5, r.name);
+        G._relicWarlordAtkNext = Math.max(G._relicWarlordAtkNext||0, 2);
+        log(r.name+': healed and empowered for the next fight!','s');
+        changed=true;
+        break;
+
+      // ── Pool Equalizer relics ──
+
+      case 'prism_evasion':
+        if(!G._relicEvasionActive && Math.random()<(r.pct||0.15)){
+          G._relicEvasionActive=true;
+          spawnFloater('DODGE','s',false);
+          log(r.name+': ready to dodge next hit!','s');
+          changed=true;
+        }
+        break;
+
+      case 'crit_shadow_dmg':
+        if(G.currentEnemy && G.currentEnemy.hp>0 && typeof dealToEnemy==='function'){
+          dealToEnemy(r.val||4, false, r.name);
+          changed=true;
+        }
+        break;
+
+      case 'bonus_ignore_def':
+        G._relicIgnoreDefNext=true;
+        log(r.name+': next attack ignores DEF!','s');
+        changed=true;
+        break;
+
+      case 'ether_conduit_sp':
+        G._relicArcaneLensBonus = (G._relicArcaneLensBonus||0) + (r.val||3);
+        spawnFloater('+'+(r.val||3)+' SP','s',false);
+        log(r.name+': spell power +'+(r.val||3)+' this fight!','s');
+        changed=true;
+        break;
+
+      case 'per_turn_resource_chance':
+        if(G.resMax && G.res<G.resMax && Math.random()<(r.pct||0.20)){
+          G.res=Math.min(G.resMax,G.res+1);
+          spawnFloater('+1 res','s',false);
+          log(r.name+': resource restored!','s');
+          changed=true;
+        } else if(G.spellSlots && G.spellSlotsMax && Math.random()<(r.pct||0.20)){
+          if(G.spellSlots['1']<G.spellSlotsMax['1']){ G.spellSlots['1']++; spawnFloater('SLOT','s',false); changed=true; }
+        }
+        break;
+
+      case 'hit_weaken_enemy':
+        if(G.currentEnemy && G.currentEnemy.hp>0 && Math.random()<(r.pct||0.25)){
+          if(typeof addConditionEnemy==='function'){ addConditionEnemy('Weakened', r.turns||2); changed=true; }
+        }
+        break;
+
+      case 'low_hp_heal_on_action':
+        if(G.hp < G.maxHp*0.5 && typeof heal==='function'){
+          heal(r.val||2, r.name);
+          changed=true;
+        }
+        break;
+
+      case 'kill_hp_resource':
+        if(typeof heal==='function') heal(r.val||3, r.name);
+        if(G.resMax && G.res<G.resMax){ G.res=Math.min(G.resMax,G.res+1); spawnFloater('+1 res','s',false); }
+        changed=true;
+        break;
+
+      case 'astral_root_sp':
+        G._relicAstralRootBonus = (r.val||2);
+        log(r.name+': +2 spell power for the next fight!','s');
+        changed=true;
+        break;
+
+      case 'crit_poison_dex':
+        if(typeof addConditionEnemy==='function'){ addConditionEnemy('Poisoned', r.turns||2); changed=true; }
+        break;
+
+      case 'bonus_def_boost':
+        G._relicBattleScarabDef = (G._relicBattleScarabDef||0) + (r.val||3);
+        G._relicBattleScarabTurns = 2;
+        spawnFloater('+'+(r.val||3)+' DEF','s',false);
+        log(r.name+': +'+(r.val||3)+' DEF until end of next turn!','s');
+        changed=true;
+        break;
+
+      // passive effects handled inline (hasRelic checks) — no dispatch here
+      case 'passive_crit_range':
+      case 'passive_crit_range_caster':
+      case 'passive_expose':
+      case 'passive_execute':
+        break;
+    }
+  }
+  if(changed && typeof renderAll==='function') renderAll();
+}
+
+// ══════════════════════════════════════════════════════════
+//  BOSS REWARD SCREEN
+// ══════════════════════════════════════════════════════════
+
+let _bossRewardCallback = null;
+let _bossRewardRelicChoices = null;
+let _bossRewardGrace = null;
+
+function showBossReward(onDone){
+  if(!G || typeof RELICS==='undefined' || typeof CLASSES==='undefined') { if(onDone) onDone(); return; }
+  _bossRewardCallback = onDone;
+
+  // -- RELIC PANEL: 3 choices from relics player doesn't own, filtered by class
+  const owned = new Set((G.relics||[]).map(r=>r.id));
+  const classPool = RELICS.filter(r=>!owned.has(r.id) && (!r.classes || r.classes.includes(G.classId)));
+  const pool = classPool.length >= 3 ? classPool : RELICS.filter(r=>!owned.has(r.id));
+  const source = pool.length >= 3 ? pool : RELICS;
+  const shuffled = [...source].sort(()=>Math.random()-0.5);
+  _bossRewardRelicChoices = [shuffled[0], shuffled[1], shuffled[2]];
+
+  // -- GRACE PANEL: 60% chance — generate but do NOT add to inventory yet
+  _bossRewardGrace = (Math.random()<0.60 && typeof generateGrace==='function') ? generateGrace() : null;
+
+  // -- SKILL UPGRADE PANEL: upgradeable skills visible to player
+  const upgradeable = (CLASSES[G.classId]&&CLASSES[G.classId].skills||[]).filter(sk=>
+    sk.upgrade &&
+    !(G.upgradedSkills && G.upgradedSkills[sk.id]) &&
+    (!sk.subclassOnly||(G.level>=3&&G.subclassId&&sk.subclassId===G.subclassId)) &&
+    (!sk.ultimateOnly||G.ultimateUnlocked)
+  );
+
+  const rc = {common:'#888',uncommon:'var(--green2)',rare:'#4a9eda',epic:'#8b44ad',legendary:'var(--gold)'};
+
+  const relicCardsHtml = _bossRewardRelicChoices.map((r,i)=>`
+    <div class="boss-reward-card relic-card" onclick="bossRewardPickRelic(${i})" style="border-color:${rc[r.rarity]||'#333'}40;">
+      <div class="brc-icon" style="color:${rc[r.rarity]||'#888'}">${iconHTML(r.icon)}</div>
+      <div class="brc-name" style="color:${rc[r.rarity]||'#888'}">${r.name}</div>
+      <div class="brc-rarity" style="color:${rc[r.rarity]||'#888'}">${r.rarity.toUpperCase()}</div>
+      <div class="brc-desc">${r.desc}</div>
+    </div>`).join('');
+
+  const skillCardsHtml = upgradeable.length ? upgradeable.map(sk=>`
+    <div class="boss-reward-card skill-card" onclick="bossRewardPickUpgrade('${sk.id}')">
+      <div class="brc-icon" style="color:var(--gold)">${iconHTML(sk.icon)}</div>
+      <div class="brc-name" style="color:var(--gold)">${sk.name}</div>
+      <div class="brc-current">${sk.desc}</div>
+      <div class="brc-upgrade-label">UPGRADED:</div>
+      <div class="brc-upgrade-desc" style="color:var(--green2)">${sk.upgrade.desc}</div>
+    </div>`).join('')
+  : '<div class="brc-empty">All skills upgraded.</div>';
+
+  const graceColumnHtml = _bossRewardGrace ? (()=>{
+    const g = _bossRewardGrace;
+    const gc = rc[g.rarity]||'#888';
+    return `
+      <div class="boss-reward-divider">OR</div>
+      <div class="boss-reward-panel">
+        <div class="brp-label">TAKE A GRACE</div>
+        <div class="brp-cards">
+          <div class="boss-reward-card grace-card" onclick="bossRewardPickGrace()" style="border-color:${gc}40;">
+            <div class="brc-icon" style="color:${gc}">${iconHTML(g.icon||'crown-coin')}</div>
+            <div class="brc-name" style="color:${gc}">${g.name}</div>
+            <div class="brc-rarity" style="color:${gc}">${(g.rarity||'').toUpperCase()}</div>
+            <div class="brc-desc">${g.desc||''}</div>
+          </div>
+        </div>
+      </div>`;
+  })() : '';
+
+  document.getElementById('bossRewardContent').innerHTML = `
+    <div class="boss-reward-header">BOSS DEFEATED — CHOOSE YOUR REWARD</div>
+    <div class="boss-reward-panels">
+      <div class="boss-reward-panel">
+        <div class="brp-label">TAKE A RELIC</div>
+        <div class="brp-cards">${relicCardsHtml}</div>
+      </div>
+      <div class="boss-reward-divider">OR</div>
+      <div class="boss-reward-panel">
+        <div class="brp-label">UPGRADE A SKILL</div>
+        <div class="brp-cards">${skillCardsHtml}</div>
+      </div>
+      ${graceColumnHtml}
+    </div>`;
+
+  document.getElementById('bossRewardOverlay').style.display = 'flex';
+  if(typeof AUDIO!=='undefined'&&AUDIO.sfx&&AUDIO.sfx.loot) AUDIO.sfx.loot();
+}
+
+function bossRewardPickRelic(idx){
+  const chosen = _bossRewardRelicChoices && _bossRewardRelicChoices[idx];
+  if(!chosen || !G) return;
+  if(!G.relics) G.relics = [];
+  if(G.relics.length < 6){ G.relics.push({...chosen}); log(chosen.name+' acquired!','l'); }
+  _bossRewardDone();
+}
+
+function bossRewardPickUpgrade(skillId){
+  if(!G) return;
+  if(!G.upgradedSkills) G.upgradedSkills = {};
+  G.upgradedSkills[skillId] = true;
+  const sk = (CLASSES[G.classId]&&CLASSES[G.classId].skills||[]).find(s=>s.id===skillId);
+  log((sk?sk.name:'Skill')+' upgraded!','l');
+  _bossRewardDone();
+}
+
+function bossRewardPickGrace(){
+  if(!_bossRewardGrace) return;
+  if(typeof addGraceToInventory==='function') addGraceToInventory(_bossRewardGrace);
+  log(_bossRewardGrace.name+' grace acquired!','l');
+  _bossRewardDone();
+}
+
+function _bossRewardDone(){
+  document.getElementById('bossRewardOverlay').style.display = 'none';
+  _bossRewardRelicChoices = null;
+  _bossRewardGrace = null;
+  if(typeof renderRelicHud==='function') renderRelicHud();
+  if(typeof renderAll==='function') renderAll();
+  const cb = _bossRewardCallback;
+  _bossRewardCallback = null;
+  if(cb) setTimeout(cb, 300);
+}
+
+// ══════════════════════════════════════════════════════════
+//  ROOM CHOICE OVERLAY
+// ══════════════════════════════════════════════════════════
+
+function showRoomChoice(){
+  // Weighted room choice: 40% rest, 35% elite, 25% event
+  const rng = Math.random();
+  const altType = rng < 0.40 ? 'rest' : rng < 0.75 ? 'elite' : 'event';
+  const altData = {
+    rest: {
+      icon:'health-increase', label:'Take a Rest',
+      desc:'Catch your breath in a sheltered alcove. Restore 15% of your max HP before pressing deeper.',
+      flavor:'A faint breeze carries the scent of moss and still water. The silence here feels safe — for now.'
+    },
+    elite: {
+      icon:'skull-crossed-bones', label:'Elite Enemy',
+      desc:'Face a powerful foe with 1.5\u00D7 stats. Defeating it guarantees a rare item drop and a relic.',
+      flavor:'The ground trembles beneath heavy footsteps. Something far stronger than the usual rabble blocks the way ahead.'
+    },
+    event: {
+      icon:'scroll-unfurled', label:'Strange Encounter',
+      desc:'Something unusual stirs in the dungeon. The outcome is uncertain.',
+      flavor:'A strange light flickers at the edge of your vision. You hear whispers that don\'t belong to the wind.'
+    },
+  };
+  const alt = altData[altType];
+
+  // Zone-aware header flavor
+  const zoneName = (typeof ZONES!=='undefined'&&ZONES[G.zoneIdx]) ? ZONES[G.zoneIdx].name : 'the dungeon';
+  const killNum = (G.zoneKills||0);
+  const headerFlavor = 'The path splits ahead in ' + zoneName + '.';
+
+  document.getElementById('roomChoiceContent').innerHTML = `
+    <div class="room-choice-header">WHAT LIES AHEAD?</div>
+    <div class="room-choice-subheader">${headerFlavor}</div>
+    <div class="room-choice-progress">${iconHTML('sword')} ${killNum} enemies defeated this zone</div>
+    <div class="room-choice-cards">
+      <div class="room-choice-card" onclick="resolveRoomChoice('fight')">
+        <div class="rcc-icon">${iconHTML('crossed-swords')}</div>
+        <div class="rcc-label">Press On</div>
+        <div class="rcc-flavor">The corridor ahead echoes with the scrape of claws on stone. More enemies lie in wait.</div>
+        <div class="rcc-divider"></div>
+        <div class="rcc-desc">Fight the next enemy.</div>
+      </div>
+      <div class="room-choice-card room-choice-alt" onclick="resolveRoomChoice('${altType}')">
+        <div class="rcc-icon">${iconHTML(alt.icon)}</div>
+        <div class="rcc-label">${alt.label}</div>
+        <div class="rcc-flavor">${alt.flavor}</div>
+        <div class="rcc-divider"></div>
+        <div class="rcc-desc">${alt.desc}</div>
+      </div>
+    </div>`;
+  document.getElementById('roomChoiceOverlay').style.display = 'flex';
+}
+
+function resolveRoomChoice(type){
+  document.getElementById('roomChoiceOverlay').style.display = 'none';
+  if(type==='fight'){
+    spawnEnemy();
+  } else if(type==='rest'){
+    const hpGain = Math.max(1, Math.ceil(G.maxHp*0.15));
+    if(typeof heal==='function') heal(hpGain,'Rest');
+    log('You rest briefly. +'+hpGain+' HP.','s');
+    setTimeout(()=>spawnEnemy(), 600);
+  } else if(type==='elite'){
+    G._nextEnemyIsElite = true;
+    log('An elite enemy steps from the shadows...','w');
+    spawnEnemy();
+  } else if(type==='event'){
+    const zoneId = (typeof ZONES!=='undefined'&&ZONES[G.zoneIdx]) ? ZONES[G.zoneIdx].id : null;
+    const eligible = (typeof RARE_EVENTS!=='undefined'?RARE_EVENTS:[]).filter(e=>
+      (!e.zones||(zoneId&&e.zones.includes(zoneId))) &&
+      (!e.locked||(typeof isEventUnlocked==='function'&&isEventUnlocked(RARE_EVENTS.indexOf(e))))
+    );
+    if(eligible.length>0 && typeof showRareEvent==='function'){
+      G._rareEventsThisZone=(G._rareEventsThisZone||0)+1;
+      if(typeof updateUnlockStats==='function') updateUnlockStats('rare_event');
+      showRareEvent(eligible[Math.floor(Math.random()*eligible.length)]);
+    } else {
+      log('The path ahead is clear.','s');
+      spawnEnemy();
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  ELITE RELIC DROP — pick 1 of 2 after killing an elite
+// ══════════════════════════════════════════════════════════
+let _eliteRelicChoices = null;
+
+function showEliteRelicDrop(){
+  if(!G || typeof RELICS==='undefined') return;
+  const owned = new Set((G.relics||[]).map(r=>r.id));
+  const classPool = RELICS.filter(r=>!owned.has(r.id) && (!r.classes || r.classes.includes(G.classId)));
+  const pool = classPool.length > 0 ? classPool : RELICS.filter(r=>!owned.has(r.id));
+  if(pool.length===0) return; // player owns all relics
+
+  const shuffled = [...pool].sort(()=>Math.random()-0.5);
+  _eliteRelicChoices = [shuffled[0], shuffled[1]||shuffled[0]];
+
+  const rc = {common:'#888',uncommon:'var(--green2)',rare:'#4a9eda',epic:'#8b44ad',legendary:'var(--gold)'};
+
+  const cardsHtml = _eliteRelicChoices.map((r,i)=>`
+    <div class="elite-relic-card" onclick="eliteRelicPick(${i})" style="border-color:${rc[r.rarity]||'#333'}40;">
+      <div class="erc-icon" style="color:${rc[r.rarity]||'#888'}">${iconHTML(r.icon)}</div>
+      <div class="erc-name" style="color:${rc[r.rarity]||'#888'}">${r.name}</div>
+      <div class="erc-rarity" style="color:${rc[r.rarity]||'#888'}">${r.rarity.toUpperCase()}</div>
+      <div class="erc-desc">${r.desc}</div>
+    </div>`).join('');
+
+  document.getElementById('eliteRelicContent').innerHTML = `
+    <div class="elite-relic-header">ELITE VANQUISHED</div>
+    <div class="elite-relic-subheader">A powerful artifact remains. Choose one.</div>
+    <div class="elite-relic-cards">${cardsHtml}</div>`;
+
+  document.getElementById('eliteRelicOverlay').style.display = 'flex';
+  if(AUDIO&&AUDIO.sfx&&AUDIO.sfx.loot) AUDIO.sfx.loot();
+}
+
+function eliteRelicPick(idx){
+  const chosen = _eliteRelicChoices && _eliteRelicChoices[idx];
+  if(!chosen || !G) return;
+  if(!G.relics) G.relics = [];
+  if(G.relics.length < 6){
+    G.relics.push({...chosen});
+    log(chosen.name + ' acquired!', 'l');
+  } else {
+    log('Relic inventory full (6/6) — ' + chosen.name + ' left behind.', 'w');
+  }
+  _eliteRelicChoices = null;
+  document.getElementById('eliteRelicOverlay').style.display = 'none';
+  if(typeof renderRelicHud==='function') renderRelicHud();
+  renderAll();
+}
+

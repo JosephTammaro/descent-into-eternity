@@ -336,7 +336,7 @@ function updateSetBonuses(){
   }
 }
 
-function dropLoot(enemy){
+function dropLoot(enemy, minRarity){
   // ── CLASS SET ITEM DROP (zone 3+, 5% chance) ────────────
   if(G.zoneIdx>=3&&Math.random()<0.05){
     const classSetItems=ITEMS.filter(i=>i.forClass===G.classId&&i.set);
@@ -370,6 +370,11 @@ function dropLoot(enemy){
   if(G._activeModifier&&G._activeModifier.effects.upgradeDrops){
     const upgradeMap={common:'uncommon',uncommon:'rare',rare:'epic'};
     if(upgradeMap[rolledRarity])rolledRarity=upgradeMap[rolledRarity];
+  }
+  // Elite room: minimum rarity override
+  if(minRarity){
+    const rarityRank={common:0,uncommon:1,rare:2,epic:3,legendary:4};
+    if((rarityRank[rolledRarity]||0)<(rarityRank[minRarity]||0)) rolledRarity=minRarity;
   }
   let filtered=pool.filter(i=>i.rarity===rolledRarity);
   if(!filtered.length)filtered=pool.filter(i=>i.rarity==='common');

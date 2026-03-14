@@ -93,6 +93,20 @@ function setPlayerTurn(isPlayer){
     }
     // Per-turn subclass resets
     G._fortressUsedThisTurn=false;
+    // ── Relic: per-turn triggers and flag resets ──────────────
+    // Soulbrand: decrement remaining turns; clear when expired
+    // (must happen BEFORE per_turn triggers so the buff persists through the player's attack turn)
+    if(G._relicSoulbrandTurns>0){
+      G._relicSoulbrandTurns--;
+      if(G._relicSoulbrandTurns<=0){G._relicSoulbrandActive=false;G._relicDmgMult=1;}
+    }
+    // Battle Scarab: decrement DEF bonus turns
+    if(G._relicBattleScarabTurns>0){
+      G._relicBattleScarabTurns--;
+      if(G._relicBattleScarabTurns<=0) G._relicBattleScarabDef=0;
+    }
+    if(typeof triggerRelic==='function') triggerRelic('per_turn',{});
+    G._relicVoidMirrorUsedThisTurn=false;
     G.roundNum++;
     // ── Roll intent for all living enemies this round ──
     (G.currentEnemies||[]).forEach(en=>{if(!en.dead&&en.hp>0)_rollIntentForEnemy(en);});
@@ -187,27 +201,12 @@ function handleNextEnemy(){
   if(_wipeStage){_wipeStage.classList.remove('zone-scene-wipe');void _wipeStage.offsetWidth;_wipeStage.classList.add('zone-scene-wipe');setTimeout(()=>_wipeStage.classList.remove('zone-scene-wipe'),1100);}
   // Branch zones use their own spawner
   if(G._inBranch){ spawnBranchEnemy(); return; }
-  // Don't trigger rare events if boss is ready, or already had one this zone
-  if(G.bossReady || (G._rareEventsThisZone||0) >= 1){
-    spawnEnemy(); return;
-  }
-  // ~20% chance per fight
-  if(Math.random() < 0.20){
-    const zoneId = ZONES[G.zoneIdx] ? ZONES[G.zoneIdx].id : null;
-    const eligible = RARE_EVENTS.filter((e,idx) => {
-      if(e.zones && !(zoneId && e.zones.includes(zoneId))) return false;
-      // Phase B: locked events require unlock
-      if(e.locked && typeof isEventUnlocked === 'function' && !isEventUnlocked(idx)) return false;
-      return true;
-    });
-    if(eligible.length > 0){
-      const ev = eligible[Math.floor(Math.random() * eligible.length)];
-      G._rareEventsThisZone = (G._rareEventsThisZone || 0) + 1;
-      // Phase B: Track rare event for unlock stats
-      if(typeof updateUnlockStats === 'function') updateUnlockStats('rare_event');
-      showRareEvent(ev);
-      return;
-    }
+  // Boss: skip room choice — go straight to boss
+  if(G.bossReady){ spawnEnemy(); return; }
+  // Room choice — random 35% chance on any non-boss kill (max 2 per zone)
+  if((G._roomChoicesThisZone||0)<2 && Math.random()<0.35 && typeof showRoomChoice==='function'){
+    G._roomChoicesThisZone=(G._roomChoicesThisZone||0)+1;
+    showRoomChoice(); return;
   }
   spawnEnemy();
 }
@@ -395,6 +394,7 @@ function spawnEnemy(){
   }
 
   // ── Populate G.currentEnemies ─────────────────────────────
+  let finalHornActive=!isBoss&&G._rareEventFlags.finalHorn&&G._rareEventFlags.finalHorn.zoneIdx===G.zoneIdx;
   if(isBoss){
     G.currentEnemies=[buildEnemy(z.boss)];
     // Rare Event: Doppelganger Boss — add extra enemy alongside boss
@@ -415,7 +415,6 @@ function spawnEnemy(){
   } else {
     G.currentEnemies=[];
     // Rare Event: Final Horn — +1 extra enemy per fight in this zone
-    let finalHornActive=G._rareEventFlags.finalHorn&&G._rareEventFlags.finalHorn.zoneIdx===G.zoneIdx;
     const adjustedCount=finalHornActive?Math.min(4,enemyCount+1):enemyCount;
     for(let i=0;i<adjustedCount;i++){
       const eData=z.enemies[Math.floor(Math.random()*z.enemies.length)];
@@ -439,6 +438,27 @@ function spawnEnemy(){
   }
   G.targetIdx=0;
   G.currentEnemy=G.currentEnemies[0];
+
+  // ── Elite Room ─────────────────────────────────────────────
+  if(G._nextEnemyIsElite && !isBoss){
+    G._nextEnemyIsElite=false;
+    const _elite=G.currentEnemies[0];
+    _elite.hp=Math.ceil(_elite.hp*1.5);
+    _elite.maxHp=_elite.hp;
+    _elite.atk=Math.ceil(_elite.atk*1.5);
+    _elite._eliteDrop=true;
+    log(_elite.name+' (ELITE) — +50% stats, guaranteed rare drop!','w');
+  }
+
+  // ── Relic: Bone Flute — apply stun to first spawned enemy ──
+  if(G._relicBoneFluteReady && G.currentEnemies && G.currentEnemies[0]){
+    G._relicBoneFluteReady=false;
+    const _bfe=G.currentEnemies[0];
+    if(!_bfe.conditions) _bfe.conditions=[];
+    if(!_bfe.conditions.find(c=>c.name==='Stunned'))
+      _bfe.conditions.push({name:'Stunned',turns:1});
+    log('Bone Flute: '+_bfe.name+' stumbles in, Stunned!','s');
+  }
 
   // ── Render sprite + name/HP for the first target ──────────
   const eEl=document.getElementById('enemySprite');
@@ -569,6 +589,24 @@ function spawnEnemy(){
   // Legendary item per-fight resets
   G._crimsonBrandUsed=false;
   G._firstDodgeAvailable=true;
+  // ── Relic: per-fight resets ──────────────────────────────
+  G._relicKillAtkBonus=0; G._relicPaincrestStacks=0; G._relicVoidpiercerCount=0;
+  G._relicThirstingReady=false; G._relicThirstingUsed=false;
+  G._relicAshenCrownReady=false; G._relicAshenCrownUsed=false;
+  G._relicStormcallerBonus=0;
+  G._relicArcaneLensBonus=0; G._relicShadowFangCrit=0; G._relicBloodrageStacks=0;
+  G._relicBattleScarabDef=0; G._relicBattleScarabTurns=0;
+  G._relicIgnoreDefNext=false;
+  // Warlord's Signet: apply pending ATK bonus from previous fight, then clear
+  if((G._relicWarlordAtkNext||0)>0){
+    G._relicKillAtkBonus=G._relicWarlordAtkNext; // starts this fight with bonus ATK
+    G._relicWarlordAtkNext=0;
+  }
+  // Astral Root: apply pending spell power bonus from previous fight
+  if((G._relicAstralRootBonus||0)>0){
+    G._relicArcaneLensBonus=G._relicAstralRootBonus;
+    G._relicAstralRootBonus=0;
+  }
 
   // ── Subclass startup effects ──────────────────────────────
   // Vengeance Paladin: auto-mark highest-HP enemy at fight start
@@ -681,9 +719,11 @@ function spawnEnemy(){
   // Enemy spawn animation — scale/fade in from above
   {
     const _single=G.currentEnemies.length<=1;
-    if(_single){
+    if(_single && !G._isTutorialFight){
       const _eEl=document.getElementById('enemySprite');
       if(_eEl){_eEl.classList.remove('enemy-spawning');void _eEl.offsetWidth;_eEl.classList.add('enemy-spawning');setTimeout(()=>_eEl.classList.remove('enemy-spawning'),500);}
+    } else if(_single){
+      // Tutorial fight: no spawn animation — dummy must be instantly visible for the tour
     } else {
       document.querySelectorAll('#multiEnemyRow .enemy-card').forEach((card,idx)=>{
         card.style.animationDelay=(idx*80)+'ms';

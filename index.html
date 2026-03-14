@@ -205,6 +205,21 @@
 
 </div>
 
+<!-- BOSS REWARD: pick relic, upgrade skill, or take grace -->
+<div id="bossRewardOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center;overflow-y:auto;">
+  <div id="bossRewardContent" style="max-width:1000px;width:96%;padding:32px 24px;"></div>
+</div>
+
+<!-- ROOM CHOICE: crossroads between regular enemies (kills 2 and 4) -->
+<div id="roomChoiceOverlay" style="display:none;">
+  <div id="roomChoiceContent" style="max-width:760px;width:96%;padding:32px 24px;"></div>
+</div>
+
+<!-- ELITE RELIC DROP: pick 1 of 2 relics after killing an elite -->
+<div id="eliteRelicOverlay" style="display:none;">
+  <div id="eliteRelicContent" style="max-width:660px;width:96%;padding:32px 24px;"></div>
+</div>
+
 <!-- Prepare for Descent overlay — lives outside all screens so position:fixed works from any screen -->
 <div id="prepareOverlay" class="prepare-overlay">
   <div class="prepare-box">
@@ -431,6 +446,9 @@
 
       <!-- GRACE STRIP — equipped graces -->
       <div class="grace-strip" id="graceStrip" style="display:none;"></div>
+
+      <!-- RELIC STRIP — per-run relics -->
+      <div class="relic-strip" id="relicHud" style="display:none;"></div>
 
       <!-- BATTLE STAGE -->
       <div class="battle-stage" id="battleStage">
@@ -1251,6 +1269,7 @@ function switchHelpTab(id, btn) {
   <script src="data/zones.js"></script>
   <script src="data/items.js"></script>
   <script src="data/ultimates.js"></script>
+  <script src="data/relics.js"></script>
   <script src="data/events.js"></script>
   <script src="data/modifiers.js"></script>
   <script src="data/unlocks.js"></script>

@@ -1071,3 +1071,90 @@
 #phase2Overlay{display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0);align-items:center;justify-content:center;pointer-events:none;flex-direction:column;}
 #branchRewardOverlay{display:none;position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;}
 
+/* ══ BOSS REWARD OVERLAY ══════════════════════════════════════ */
+#bossRewardOverlay{ position:fixed;inset:0;background:rgba(0,0,0,0.9);
+  z-index:9999;display:flex;align-items:center;justify-content:center;overflow-y:auto; }
+.boss-reward-header{ font-family:'Press Start 2P',monospace;font-size:10px;
+  color:var(--gold);text-align:center;margin-bottom:24px;letter-spacing:2px;
+  text-shadow:0 0 20px rgba(200,168,75,0.5); }
+.boss-reward-panels{ display:flex;gap:0;align-items:flex-start;justify-content:center;flex-wrap:wrap; }
+.boss-reward-panel{ flex:1;min-width:240px;max-width:360px;padding:0 14px; }
+.brp-label{ font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim);
+  letter-spacing:2px;text-align:center;margin-bottom:12px; }
+.brp-cards{ display:flex;flex-direction:column;gap:10px; }
+.boss-reward-divider{ display:flex;align-items:center;justify-content:center;
+  padding:0 12px;font-family:'Press Start 2P',monospace;font-size:10px;
+  color:var(--dim);min-width:40px; }
+.boss-reward-card{ background:rgba(0,0,0,0.5);border:2px solid #333;border-radius:4px;
+  padding:14px;cursor:pointer;transition:all 0.15s;font-family:'Press Start 2P',monospace; }
+.boss-reward-card:hover{ border-color:var(--gold)!important;background:rgba(200,168,75,0.08);transform:translateY(-2px); }
+.brc-icon{ font-size:20px;margin-bottom:8px; }
+.brc-name{ font-size:8px;margin-bottom:4px; }
+.brc-rarity{ font-size:6px;letter-spacing:2px;margin-bottom:8px; }
+.brc-desc{ font-size:7px;color:var(--dim);line-height:1.8; }
+.brc-current{ font-size:6px;color:var(--dim);margin-bottom:6px;line-height:1.8; }
+.brc-upgrade-label{ font-size:6px;letter-spacing:1px;color:#4a9eda;margin-bottom:4px; }
+.brc-upgrade-desc{ font-size:7px;line-height:1.8; }
+.brc-empty{ font-size:7px;color:var(--dim);text-align:center;padding:20px; }
+
+/* ══ ROOM CHOICE OVERLAY ══════════════════════════════════════ */
+#roomChoiceOverlay{ position:fixed;inset:0;background:rgba(0,0,0,0.92);
+  z-index:9998;display:flex;align-items:center;justify-content:center;
+  animation:rcFadeIn 0.4s ease-out; }
+@keyframes rcFadeIn{ from{opacity:0} to{opacity:1} }
+.room-choice-header{ font-family:'Press Start 2P',monospace;font-size:12px;
+  color:var(--gold);letter-spacing:3px;text-align:center;margin-bottom:8px;
+  text-shadow:0 0 24px rgba(200,168,75,0.5); }
+.room-choice-subheader{ font-family:'Press Start 2P',monospace;font-size:7px;
+  color:var(--dim);text-align:center;margin-bottom:6px;line-height:1.8;
+  font-style:italic;max-width:500px;margin-left:auto;margin-right:auto; }
+.room-choice-progress{ font-family:'Press Start 2P',monospace;font-size:6px;
+  color:#555;text-align:center;margin-bottom:28px;letter-spacing:1px; }
+.room-choice-cards{ display:flex;gap:24px;justify-content:center;flex-wrap:wrap;
+  max-width:720px;margin:0 auto; }
+.room-choice-card{ background:rgba(10,6,8,0.8);border:2px solid #333;border-radius:6px;
+  padding:28px 24px;width:300px;cursor:pointer;text-align:center;
+  transition:all 0.2s ease;font-family:'Press Start 2P',monospace;
+  position:relative;overflow:hidden; }
+.room-choice-card::before{ content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center top,rgba(200,168,75,0.04) 0%,transparent 70%);
+  pointer-events:none;transition:opacity 0.2s; opacity:0; }
+.room-choice-card:hover::before{ opacity:1; }
+.room-choice-card:hover{ border-color:var(--gold);background:rgba(200,168,75,0.06);
+  transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 20px rgba(200,168,75,0.1); }
+.room-choice-alt{ border-color:#4a9eda30; }
+.room-choice-alt:hover{ border-color:#4a9eda; box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 20px rgba(74,158,218,0.15); }
+.rcc-icon{ font-size:36px;margin-bottom:14px;display:block;color:var(--gold); }
+.room-choice-alt .rcc-icon{ color:#4a9eda; }
+.rcc-label{ font-size:10px;color:var(--gold);margin-bottom:12px;letter-spacing:1px; }
+.room-choice-alt .rcc-label{ color:#4a9eda; }
+.rcc-flavor{ font-size:7px;color:#776a55;line-height:2;margin-bottom:12px;
+  font-style:italic;min-height:42px; }
+.rcc-divider{ width:40px;height:1px;background:#333;margin:0 auto 12px; }
+.rcc-desc{ font-size:7px;color:var(--dim);line-height:2; }
+
+/* ══ ELITE RELIC DROP OVERLAY ═════════════════════════════════ */
+#eliteRelicOverlay{ position:fixed;inset:0;background:rgba(0,0,0,0.92);
+  z-index:9997;display:flex;align-items:center;justify-content:center;
+  animation:rcFadeIn 0.4s ease-out; }
+.elite-relic-header{ font-family:'Press Start 2P',monospace;font-size:12px;
+  color:var(--gold);letter-spacing:3px;text-align:center;margin-bottom:8px;
+  text-shadow:0 0 24px rgba(200,168,75,0.5); }
+.elite-relic-subheader{ font-family:'Press Start 2P',monospace;font-size:7px;
+  color:var(--dim);text-align:center;margin-bottom:28px;line-height:1.8;font-style:italic; }
+.elite-relic-cards{ display:flex;gap:24px;justify-content:center;flex-wrap:wrap; }
+.elite-relic-card{ background:rgba(10,6,8,0.8);border:2px solid #333;border-radius:6px;
+  padding:24px 20px;width:260px;cursor:pointer;text-align:center;
+  transition:all 0.2s ease;font-family:'Press Start 2P',monospace;
+  position:relative;overflow:hidden; }
+.elite-relic-card::before{ content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center top,rgba(200,168,75,0.04) 0%,transparent 70%);
+  pointer-events:none;transition:opacity 0.2s;opacity:0; }
+.elite-relic-card:hover::before{ opacity:1; }
+.elite-relic-card:hover{ border-color:var(--gold)!important;background:rgba(200,168,75,0.06);
+  transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 20px rgba(200,168,75,0.1); }
+.erc-icon{ font-size:28px;margin-bottom:12px; }
+.erc-name{ font-size:8px;margin-bottom:4px; }
+.erc-rarity{ font-size:6px;letter-spacing:2px;margin-bottom:10px; }
+.erc-desc{ font-size:7px;color:var(--dim);line-height:2; }
+

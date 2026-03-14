@@ -38,6 +38,8 @@ function getSpellPower(){
   if(G._activeModifier && G._activeModifier.effects && G._activeModifier.effects.killAtkStack && G._ancestralStacks > 0){
     sp += G._ancestralStacks * G._activeModifier.effects.killAtkStack;
   }
+  // Relic: Arcane Lens — stacking spell power bonus this fight
+  if((G._relicArcaneLensBonus||0)>0) sp += G._relicArcaneLensBonus;
   return sp;
 }
 

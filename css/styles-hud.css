@@ -465,3 +465,35 @@
   border-color:rgba(180,80,255,0.5)!important;
 }
 
+/* ══ RELIC HUD STRIP ══════════════════════════════════ */
+.relic-strip{ display:flex;flex-wrap:wrap;gap:4px;padding:3px 8px;align-items:center;overflow:visible; }
+.relic-pip{ position:relative;display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;background:rgba(0,0,0,0.5);border:1px solid #333;border-radius:3px;cursor:default; }
+.relic-pip:hover{ border-color:var(--gold)!important; }
+.rp-icon{ font-size:14px; }
+.rp-tooltip{ display:none;position:fixed;z-index:9000;pointer-events:none;
+  background:#0a0608;border:1px solid var(--border);padding:8px 10px;
+  min-width:160px;max-width:220px;font-family:'Press Start 2P',monospace;
+  box-shadow:0 4px 16px rgba(0,0,0,0.8); }
+.relic-pip:hover .rp-tooltip{ display:block; }
+.rp-tt-name{ font-size:8px;margin-bottom:4px; }
+.rp-tt-rarity{ font-size:6px;letter-spacing:2px;margin-bottom:6px; }
+.rp-tt-desc{ font-size:7px;color:var(--dim);line-height:1.8; }
+
+/* ══ SKILL BUTTON CUSTOM TOOLTIP ══════════════════════ */
+.sk-wrap{ position:relative;flex:0 0 auto; }
+.skill-btn{ position:relative;overflow:visible; }
+.sk-tooltip{ display:none;position:fixed;z-index:9000;pointer-events:none;
+  background:#0a0608;border:1px solid var(--border);padding:10px 12px;
+  min-width:180px;max-width:240px;text-align:left;
+  font-family:'Press Start 2P',monospace;white-space:normal;
+  box-shadow:0 4px 16px rgba(0,0,0,0.8); }
+.sk-wrap:hover .sk-tooltip{ display:block; }
+.skt-name{ font-size:8px;color:var(--gold);margin-bottom:6px; }
+.skt-desc{ font-size:7px;color:var(--dim);line-height:1.9;margin-bottom:8px; }
+.skt-meta{ margin-bottom:6px; }
+.skt-tag{ font-size:6px;color:#4a9eda;margin-right:6px; }
+.skt-synergy-label{ font-size:6px;color:var(--dim);letter-spacing:1px;margin-top:8px;margin-bottom:4px; }
+.skt-synergy-line{ font-size:7px;margin-bottom:3px; }
+.skt-upgrade-hint{ font-size:6px;color:var(--green2);margin-top:8px; }
+

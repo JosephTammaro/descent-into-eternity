@@ -190,10 +190,16 @@ function onEnemyDied(){
   checkAchievements();
   checkObjectiveProgress('enemy_killed',e);
 
+  // ── Relic: on_kill triggers ──
+  if(typeof triggerRelic==='function') triggerRelic('on_kill',{enemy:e});
+
   // Loot
   const lootChance = (G._activeModifier && G._activeModifier.effects.lootChanceMult)
     ? 0.3 * G._activeModifier.effects.lootChanceMult : 0.3;
   if(Math.random()<lootChance)dropLoot(e);
+  // ── Relic: Elite room guaranteed rare drop + relic pick ──
+  if(e._eliteDrop&&typeof dropLoot==='function') dropLoot(e,'rare');
+  if(e._eliteDrop&&typeof showEliteRelicDrop==='function') setTimeout(()=>showEliteRelicDrop(),600);
   // Per-enemy custom material drop
   if(e.dropMat&&Math.random()<.5){const m=ITEMS.find(i=>i.id===e.dropMat);if(m)addItem({...m,qty:1});}
   // Universal drops based on enemy properties
@@ -317,7 +323,8 @@ function onEnemyDied(){
     // ── First clear: level-up → grace → lore → town ──────────
     const firstClearFlow = () => {
       const afterLevelUps = () => {
-        doGraceDrop(() => {
+        const _showReward = typeof showBossReward==='function' ? showBossReward : (cb=>cb());
+        _showReward(() => {
           if(G) G._bossSequenceActive = false;
           const slot = (typeof activeSaveSlot!=='undefined') ? activeSaveSlot : null;
           if(typeof updateSlotData==='function'&&slot){
@@ -387,7 +394,8 @@ function onEnemyDied(){
     // ── Repeat clear: level-up → grace → lore → map (next zone + any side quest) ──
     const repeatClearFlow = () => {
       const afterLevelUps = () => {
-        doGraceDrop(() => {
+        const _showReward = typeof showBossReward==='function' ? showBossReward : (cb=>cb());
+        _showReward(() => {
           if(G) G._bossSequenceActive = false;
           const nextZone = loreIdx + 1;
           const loreExists = loreIdx < LORE_REVEALS.length;

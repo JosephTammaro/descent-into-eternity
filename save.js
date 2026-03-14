@@ -308,6 +308,15 @@ function serializeState(g){
     '_nethrixShuffleOrder','_auranthosBlindedBtns',
     '_lastParticleZone',
     '_newLootSlots','_lootAnimPending','_singleEnemyDying','_dyingCards',
+    // Tutorial transient flags — always reset via newState(); never persist
+    '_isTutorialFight','_pauseForTutorial',
+    // Relic per-turn flags — always reset at start of player turn; safe to clear on load
+    '_relicVoidMirrorUsedThisTurn',
+    '_relicEvasionActive',
+    '_relicSoulbrandActive','_relicSoulbrandTurns',
+    '_relicBattleScarabDef','_relicBattleScarabTurns',
+    '_relicShadowFangCrit',
+    '_relicIgnoreDefNext',
   ]);
   const copy = {};
   for(const [k,v] of Object.entries(g)){

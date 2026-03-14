@@ -899,10 +899,10 @@ function townEnterDungeon(){
 // ══════════════════════════════════════════════════════════
 
 const DUNGEON_TOUR_STEPS = [
-  { target: null,
+  { target: '#enemyArea',
     icon: '⚔',
     heading: 'YOUR FIRST DUNGEON',
-    text: "Welcome! This tour points out every part of the combat screen. You will then fight a Training Dummy to practice — it barely hits back, so experiment freely with all your skills." },
+    text: "Welcome! Meet the Training Dummy — it barely hits back, so experiment freely. This tour points out every part of the combat screen before you fight." },
   { target: '.ae-row',
     icon: '🎯',
     heading: 'ACTION ECONOMY',
@@ -967,20 +967,26 @@ function showDungeonTutorialChoice() {
 function _dtDoTutorial() {
   const overlay = document.getElementById('dtChoiceOverlay');
   if (overlay) overlay.style.display = 'none';
+  // Set tutorial flags and spawn the Training Dummy now
+  if (typeof G !== 'undefined' && G) {
+    G._isTutorialFight  = true;
+    G._pauseForTutorial = true;
+  }
+  if (typeof spawnEnemy === 'function') spawnEnemy();
+  // G._isTutorialFight skips the enemy-spawning CSS animation so the dummy is
+  // already at full opacity. Render it and start the tour immediately.
+  if (typeof renderAll === 'function') renderAll();
   _dtStartTour();
 }
 
-// Called by "SKIP TUTORIAL" button —
-// clears the training dummy and spawns a real Zone I enemy instead.
+// Called by "SKIP TUTORIAL" button — spawn a real Zone I enemy instead.
 function _dtSkipAll() {
   const overlay = document.getElementById('dtChoiceOverlay');
   if (overlay) overlay.style.display = 'none';
   _dtMarkShown();
   if (typeof G !== 'undefined' && G) {
-    G._isTutorialFight   = false;
-    G._pauseForTutorial  = false;
-    G.currentEnemies     = [];
-    G.currentEnemy       = null;
+    G._isTutorialFight  = false;
+    G._pauseForTutorial = false;
   }
   if (typeof spawnEnemy === 'function') spawnEnemy();
 }
@@ -1135,6 +1141,7 @@ function _dtClearHighlight() {
 
 // ── Persistence ────────────────────────────────────────────
 function _dtMarkShown() {
+  if (typeof G !== 'undefined' && G) G._tutorialDone = true;
   if (typeof updateSlotData === 'function' && typeof activeSaveSlot !== 'undefined' && activeSaveSlot) {
     updateSlotData(activeSaveSlot, function(d) { d._dungeonTutorialShown = true; });
   }

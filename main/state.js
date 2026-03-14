@@ -62,7 +62,7 @@ function newState(classId){
     branchDefeated:{catacombs:false,fungalwarren:false,sunkenvault:false,ashenwastes:false},
     branchPassives:[],
     dungeonFights:0, campUnlocked:false,
-    _isTutorialFight:false, _pauseForTutorial:false,
+    _isTutorialFight:false, _pauseForTutorial:false, _tutorialDone:false,
     lives: 3,
     // Turn state
     isPlayerTurn:true, actionUsed:false, bonusUsed:false, reactionUsed:false,
@@ -82,6 +82,7 @@ function newState(classId){
     // ── Phase A: Rare Events / Shop / Salvage ──
     _rareEventFlags: {},       // Active rare event flags
     _rareEventsThisZone: 0,    // Cap 1 rare event per zone
+    _roomChoicesThisZone: 0,   // Cap 2 room choices per zone
     _shopStock: null,          // Randomized shop inventory (array of ITEMS indices)
     _salvageBuffs: [],         // Temp buffs from salvage [{stat,value}]
     // ── Phase B: Zone Modifiers ──
@@ -163,6 +164,37 @@ function newState(classId){
     // ── Per-turn state (reset in setPlayerTurn() or enemy turn) ──
     _fortressUsedThisTurn: false,  // Fortress keystone: one Parry per enemy turn
     _phantomTargetedBy: -1,        // Phantom keystone: enemy index that targeted you
+
+    // ── Relics & Skill Upgrades ──────────────────────────────
+    relics: [],                          // per-run relic objects; cleared by newState each run
+    upgradedSkills: {},                  // { skillId: true } — skills upgraded this run
+
+    // Relic combat flags (per-fight or per-turn; see spawnEnemy / setPlayerTurn)
+    _relicKillAtkBonus: 0,              // Hunter's Token: bonus ATK from kills (read in calcPlayerDmg, never added to G.atk)
+    _relicPaincrestStacks: 0,           // Paincrest: stacks × 3 ATK (read in calcPlayerDmg)
+    _relicStormcallerBonus: 0,          // Stormcaller's Band: pending +dmg on next attack
+    _relicVoidpiercerCount: 0,          // Voidpiercer: action-skill use counter
+    _relicThirstingReady: false,        // Thirsting Blade: double-next-hit pending
+    _relicThirstingUsed: false,         // Thirsting Blade: one-per-fight consumed flag
+    _relicAshenCrownReady: false,       // Ashen Crown: free bonus action resource pending
+    _relicAshenCrownUsed: false,        // Ashen Crown: one-per-fight consumed flag
+    _relicBoneFluteReady: false,        // Bone Flute: next spawned enemy starts Stunned
+    _relicSoulbrandActive: false,       // Soulbrand: damage boost active this turn
+    _relicSoulbrandTurns: 0,            // Soulbrand: turns remaining (decremented in setPlayerTurn)
+    _relicDmgMult: 1,                   // Soulbrand: damage multiplier (reset each turn)
+    _relicEvasionActive: false,         // Shade Shroud: dodge the next incoming hit
+    _relicVoidMirrorUsedThisTurn: false,// Void Mirror: echo already used this turn
+    _relicArcaneLensBonus: 0,           // Arcane Lens: spell power bonus this fight
+    _relicBattleScarabDef: 0,           // Battle Scarab: temp DEF bonus
+    _relicBattleScarabTurns: 0,         // Battle Scarab: turns remaining
+    _relicWarlordAtkNext: 0,            // Warlord's Signet / Warmonger: bonus ATK for next fight
+    _relicShadowFangCrit: 0,            // Shadow Fang: bonus crit range for next attack
+    _relicBloodrageStacks: 0,           // Bloodrage Torc: stacks x2 ATK while raging
+    _relicIgnoreDefNext: false,        // Veilstrike Lens: next attack ignores enemy DEF
+    _relicAstralRootBonus: 0,          // Astral Root: +spell power for next fight
+
+    // Room Choice
+    _nextEnemyIsElite: false,           // Room Choice: next spawned enemy gets elite buff
   };
 }
 

@@ -97,7 +97,14 @@ function calcPlayerDmg(){
   const critBonus=(G.critBonus||0)+(G.classId==='ranger'&&G.talents.includes('Eagle Eye')?2:0)+(G._surgeCritBonus||0);
   // Phase B: Volatile — crit range +1 for player
   const modCritBonus=(G._activeModifier && G._activeModifier.effects.critRangeBonus)||0;
-  const critThresh=G.critRange-critBonus-modCritBonus;
+  // ── Relic: ATK bonuses (read here only, never mutate G.atk) ──
+  if((G._relicKillAtkBonus||0)>0) base+=G._relicKillAtkBonus;
+  if((G._relicPaincrestStacks||0)>0) base+=G._relicPaincrestStacks*3;
+  if(G.raging&&(G._relicBloodrageStacks||0)>0) base+=G._relicBloodrageStacks*2;
+  // ── Relic: Dusty Sigil — +1 crit range; Shadow Fang — +3 crit range (consumed) ──
+  let relicCritBonus = (typeof hasRelic==='function'&&(hasRelic('dusty_sigil')||hasRelic('spellthread_sash'))) ? 1 : 0;
+  if((G._relicShadowFangCrit||0)>0){ relicCritBonus+=G._relicShadowFangCrit; G._relicShadowFangCrit=0; }
+  const critThresh=G.critRange-critBonus-modCritBonus-relicCritBonus;
   // Fighter capstone: advantage (roll twice take higher)
   let roll20=roll(20);
   if(G._capstone&&G.classId==='fighter'){const r2=roll(20);if(r2>roll20)roll20=r2;}
@@ -170,7 +177,30 @@ function dealToEnemy(dmg,crit,source){
     const hasSoldiers=(G.currentEnemies||[]).some(en=>!en.dead&&en.hp>0&&en._isFrozenSoldier);
     if(hasSoldiers){dmg=Math.ceil(dmg*0.5);log('❄ Frozen Bulwark shields Valdris! (-50% dmg)','c');}
   }
+  // ── Relic: pre-hit modifiers ──
+  if(G._relicThirstingReady){G._relicThirstingReady=false;G._relicThirstingUsed=true;dmg*=2;log('Thirsting Blade: doubled!','s');}
+  if((G._relicStormcallerBonus||0)>0){dmg+=G._relicStormcallerBonus;G._relicStormcallerBonus=0;}
+  if(G._relicSoulbrandActive&&(G._relicDmgMult||1)>1) dmg=Math.ceil(dmg*G._relicDmgMult);
+  // Relic: Veilstrike Lens — ignore enemy DEF on this hit
+  if(G._relicIgnoreDefNext){
+    G._relicIgnoreDefNext=false;
+    // Add back the DEF that was already subtracted in calcPlayerDmg (DEF calc is in calcPlayerDmg line 83)
+    // Since dealToEnemy receives final dmg, the DEF was already applied. We re-add it here.
+    const _enemyDef = G.currentEnemy ? (G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)-(G.currentEnemy._defDebuff||0)) : 0;
+    if(_enemyDef>0){ dmg+=_enemyDef; log('Veilstrike Lens: ignoring DEF!','s'); }
+  }
   G.currentEnemy.hp-=dmg;
+
+  // ── Relic: post-hit passives ──
+  if(typeof hasRelic==='function'&&hasRelic('cursed_eye')&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0&&Math.random()<0.20){
+    G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+2;
+    G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,2);
+    log('Cursed Eye: Exposed (-2 DEF, 2 turns)','s');
+  }
+  if(typeof hasRelic==='function'&&hasRelic('crown_oblivion')&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0
+     &&G.currentEnemy.hp<(G.currentEnemy.maxHp||G.currentEnemy.hp)*0.15){
+    log('Crown of Oblivion: execute!','s'); G.currentEnemy.hp=0;
+  }
 
   // ── HIT STOP — freeze animations for 90ms (physical impact feel) ──
   const _stage=document.getElementById('battleStage');
@@ -236,6 +266,8 @@ function dealToEnemy(dmg,crit,source){
       const rl=restoreSpellSlot();
       if(rl){log('✦ Archmage\'s Ascension: Crit restored 1 LVL'+rl+' spell slot!','l');renderSpellSlots();}
     }
+    // ── Relic: on_crit triggers ──
+    if(typeof triggerRelic==='function') triggerRelic('on_crit',{dmg});
   }
   checkObjectiveProgress('damage_dealt',dmg);
   // ── Unlockable item passives ───────────────────────────────────────────────

@@ -79,8 +79,20 @@ function useSkill(skillId){
     if(isRelentlessFree){G._battleMasterRelentless=false;log('⚔ Relentless: free '+sk.name+' (charge preserved)!','s');}
     else if(G.skillCharges[sk.id]>0) G.skillCharges[sk.id]--;
   }
-  if(sk.type==='action') G.actionUsed=true;
-  if(sk.type==='bonus') G.bonusUsed=true;
+  if(sk.type==='action'){
+    G.actionUsed=true;
+    if(typeof triggerRelic==='function') triggerRelic('on_action_used',{skillId:sk.id});
+  }
+  if(sk.type==='bonus'){
+    G.bonusUsed=true;
+    if(typeof triggerRelic==='function') triggerRelic('on_bonus_used',{skillId:sk.id});
+    // Relic: Ashen Crown — refund resource cost on first bonus action per fight
+    if(G._relicAshenCrownReady&&!G._relicAshenCrownUsed){
+      G._relicAshenCrownUsed=true; G._relicAshenCrownReady=false;
+      G.res=Math.min(G.resMax,G.res+(effectiveCost||0));
+      log('Ashen Crown: resource refunded!','s');
+    }
+  }
   if(sk.type==='reaction') G.reactionUsed=true;
   // Time Stop: count down free actions and restore turn on each use
   if(G._timeStopActive&&sk.type==='action'){
@@ -209,13 +221,15 @@ function doSkillEffect(effect, sk){
       // Temporarily remove _vulnerable so Power Strike itself doesn't consume it
       const hadVuln=G.currentEnemy&&G.currentEnemy._vulnerable;
       if(hadVuln)delete G.currentEnemy._vulnerable;
-      const r=calcPlayerDmg();r.dmg=r.dmg+roll(10)+roll(10);
+      const _psUp=!!(G.upgradedSkills&&G.upgradedSkills['power_strike']);
+      const r=calcPlayerDmg();r.dmg=r.dmg+roll(10)+roll(10)+(_psUp?roll(10)+roll(10)+roll(10):0);
       // Restore if it was there, then set new one for NEXT hit
       if(hadVuln&&G.currentEnemy)G.currentEnemy._vulnerable=true;
       dealToEnemy(r.dmg,r.crit,'Power Strike 💪 (base+2d10)');
       if(G.currentEnemy&&G.currentEnemy.hp>0){
         G.currentEnemy._vulnerable=true;
-        log('Vulnerable! Enemy takes +10% dmg on next hit.','s');
+        if(_psUp){G.currentEnemy._vulnerableTurns=2;log('Upgraded: Vulnerable lasts 2 turns!','s');}
+        else log('Vulnerable! Enemy takes +10% dmg on next hit.','s');
       }
       // Iron Legion set bonus: second hit at 60% damage
       if(G._classSetBonus==='fighter_set'&&G.currentEnemy&&G.currentEnemy.hp>0){
@@ -229,7 +243,7 @@ function doSkillEffect(effect, sk){
       }
       setCooldown('power_strike',4);
       break;}
-    case 'second_wind':{AUDIO.sfx.secondWind();const h=roll(10)+md(G.stats.con);heal(h,'Second Wind (1d10+CON)');
+    case 'second_wind':{AUDIO.sfx.secondWind();const _swUp=!!(G.upgradedSkills&&G.upgradedSkills['second_wind']);const h=roll(10)+md(G.stats.con)+(_swUp?roll(10)+roll(10)+md(G.stats.con):0);heal(h,'Second Wind (1d10+CON'+(_swUp?'+2d10+CON':'')+')');if(_swUp&&!G.sx.parry){G.sx.parry=true;log('Upgraded: Parry activated!','s');}
       // Relentless Advance: Second Wind also removes one negative condition
       if(G.classId==='fighter'&&G._relentlessAdvance&&G.conditions.length>0){
         const removed=G.conditions[0];
@@ -238,7 +252,7 @@ function doSkillEffect(effect, sk){
         log('⚔ Relentless Advance: '+removed+' cleansed!','s');
       }
       break;}
-    case 'parry':AUDIO.sfx.block();G.sx.parry=true;log('⛊ Parry set — next hit halved!','s');break;
+    case 'parry':AUDIO.sfx.block();G.sx.parry=true;if(G.upgradedSkills&&G.upgradedSkills['parry']){G.sx.parryFull=true;log('Parry set — next hit NEGATED! (upgraded)','s');}else{log('⛊ Parry set — next hit halved!','s');}break;
     case 'fire_bolt':{AUDIO.sfx.burn();
       let fbd=roll(10)+roll(10)+getSpellPower()+(G.subclassId==='evoker'?roll(6):0);
       if(G._overchannelActive){fbd=10+10+getSpellPower()+(G.subclassId==='evoker'?6:0);G._overchannelActive=false;log('⚡ Overchannel: Fire Bolt maximized!','s');}
@@ -273,6 +287,10 @@ function doSkillEffect(effect, sk){
         log('🌀 Next cast: '+G._elementalShiftType.charAt(0).toUpperCase()+G._elementalShiftType.slice(1),'s');
       } else {
         dealToEnemy(fbd,false,'Fire Bolt 🔥');
+        // Upgrade: Burning(1) on every hit
+        if(G.upgradedSkills&&G.upgradedSkills['fire_bolt']&&G.currentEnemy&&G.currentEnemy.hp>0){
+          addConditionEnemy('Burning',1);log('Upgraded Fire Bolt: Burning applied!','s');
+        }
       }
       // Metamagic: Twin — once per rest, fire bolt twice
       if(G.classId==='wizard'&&G._metamagicTwin&&!G._metamagicTwinUsed&&G.currentEnemy&&G.currentEnemy.hp>0){
@@ -318,15 +336,16 @@ function doSkillEffect(effect, sk){
       // Arcane Transcendence: +30% spell damage
       if(G._arcaneTranscendence)d=Math.ceil(d*1.3);
       dealToAllEnemies(d,false,'Fireball 💥');
-      addConditionAllEnemies('Burning',2);
-      log('🔥 Fireball hits all enemies! Burning for 3 turns!','c');
+      const _fbBurnTurns=(G.upgradedSkills&&G.upgradedSkills['fireball'])?3:2;
+      addConditionAllEnemies('Burning',_fbBurnTurns);
+      log('🔥 Fireball hits all enemies! Burning for '+_fbBurnTurns+' turns!','c');
       processAoeDeaths();
       break;}
     case 'counterspell':AUDIO.sfx.counterspell();G.sx.counterspell=true;log('Counterspell ready!','s');break;
     case 'mirror_image':
       AUDIO.sfx.mirrorImage();
-      G.mirrorImages=3;
-      log('🪞 Mirror Image: 3 illusory copies surround you! Each attack has a 33% chance to hit a copy instead.','s');
+      G.mirrorImages=(G.upgradedSkills&&G.upgradedSkills['mirror_image'])?4:3;
+      log('Mirror Image: '+G.mirrorImages+' illusory copies surround you! Each attack has a '+Math.round(100/G.mirrorImages)+'% chance to hit a copy instead.','s');
       break;
     case 'blink':
       AUDIO.sfx.blink();
@@ -346,6 +365,10 @@ function doSkillEffect(effect, sk){
         if(hasPoisoned||hasBleeding){r.dmg=Math.ceil(r.dmg*1.5);log('🎯 Exploit Weakness: +50% damage!','s');}
       }
       dealToEnemy(r.dmg,r.crit,'Sneak Attack 🎯 ('+sneakDice+'d6)');
+      // Upgrade: Bleeding(2) on every hit
+      if(G.upgradedSkills&&G.upgradedSkills['sneak_attack']&&G.currentEnemy&&G.currentEnemy.hp>0){
+        addConditionEnemy('Bleeding',2);log('Upgraded Sneak Attack: Bleeding(2) applied!','s');
+      }
       // ── Chroma tracking: sneak attacks ──
       G.totalSneakAttacks=(G.totalSneakAttacks||0)+1;
       // Hemorrhage: apply Bleeding (5 dmg/turn, 3 turns)
@@ -367,6 +390,8 @@ function doSkillEffect(effect, sk){
       setCooldown('sneak_attack',G._classSetBonus==='rogue_set'?1:2);
       break;}
     case 'cunning_action':AUDIO.sfx.block();G.sx.evasion=true;log('Cunning Action: evading next hit!','s');
+      // Upgrade: restore 2 Combo Points
+      if(G.upgradedSkills&&G.upgradedSkills['cunning_action']){G.res=Math.min(G.resMax,G.res+2);log('Upgraded Cunning Action: +2 Combo Points!','s');}
       // Blur: also grant 20% dodge chance for 2 turns
       if(G.classId==='rogue'&&G._blur){G.sx.blur={turns:2};log('🌀 Blur: +20% dodge for 2 turns!','s');}
       break;
@@ -388,6 +413,8 @@ function doSkillEffect(effect, sk){
       const smiteCrit=G._oathRenewal||Math.random()<0.1;
       if(G._oathRenewal){G._oathRenewal=false;log('🕯 Oath Renewal: free guaranteed-crit smite!','s');}
       dealToEnemy(d,smiteCrit,'Divine Smite ✨');
+      // Upgrade: Burning(2) on target
+      if(G.upgradedSkills&&G.upgradedSkills['divine_smite']&&G.currentEnemy&&G.currentEnemy.hp>0){addConditionEnemy('Burning',2);log('Upgraded Divine Smite: Burning(2) applied!','s');}
       if(G.talents.includes('Avenging Angel')){const ah=Math.floor(d/2);G.hp=Math.min(G.maxHp,G.hp+ah);log('⚡ Avenging Angel: healed '+ah+' HP!','s');}
       if(G._classSetBonus==='paladin_set'){const sh=Math.ceil(d*0.25);G.hp=Math.min(G.maxHp,G.hp+sh);spawnFloater(sh,'heal',false);log('✦ Oath of the Undying: healed '+sh+' HP from Smite!','l');}
       // Holy Momentum: on crit, restore 2 Holy Power
@@ -404,7 +431,8 @@ function doSkillEffect(effect, sk){
     case 'lay_on_hands':{
       AUDIO.sfx.heal();
       if(G.layOnHandsPool<=0){log('Lay on Hands pool exhausted!','s');return;}
-      const healAmt=Math.min(G.layOnHandsPool, roll(8)+roll(8)+Math.max(0,md(G.stats.wis))+(G.talents.includes('Lay on Hands+')?Math.max(0,md(G.stats.wis)):0));
+      const _lohUp=!!(G.upgradedSkills&&G.upgradedSkills['lay_on_hands']);
+      const healAmt=Math.min(G.layOnHandsPool, roll(8)+roll(8)+Math.max(0,md(G.stats.wis))+(G.talents.includes('Lay on Hands+')?Math.max(0,md(G.stats.wis)):0)+(_lohUp?roll(10)+roll(10)+Math.max(0,md(G.stats.wis)):0));
       G.layOnHandsPool=Math.max(0,G.layOnHandsPool-healAmt);
       heal(Math.floor(healAmt),'Lay on Hands 🙏 ('+G.layOnHandsPool+' pool left)');
       // Restorative Aura: remove one condition on use
@@ -427,15 +455,20 @@ function doSkillEffect(effect, sk){
       // Lock until enemy dies (very long cooldown cleared on kill)
       G.skillCooldowns['hunters_mark']=Date.now()+(999*1000);
       log("Hunter's Mark applied! [Concentration] +1d6 per hit — breaks on damage.",'s');
+      // Upgrade: Weakened(2) on marked target
+      if(G.upgradedSkills&&G.upgradedSkills['hunters_mark']&&G.currentEnemy&&G.currentEnemy.hp>0){
+        addConditionEnemy('Weakened',2);log("Upgraded Hunter's Mark: target Weakened(2)!",'s');
+      }
       // Binding Mark: reduce enemy ATK by 4 while marked
       if(G._bindingMark&&G.currentEnemy){G.currentEnemy.atk=Math.max(1,(G.currentEnemy.atk||0)-4);log("🔗 Binding Mark: enemy ATK -4!",'c');}
       break;}
     case 'volley':{
       AUDIO.sfx.volley();let t=0;let arrowsHit=0;
+      const _vollUpgrade=!!(G.upgradedSkills&&G.upgradedSkills['volley']);
       const vTargets=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
       if(vTargets.length<=1){
         // Single target — all arrows at it
-        for(let i=0;i<3;i++){
+        for(let i=0;i<(_vollUpgrade?4:3);i++){
           if(!G.currentEnemy||G.currentEnemy.hp<=0)break;
           const r=calcPlayerDmg();
           let d=Math.ceil(r.dmg*.7)+roll(6);
@@ -446,7 +479,7 @@ function doSkillEffect(effect, sk){
         }
       } else {
         // Multi-target — spread arrows across living enemies
-        for(let i=0;i<3;i++){
+        for(let i=0;i<(_vollUpgrade?4:3);i++){
           const alive=vTargets.filter(e=>!e.dead&&e.hp>0);
           if(!alive.length)break;
           const target=alive[i%alive.length];
@@ -474,7 +507,9 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.rage();if(G.raging){log('Already raging!','s');return;}
       G.raging=true;
       // Fury Incarnate set bonus: rage lasts entire fight (999 turns)
-      G.rageTurns=G._classSetBonus==='barbarian_set'?999:6+(G.talents.includes('Endless Rage')?2:0);
+      const _rageUpExtra=(G.upgradedSkills&&G.upgradedSkills['rage'])?2:0;
+      G.rageTurns=G._classSetBonus==='barbarian_set'?999:6+(G.talents.includes('Endless Rage')?2:0)+_rageUpExtra;
+      if(_rageUpExtra){G.def+=2;log('Upgraded Rage: +2 DEF while raging!','s');}
       const rageMsg=G._classSetBonus==='barbarian_set'?'FURY INCARNATE! Rage lasts the entire fight!':'RAGE! +2 dmg, physical resistance for '+G.rageTurns+' more rounds!';
       log(rageMsg,'s');
       if(G._classSetBonus==='barbarian_set')log('✦ Fury Incarnate: Endless Rage!','l');
@@ -485,10 +520,11 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.attack();const fr=calcPlayerDmg();dealToEnemy(fr.dmg,fr.crit,'Frenzy Strike ⚡');break;}
     case 'reckless_attack':{
       AUDIO.sfx.attack();const r=calcPlayerDmg();
+      const _raUp=!!(G.upgradedSkills&&G.upgradedSkills['reckless']);
       // Tidal Force: damage die increases to d12 (adds extra d12 bonus)
       if(G._tidalForce)r.dmg+=roll(12);
-      r.dmg=r.dmg+roll(12)+roll(12);
-      dealToEnemy(r.dmg,r.crit,'Reckless Attack 💥 (base+2d12)');
+      r.dmg=r.dmg+roll(12)+roll(12)+(_raUp?roll(12)+roll(12):0);
+      dealToEnemy(r.dmg,r.crit,'Reckless Attack 💥 (base+'+(_raUp?'4':'2')+'d12)');
       // ── Chroma tracking: reckless attacks ──
       G.totalReckless=(G.totalReckless||0)+1;
       // Consumes 20 rage resource — but never drops you out of rage entirely
@@ -498,10 +534,10 @@ function doSkillEffect(effect, sk){
         log('🔥 Reckless: -'+rageCost+' Rage ('+Math.floor(G.res)+' left)','s');
         renderHUD();
       }
-      // Recoil — Juggernaut halves it; Volcanic Rage redirects to enemy
+      // Recoil — Juggernaut/Upgrade halves it; Volcanic Rage redirects to enemy
       {
         let recoil=roll(6); // 1d6 recoil
-        if(G._juggernaut) recoil=Math.floor(recoil*0.5); // Juggernaut: 50% reduction
+        if(G._juggernaut||_raUp) recoil=Math.floor(recoil*0.5); // Juggernaut or upgrade: 50% reduction
         if(recoil>0&&G._volcanicRage&&G.raging&&G.currentEnemy&&G.currentEnemy.hp>0){
           const burnBonus=roll(6);
           dealToEnemy(burnBonus,false,'Volcanic Rage 🌋 burn');
@@ -526,6 +562,8 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.sacredFlame();
       const d=roll(8)+roll(8)+getSpellPower()+(G.subclassId==='life'?roll(4):0)+(G.talents.includes('Radiant Soul')?roll(4):0);
       dealToEnemy(d,false,'Sacred Flame ☀️');
+      // Upgrade: Burning(1) on every hit
+      if(G.upgradedSkills&&G.upgradedSkills['sacred_flame']&&G.currentEnemy&&G.currentEnemy.hp>0){addConditionEnemy('Burning',1);log('Upgraded Sacred Flame: Burning(1)!','s');}
       // Wrath of the Righteous: applies Vulnerable (+15% dmg taken) for 1 turn
       if(G.classId==='cleric'&&G._wrathRighteous&&G.currentEnemy&&G.currentEnemy.hp>0){G.currentEnemy._vulnerable=true;log('⚡ Wrath of the Righteous: Vulnerable!','c');}
       // Wrath of God: sacred flame hits twice (once per turn)
@@ -556,6 +594,10 @@ function doSkillEffect(effect, sk){
     case 'channel_divinity':{
       // ── Chroma tracking: lifetime channels ──
       G._lifetimeChannels=(G._lifetimeChannels||0)+1;
+      // Upgrade: heal 1d8+WIS on every use
+      if(G.upgradedSkills&&G.upgradedSkills['channel_divinity']){
+        const _cdUpHeal=roll(8)+Math.max(0,md(G.stats.wis));heal(_cdUpHeal,'Channel Divinity (upgrade bonus)');log('Upgraded Channel Divinity: +'+_cdUpHeal+' HP!','s');
+      }
       // vs Undead: auto Turn Undead (smite)
       if(G.currentEnemy&&G.currentEnemy.isUndead){
         AUDIO.sfx.sacredFlame();
@@ -589,6 +631,13 @@ function doSkillEffect(effect, sk){
       let finalClaw=clawCrit?clawDmg+roll(6)+roll(6):clawDmg; // D&D crit: roll damage dice again
       if(G._elementalForm){const fireDmg=roll(6);finalClaw+=fireDmg;log('🔥 Elemental: +'+fireDmg+' fire damage!','s');}
       dealToEnemy(finalClaw,clawCrit,G._elementalForm?'Flame Strike 🔥':'Claw Strike 🐾');
+      // Upgrade: second claw strike
+      if(G.upgradedSkills&&G.upgradedSkills['claw_strike']&&G.currentEnemy&&G.currentEnemy.hp>0){
+        const claw2Dmg=roll(6)+roll(6)+Math.max(0,md(G.stats.str))+G.profBonus;
+        const claw2Crit=roll(20)>=G.critRange;
+        dealToEnemy(claw2Crit?claw2Dmg+roll(6)+roll(6):claw2Dmg,claw2Crit,'Claw Strike (2nd)');
+        log('Upgraded Claw Strike: second strike!','s');
+      }
       // Apex Predator: 20% chance to Restrain enemy
       if(G._apexPredator&&G.currentEnemy&&G.currentEnemy.hp>0&&Math.random()<0.2){
         addConditionEnemy('Restrained',1);log('🐾 Apex Predator: enemy Restrained!','c');
@@ -603,6 +652,10 @@ function doSkillEffect(effect, sk){
         addConditionEnemy('Poisoned',2);
         if(G.classId==='druid') G._lifetimePoisonsApplied=(G._lifetimePoisonsApplied||0)+1;
         log('🌱 Critical! Thorns inject poison — Poisoned (2 turns).','c');
+      } else if(!isTwCrit&&G.upgradedSkills&&G.upgradedSkills['thorn_whip']&&G.currentEnemy&&G.currentEnemy.hp>0&&Math.random()<0.4){
+        addConditionEnemy('Poisoned',2);
+        if(G.classId==='druid') G._lifetimePoisonsApplied=(G._lifetimePoisonsApplied||0)+1;
+        log('Upgraded Thorn Whip: Poisoned! (40% chance)','s');
       }
       // Dark Moon: 25% chance to Poison on thorn whip
       if(G._darkMoon&&G.currentEnemy&&G.currentEnemy.hp>0&&Math.random()<0.25){
@@ -694,6 +747,8 @@ function doSkillEffect(effect, sk){
       const d=roll(10)+roll(10)+getSpellPower()+(G.talents.includes('Lunar Magic')?roll(6):0)+mbBonus;
       dealToEnemy(d,false,'Moonbeam 🌙');
       if(G._waxingMoon&&G._waxingMoonStacks>0)log('🌙 Waxing Moon: +'+G._waxingMoonStacks+'d6 stacked!','s');
+      // Upgrade: Burning(1) from lunar fire
+      if(G.upgradedSkills&&G.upgradedSkills['moonbeam']&&G.currentEnemy&&G.currentEnemy.hp>0){addConditionEnemy('Burning',1);log('Upgraded Moonbeam: Burning(1) from lunar fire!','s');}
       // Living Lightning: 30% chance to Stun enemy
       if(G._livingLightning&&G.currentEnemy&&G.currentEnemy.hp>0&&Math.random()<0.3){
         addConditionEnemy('Stunned',1);log('⚡ Living Lightning: enemy Stunned!','c');
@@ -1185,7 +1240,8 @@ function doSkillEffect(effect, sk){
     case 'cheap_shot':{
       const {dmg:csdmg,crit:cscrit}=calcPlayerDmg();
       dealToEnemy(csdmg+roll(4),cscrit,'Cheap Shot 👊 (base+1d4)');
-      if(Math.random()<0.5){addConditionEnemy('Stunned',1);log('👊 Cheap Shot: STUNNED!','s');}
+      const _csStunTurns=(G.upgradedSkills&&G.upgradedSkills['cheap_shot'])?2:1;
+      if(Math.random()<0.5){addConditionEnemy('Stunned',_csStunTurns);log('Cheap Shot: STUNNED ('+_csStunTurns+'t)!','s');}
       else{log('👊 Cheap Shot: hit!','s');}
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
@@ -1205,6 +1261,12 @@ function doSkillEffect(effect, sk){
       dealToEnemy(asDmgFinal,ascrit,'Aura Strike 💛 (base+1d4)');
       heal(asHeal,'Aura Strike 💛 (1d4+WIS)');
       log('💛 Aura Strike: '+asDmgFinal+' radiant + healed '+asHeal+' HP!','s');
+      // Upgrade: cleanse one player condition
+      if(G.upgradedSkills&&G.upgradedSkills['aura_strike']&&G.conditions&&G.conditions.length>0){
+        const _asCleansed=G.conditions[0];G.conditions=G.conditions.slice(1);
+        if(G.conditionTurns)delete G.conditionTurns[_asCleansed];
+        log('Upgraded Aura Strike: '+_asCleansed+' cleansed!','s');
+      }
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
 
@@ -1218,11 +1280,16 @@ function doSkillEffect(effect, sk){
 
     // Ranger — Crippling Shot
     case 'crippling_shot':{
+      const _csUp=!!(G.upgradedSkills&&G.upgradedSkills['crippling_shot']);
       const {dmg:crdmg,crit:crcrit}=calcPlayerDmg();
       dealToEnemy(crdmg+roll(6),crcrit,'Crippling Shot 🎯 (base+1d6)');
       addConditionEnemy('Restrained',2);
-      if(G.currentEnemy&&G.currentEnemy.hp>0){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,2);}
-      log('🎯 Crippling Shot: Restrained(2) + DEF -4 for 2 turns!','s');
+      if(G.currentEnemy&&G.currentEnemy.hp>0){
+        const _csDefDmg=_csUp?6:4;const _csTurns=_csUp?3:2;
+        G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+_csDefDmg;
+        G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,_csTurns);
+      }
+      log('Crippling Shot: Restrained(2) + DEF '+(G.upgradedSkills&&G.upgradedSkills['crippling_shot']?'-6 for 3 turns':'-4 for 2 turns')+'!','s');
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}
 
@@ -1235,12 +1302,14 @@ function doSkillEffect(effect, sk){
 
     // Barbarian — Ground Slam
     case 'ground_slam':{
+      const _gsUp=!!(G.upgradedSkills&&G.upgradedSkills['ground_slam']);
       let gsDmg=roll(8)+roll(8)+md(G.stats.str);
       if(G.raging)gsDmg+=2+Math.floor(G.level/4);
       dealToAllEnemies(gsDmg,false,'Ground Slam 💢 (2d8+STR)');
       const aliveGS=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
-      aliveGS.forEach(e=>{if(Math.random()<0.5)addConditionEnemy('Restrained',1);G.currentEnemy=e;});
-      log('💢 Ground Slam: '+gsDmg+' AoE + 50% Restrain each!','s');
+      const _gsChance=_gsUp?0.75:0.5;const _gsTurns=_gsUp?2:1;
+      aliveGS.forEach(e=>{if(Math.random()<_gsChance){G.currentEnemy=e;addConditionEnemy('Restrained',_gsTurns);}});
+      log('Ground Slam: '+gsDmg+' AoE + '+Math.round(_gsChance*100)+'% Restrained('+_gsTurns+'t) each!','s');
       processAoeDeaths();
       break;}
 
@@ -1256,6 +1325,8 @@ function doSkillEffect(effect, sk){
       const isEvil=G.currentEnemy&&(G.currentEnemy.isUndead||G.currentEnemy.isFiend);
       if(isEvil)seDmg*=2;
       dealToEnemy(seDmg,false,'Smite Evil ⚡'+(isEvil?' [DOUBLED]':''));
+      // Upgrade: Frighten on hit
+      if(G.upgradedSkills&&G.upgradedSkills['smite_evil']&&G.currentEnemy&&G.currentEnemy.hp>0){addConditionEnemy('Frightened',1);log('Upgraded Smite Evil: Frightened(1)!','s');}
       log('⚡ Smite Evil: '+seDmg+(isEvil?' (double vs undead/fiend!)':''),'s');
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
       break;}

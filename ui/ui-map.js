@@ -122,6 +122,7 @@ function travelToZone(zoneIdx){
   G._noRestStreak=0; // Reset no-rest streak on zone travel
   // ── Phase A: Reset zone-scoped rare event state ──
   G._rareEventsThisZone=0;
+  G._roomChoicesThisZone=0; // Reset room choice counter for new zone
   G._shopStock=null;        // Fresh shop for new zone
   G._salvageBuffs=[];       // Clear temp salvage buffs
   // Clean up zone-scoped rare event flags
@@ -151,6 +152,7 @@ function travelToZone(zoneIdx){
     delete ref.unstableBuff;
   }
   G._rareEventsThisZone=0; // Reset rare event cap (redundant but safe)
+  G._roomChoicesThisZone=0;
   // Clean up salvage temp buffs (reverse stat bonuses)
   if(G._salvageBuffs&&G._salvageBuffs.length){
     for(const b of G._salvageBuffs){

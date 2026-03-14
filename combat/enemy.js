@@ -803,6 +803,8 @@ function doEnemyAttack(e){
     log("💀 Death's Door: Rage ignites automatically!",'s');
   }
   if(G.sx.parry){
+    // Upgraded parry: negate all damage
+    if(G.sx.parryFull){delete G.sx.parryFull;delete G.sx.parry;log('Parry: hit fully negated!','s');return;}
     // Phantasm: uncanny dodge reduces by 75% instead of 50%
     const parryMult=(G.sx.phantasm)?0.25:0.5;
     delete G.sx.phantasm;
@@ -1020,6 +1022,17 @@ function dealDamageToPlayer(dmg, sourceName){
       log('🐻 Bear form absorbed '+absorbed+' from '+sourceName+'! ('+Math.ceil(G.wildShapeHp)+' bear HP left)','s');
     }
     renderHUD();
+  }
+  // ── Relic: pre-HP-loss effects ──
+  if(dmg>0){
+    // Ironward Talisman: flat -4 incoming damage
+    if(typeof hasRelic==='function'&&hasRelic('ironward')) dmg=Math.max(0,dmg-4);
+    // Battle Scarab: temp DEF bonus
+    if((G._relicBattleScarabDef||0)>0) dmg=Math.max(0,dmg-G._relicBattleScarabDef);
+    // Shade Shroud: consume evasion flag to dodge entirely
+    if(G._relicEvasionActive){ G._relicEvasionActive=false; log('Shade Shroud: evaded the attack!','s'); return; }
+    // on_hit_taken triggers (iron_splinter, paincrest, soulbrand, fool_courage)
+    if(typeof triggerRelic==='function') triggerRelic('on_hit_taken',{dmg});
   }
   if(dmg>0){
     if(typeof _dev_godMode==='undefined'||!_dev_godMode){
