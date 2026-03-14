@@ -74,9 +74,9 @@ const ACHIEVEMENTS = [
   {id:'cls_druid',     icon:'leaf',           title:'Nature\'s Wrath',      desc:'Reach Zone V as a Druid.',                         check:g=>g.classId==='druid'&&(g.zoneIdx>=4||g.bossDefeated[3])},
 
   // ── Objectives & Side Content ─────────────────────────
-  {id:'obj1',          icon:'★',             title:'Overachiever',          desc:'Complete 1 secondary objective.',                  check:g=>(g.totalObjectives||0)>=1},
-  {id:'obj5',          icon:'★★',            title:'Perfectionist',         desc:'Complete 5 secondary objectives.',                 check:g=>(g.totalObjectives||0)>=5},
-  {id:'obj10',         icon:'★★★',           title:'Completionist',         desc:'Complete 10 secondary objectives.',                check:g=>(g.totalObjectives||0)>=10},
+  {id:'obj1',          icon:'trophy',         title:'Overachiever',          desc:'Complete 1 secondary objective.',                  check:g=>(g.totalObjectives||0)>=1},
+  {id:'obj5',          icon:'trophy',         title:'Perfectionist',         desc:'Complete 5 secondary objectives.',                 check:g=>(g.totalObjectives||0)>=5},
+  {id:'obj10',         icon:'trophy',         title:'Completionist',         desc:'Complete 10 secondary objectives.',                check:g=>(g.totalObjectives||0)>=10},
   {id:'branch1',       icon:'cycle',          title:'Off the Beaten Path',  desc:'Clear an optional side branch.',                   check:g=>g.branchDefeated&&Object.values(g.branchDefeated).some(b=>b)},
   {id:'branchAll',     icon:'metal-gate',     title:'Explorer Supreme',     desc:'Clear all 4 optional side branches.',              check:g=>g.branchDefeated&&Object.values(g.branchDefeated).every(b=>b)},
 
@@ -106,7 +106,7 @@ const ACHIEVEMENTS = [
   {id:'chr_rogue_royal',     icon:'crystals', title:'King of Thieves',     desc:'Earn 10,000 lifetime gold as Rogue.',                                category:'chroma', check:g=>g.classId==='rogue'&&(g._lifetimeGoldRogue||0)>=10000},
   {id:'chr_rogue_nightshade',icon:'crystals', title:'Perfect Assassination',desc:'Kill a boss in 3 rounds or fewer as Rogue.',                       category:'chroma', check:g=>g.classId==='rogue'&&g._fastBossKill&&g._fastBossKill<=3},
   // Paladin
-  {id:'chr_paladin_blood',   icon:'crystals', title:'Smite Eternal',       desc:'Use Divine Smite 100 times lifetime as Paladin.',                    category:'chroma', check:g=>g.classId==='paladin'&&(g._lifetimeSmitesPaladin||0)>=100},
+  {id:'chr_paladin_blood',   icon:'crystals', title:'Smite Eternal',       desc:'Use Divine Smite 100 times lifetime as Paladin.',                    category:'chroma', check:g=>g.classId==='paladin'&&(g._lifetimeSmites||0)>=100},
   {id:'chr_paladin_lunar',   icon:'crystals', title:'Healing Hands',       desc:'Heal 1,500+ HP with Lay on Hands in one run.',                      category:'chroma', check:g=>g.classId==='paladin'&&(g.totalHealingDone||0)>=1500},
   {id:'chr_paladin_dusk',    icon:'crystals', title:'Twilight Vigil',      desc:'Finish a run healing more than damage taken as Paladin.',             category:'chroma', check:g=>g.classId==='paladin'&&g.bossDefeated&&g.bossDefeated[7]&&(g.totalHealingDone||0)>(g.totalDmgTaken||0)},
   {id:'chr_paladin_void',    icon:'crystals', title:'Judgment',            desc:'Defeat Auranthos as Paladin.',                                       category:'chroma', check:g=>g.classId==='paladin'&&g.bossDefeated&&g.bossDefeated[6]},
@@ -123,12 +123,12 @@ const ACHIEVEMENTS = [
   // Cleric
   {id:'chr_cleric_shadow',   icon:'crystals', title:'Smite the Wicked',    desc:'Deal 3,000+ total damage in one run as Cleric.',                     category:'chroma', check:g=>g.classId==='cleric'&&(g.totalDmgDealt||0)>=3000},
   {id:'chr_cleric_lunar',    icon:'crystals', title:'Mercy',               desc:'Heal 3,000+ HP in one run as Cleric.',                               category:'chroma', check:g=>g.classId==='cleric'&&(g.totalHealingDone||0)>=3000},
-  {id:'chr_cleric_solar',    icon:'crystals', title:'Channel Master',      desc:'Use Channel Divinity 40 times lifetime.',                            category:'chroma', check:g=>g.classId==='cleric'&&(g._lifetimeChannelsCleric||0)>=40},
+  {id:'chr_cleric_solar',    icon:'crystals', title:'Channel Master',      desc:'Use Channel Divinity 40 times lifetime.',                            category:'chroma', check:g=>g.classId==='cleric'&&(g._lifetimeChannels||0)>=40},
   {id:'chr_cleric_ember',    icon:'crystals', title:'The Undying',         desc:'Full run never dropping below 25% HP as Cleric.',                    category:'chroma', check:g=>g.classId==='cleric'&&g.bossDefeated&&g.bossDefeated[7]&&!g._droppedBelow25},
   // Druid
-  {id:'chr_druid_autumn',    icon:'crystals', title:'Shapeshifter',        desc:'Spend 120 turns in Wild Shape lifetime.',                            category:'chroma', check:g=>g.classId==='druid'&&(g._lifetimeWildShapeTurnsDruid||0)>=120},
+  {id:'chr_druid_autumn',    icon:'crystals', title:'Shapeshifter',        desc:'Spend 120 turns in Wild Shape lifetime.',                            category:'chroma', check:g=>g.classId==='druid'&&(g._lifetimeWildShapeTurns||0)>=120},
   {id:'chr_druid_winter',    icon:'crystals', title:"Nature's Descent",    desc:'Reach Zone VIII as Druid.',                                          category:'chroma', check:g=>g.classId==='druid'&&(g.zoneIdx>=7||g.bossDefeated[6])},
-  {id:'chr_druid_shadow',    icon:'crystals', title:'Toxic',               desc:'Poison 50 enemies lifetime as Druid.',                               category:'chroma', check:g=>g.classId==='druid'&&(g._lifetimePoisonsDruid||0)>=50},
+  {id:'chr_druid_shadow',    icon:'crystals', title:'Toxic',               desc:'Poison 50 enemies lifetime as Druid.',                               category:'chroma', check:g=>g.classId==='druid'&&(g._lifetimePoisonsApplied||0)>=50},
   {id:'chr_druid_primal',    icon:'crystals', title:'Apex Predator',       desc:'Kill 3 enemies in one Primal Avatar activation.',                    category:'chroma', check:g=>g.classId==='druid'&&g._primalAvatarTripleKill},
 ];
 

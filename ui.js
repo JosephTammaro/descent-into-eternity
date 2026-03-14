@@ -159,7 +159,7 @@ function toggleMuteMusic(){
   const sliderVal=Number(document.getElementById('musicSlider')?.value||35);
   AUDIO.setMusicVol(_musicMuted?0:sliderVal/100);
   if(!_musicMuted){
-    const bgmMap=['woods','outpost','castle','underdark','abyss'];
+    const bgmMap=['woods','outpost','castle','underdark','abyss','abyss','underdark','castle'];
     if(G&&G.currentEnemy&&G.currentEnemy.isBoss)AUDIO.playBGM('boss');
     else if(G)AUDIO.playBGM(bgmMap[G.zoneIdx]||'woods');
   } else {
@@ -184,8 +184,6 @@ function _updateAudioIcon(){
   ['audioToggleBtn','townAudioToggleBtn'].forEach(id=>{const b=document.getElementById(id);if(b)b.textContent=icon;});
 }
 
-// Keep old toggleAudio as no-op for any lingering refs
-function toggleAudio(){}
 
 function togglePause(){
   paused=!paused;

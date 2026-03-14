@@ -42,10 +42,10 @@ const CRAFT_RECIPES=[
    desc:'1 Celestial Dust + 2 Ghost Essence + 2 Herbs → Celestial Draught (100 HP)'},
   {cat:'legendary',req:{shadowEssence:1,voidShard:2,demonAsh:1},
    result:{id:'shadowBlood',name:'Shadow Blood',icon:'moon-sun',type:'consumable',slot:null,rarity:'epic',stats:{heal:40,tempAtk:12,tempDef:6},value:200},
-   desc:'1 Shadow Essence + 2 Void Shards + 1 Demon Ash → Shadow Blood (60 HP, +20 ATK, +10 DEF)'},
+   desc:'1 Shadow Essence + 2 Void Shards + 1 Demon Ash → Shadow Blood (40 HP, +12 ATK, +6 DEF)'},
   {cat:'legendary',req:{frostCrystal:2,ironCore:2},
    result:{id:'titanBlood',name:"Titan's Blood",icon:'muscle-up',type:'consumable',slot:null,rarity:'epic',stats:{heal:35,tempAtk:10,tempDef:12},value:180},
-   desc:"2 Frost Crystals + 2 Iron Cores → Titan's Blood (50 HP, +15 ATK, +20 DEF)"},
+   desc:"2 Frost Crystals + 2 Iron Cores → Titan's Blood (35 HP, +10 ATK, +12 DEF)"},
   {cat:'legendary',req:{celestialDust:2,shadowEssence:1},
    result:{id:'etherFlask',name:'Ether Flask',icon:'feather-wing',type:'consumable',slot:null,rarity:'legendary',stats:{heal:80},value:300},
    desc:'2 Celestial Dust + 1 Shadow Essence → Ether Flask (FULL heal)'},
@@ -409,7 +409,7 @@ function cfBuyItem(itemIdx){
 function showShopBuyPrompt(item){
   const rc={common:'#6a5838',uncommon:'var(--green2)',rare:'var(--blue2)',epic:'#9b54bd',legendary:'var(--gold)'}[item.rarity]||'#888';
   const rarLabel={common:'Common',uncommon:'Uncommon',rare:'Rare',epic:'Epic ✦',legendary:'★ Legendary'}[item.rarity]||item.rarity;
-  document.getElementById('sbpIcon').textContent=item.icon;
+  document.getElementById('sbpIcon').innerHTML=typeof iconHTML==='function'?iconHTML(item.icon):item.icon;
   document.getElementById('sbpName').textContent=item.name;
   document.getElementById('sbpName').style.color=rc;
   document.getElementById('sbpRar').textContent=rarLabel+' '+item.type;
@@ -449,9 +449,9 @@ function cfDonateWizard(amount){
   const tier = getShopTier();
   AUDIO.sfx.loot();
   G._shopStock=null; // A1: restock on tier change
-  if(newTotal===650||tier===2){
+  if(tier===2&&newTotal>=600&&newTotal<2500){
     log('Malachar grins. "Rare wares, unlocked for you." — Tier II shop unlocked!','l');
-  } else if(newTotal>=2500&&tier===3){
+  } else if(tier===3&&newTotal>=2500){
     log('"You have my full inventory. Take what you need." — Tier III shop unlocked!','l');
   } else {
     log('"A generous soul. I shall remember." ('+newTotal+'g total donated)','l');

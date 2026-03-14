@@ -133,9 +133,9 @@ function onEnemyDied(){
     log('⚔ Relentless: kill grants a free action!','s');
   }
   // Seasoned Hunter: each kill in a fight increases ATK by 2 (capped at +10)
+  // Bonus is read in calcPlayerDmg() via G._seasonedHunterBonus — do NOT also add to G.atk (double-dip)
   if(G.classId==='ranger'&&G._seasonedHunter&&(G._seasonedHunterBonus||0)<10){
     G._seasonedHunterBonus=(G._seasonedHunterBonus||0)+2;
-    G.atk+=2;
     log('🎖 Seasoned Hunter: +2 ATK! (total bonus: '+G._seasonedHunterBonus+')','s');
   }
   // Bloodlust: each kill extends Rage duration by 1 round
@@ -605,10 +605,11 @@ function showDeathScreen(){
   if(!G)return;
   // Record this run in the graveyard
   if(typeof recordGraveyardEntry==='function') recordGraveyardEntry(G);
-  // Persist lifetime chroma trackers on death so progress isn't lost
+  // Persist lifetime chroma trackers + run count on death so progress isn't lost
   const _deathSlot=(typeof activeSaveSlot!=='undefined')?activeSaveSlot:null;
   if(typeof updateSlotData==='function'&&_deathSlot&&G){
     updateSlotData(_deathSlot, d=>{
+      d.lifetimeRuns = (d.lifetimeRuns||0) + 1;
       d.lifetimeSmitesPaladin=G._lifetimeSmites||0;
       d.lifetimeChannelsCleric=G._lifetimeChannels||0;
       d.lifetimePoisonsDruid=G._lifetimePoisonsApplied||0;

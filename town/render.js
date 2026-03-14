@@ -1430,7 +1430,7 @@ function _drawNPC(ctx, npc, wx, wy, facing, cx, cy, near, label){
 }
 // ── Draw player ───────────────────────────────────────────
 function _drawPlayer(ctx, cx, cy){
-  const sx=_pl.wx-cx, sy=_pl.wy-cy;
+  const sx=Math.round(_pl.wx-cx), sy=Math.round(_pl.wy-cy);
   const moving=_keys['ArrowLeft']||_keys['a']||_keys['A']||_keys['ArrowRight']||_keys['d']||_keys['D']||_keys['ArrowUp']||_keys['w']||_keys['W']||_keys['ArrowDown']||_keys['s']||_keys['S'];
   const t=Date.now()*0.012;
   const bob=moving?Math.sin(t)*1.5:0;

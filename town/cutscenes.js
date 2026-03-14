@@ -751,6 +751,7 @@ function _startTown(){
   _tx.imageSmoothingEnabled=false;
   _tx.scale(DRAW_SCALE, DRAW_SCALE);
 
+  _introCamActive=false;
   for(const k in _keys) delete _keys[k];
   if(_tRAF) cancelAnimationFrame(_tRAF);
   _tRunning=true;

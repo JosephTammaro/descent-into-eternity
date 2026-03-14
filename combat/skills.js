@@ -57,7 +57,7 @@ function useSkill(skillId){
     if(G.classId==='wizard'&&G._spellWeaver&&Math.random()<0.25){
       if(restoreSpellSlot(1))log('🔮 Spell Weaver: LVL1 slot restored!','s');
     }
-    // Legendary Grace — Eternal Spellflame: 15% chance to refund the spell slot
+    // Legendary Grace — Eternal Spellflame: 10% chance to refund the spell slot
     if(G._graceSpellflame&&Math.random()<0.10){
       if(restoreSpellSlot(sk.slotCost))log('✨ Eternal Spellflame: spell slot preserved!','s');
     }
@@ -262,7 +262,7 @@ function doSkillEffect(effect, sk){
       if(G.classId==='wizard'&&G._brilliantFocus)fbd+=Math.max(0,md(G.stats.int));
       // Overload: spells penetrate 30% of enemy DEF
       if(G.classId==='wizard'&&G._overload&&G.currentEnemy)fbd+=Math.floor((G.currentEnemy.def||0)*0.3);
-      // Spell Power: +15% spell damage
+      // Spell Power: +10% spell damage
       if(G.classId==='wizard'&&G.talents.includes('Spell Power'))fbd=Math.ceil(fbd*1.10);
       // Arcane Transcendence: +30% spell damage
       if(G._arcaneTranscendence)fbd=Math.ceil(fbd*1.3);
@@ -276,7 +276,7 @@ function doSkillEffect(effect, sk){
           if(G.currentEnemy&&G.currentEnemy.hp>0){addConditionEnemy('Burning',2);log('🔥 Elemental Shift [Fire]: enemy Burning!','c');}
         } else if(shiftType==='ice'){
           dealToEnemy(fbd,false,'Frost Bolt ❄️ [Elemental]');
-          if(G.currentEnemy&&G.currentEnemy.hp>0){G.currentEnemy.def=Math.max(0,(G.currentEnemy.def||0)-4);log('❄️ Elemental Shift [Ice]: enemy DEF -4!','c');}
+          if(G.currentEnemy&&G.currentEnemy.hp>0){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,3);log('❄️ Elemental Shift [Ice]: enemy DEF -4 (3t)!','c');}
         } else {
           dealToEnemy(fbd,false,'Lightning Bolt ⚡ [Elemental]');
           if(G.currentEnemy&&G.currentEnemy.hp>0){
@@ -310,7 +310,7 @@ function doSkillEffect(effect, sk){
       if(G.classId==='wizard'&&G._brilliantFocus)t+=Math.max(0,md(G.stats.int));
       // Overload: penetrate 30% of enemy DEF
       if(G.classId==='wizard'&&G._overload&&G.currentEnemy)t+=Math.floor((G.currentEnemy.def||0)*0.3);
-      // Spell Power: +15% spell damage
+      // Spell Power: +10% spell damage
       if(G.classId==='wizard'&&G.talents.includes('Spell Power'))t=Math.ceil(t*1.10);
       // Arcane Transcendence: +30% spell damage
       if(G._arcaneTranscendence)t=Math.ceil(t*1.3);
@@ -459,8 +459,8 @@ function doSkillEffect(effect, sk){
       if(G.upgradedSkills&&G.upgradedSkills['hunters_mark']&&G.currentEnemy&&G.currentEnemy.hp>0){
         addConditionEnemy('Weakened',2);log("Upgraded Hunter's Mark: target Weakened(2)!",'s');
       }
-      // Binding Mark: reduce enemy ATK by 4 while marked
-      if(G._bindingMark&&G.currentEnemy){G.currentEnemy.atk=Math.max(1,(G.currentEnemy.atk||0)-4);log("🔗 Binding Mark: enemy ATK -4!",'c');}
+      // Binding Mark: reduce enemy ATK by 4 while marked (tracked via flag to avoid re-stacking)
+      if(G._bindingMark&&G.currentEnemy&&!G.currentEnemy._bindingMarkApplied){G.currentEnemy._bindingMarkApplied=true;G.currentEnemy.atk=Math.max(1,(G.currentEnemy.atk||0)-4);log("🔗 Binding Mark: enemy ATK -4!",'c');}
       break;}
     case 'volley':{
       AUDIO.sfx.volley();let t=0;let arrowsHit=0;
@@ -544,7 +544,7 @@ function doSkillEffect(effect, sk){
           addConditionEnemy('Burning',2);
           log('🌋 Volcanic Rage: recoil redirected as burn!','s');
         } else if(recoil>0){
-          G.hp-=recoil;
+          if(typeof _dev_godMode==='undefined'||!_dev_godMode) G.hp-=recoil;
           spawnFloater(recoil,'dmg',false);
           animEl('playerSprite','hit-anim',300);
           if(window.Anim) Anim.playerHit();
@@ -795,12 +795,12 @@ function doSkillEffect(effect, sk){
       // Overcharged: once per rest, Empowered Blast costs 0 slots
       if(G.classId==='wizard'&&G._overcharged&&!G._overchargedUsed){
         G._overchargedUsed=true;
-        restoreSpellSlot();
+        restoreSpellSlot(2);
         log('⚡ Overcharged: Empowered Blast is free this rest!','s');
       }
       // 4d8 + spell power
       const ebDmg0=roll(8)+roll(8)+roll(8)+roll(8)+getSpellPower();
-      // Spell Power: +15% spell damage
+      // Spell Power: +10% spell damage
       let ebDmg1=G.talents.includes('Spell Power')?Math.ceil(ebDmg0*1.10):ebDmg0;
       // Arcane Transcendence: +30% spell damage
       if(G._arcaneTranscendence)ebDmg1=Math.ceil(ebDmg1*1.3);
@@ -837,7 +837,7 @@ function doSkillEffect(effect, sk){
       AUDIO.sfx.levelUp();
       G.sx.sacredWeapon={turns:3};
       log('🌟 Sacred Weapon — consecrated for 3 turns! (+1d6 radiant, +3 HP on hit)','s');
-      if(G._consecratedGround&&G.currentEnemy){G.currentEnemy.def=Math.max(0,(G.currentEnemy.def||0)-4);log('✝️ Consecrated Ground: enemy DEF -4!','c');}
+      if(G._consecratedGround&&G.currentEnemy){G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,3);log('✝️ Consecrated Ground: enemy DEF -4 (3t)!','c');}
       break;}
 
     case 'pack_hunt':{
@@ -957,7 +957,7 @@ function doSkillEffect(effect, sk){
       const hasConditions=G.currentEnemy&&G.currentEnemy.conditions&&G.currentEnemy.conditions.length>0;
       if(hasConditions)wbDmg*=2;
       const wbRecoil=Math.floor(5+G.zoneIdx*3);
-      G.hp=Math.max(1,G.hp-wbRecoil); // recoil scales with zone
+      if(typeof _dev_godMode==='undefined'||!_dev_godMode) G.hp=Math.max(1,G.hp-wbRecoil); // recoil scales with zone
       dealToAllEnemies(wbDmg,false,'World Breaker 🌍'+(hasConditions?' [DOUBLED]':''));
       log('🌍 WORLD BREAKER!'+(hasConditions?' Double damage vs conditioned enemy!':' Recoil: '+wbRecoil+' damage to self.'),'s');
       processAoeDeaths();
@@ -1308,7 +1308,9 @@ function doSkillEffect(effect, sk){
       dealToAllEnemies(gsDmg,false,'Ground Slam 💢 (2d8+STR)');
       const aliveGS=(G.currentEnemies||[]).filter(e=>!e.dead&&e.hp>0);
       const _gsChance=_gsUp?0.75:0.5;const _gsTurns=_gsUp?2:1;
+      const savedGS=G.currentEnemy;
       aliveGS.forEach(e=>{if(Math.random()<_gsChance){G.currentEnemy=e;addConditionEnemy('Restrained',_gsTurns);}});
+      G.currentEnemy=savedGS;G.targetIdx=(G.currentEnemies||[]).indexOf(savedGS);
       log('Ground Slam: '+gsDmg+' AoE + '+Math.round(_gsChance*100)+'% Restrained('+_gsTurns+'t) each!','s');
       processAoeDeaths();
       break;}

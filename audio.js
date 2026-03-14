@@ -17,8 +17,8 @@ const AUDIO = (() => {
   let currentTrackName = null;
   let bgmScheduled = [];
   let muted = false;
-  let musicVol = 0.00;
-  let sfxVol = 0.00;
+  let musicVol = 0.25;
+  let sfxVol = 0.25;
   let initialized = false;
   let pendingTrack = 'title';
 

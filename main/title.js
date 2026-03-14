@@ -202,6 +202,7 @@ const _title = (function(){
   }
 
   // Reset when returning to title
+  let _titleOnKey=null, _titleOnClick=null;
   function reset(){
     awakened = false;
     const screen = document.getElementById('screen-title');
@@ -210,25 +211,28 @@ const _title = (function(){
     if(screen) screen.classList.remove('awakened');
     if(prompt) prompt.classList.remove('hidden');
     if(menu) menu.classList.remove('revealed');
+    // Remove old listeners to prevent leaks
+    if(_titleOnKey) document.removeEventListener('keydown',_titleOnKey);
+    if(_titleOnClick) document.removeEventListener('click',_titleOnClick);
     // Re-listen
-    function onKey(e){
+    _titleOnKey = function(e){
       if(awakened) return;
       if(['Shift','Control','Alt','Meta','Tab'].includes(e.key)) return;
       awakened=true;
-      document.removeEventListener('keydown',onKey);
-      document.removeEventListener('click',onClick);
+      document.removeEventListener('keydown',_titleOnKey);
+      document.removeEventListener('click',_titleOnClick);
       revealMenu();
-    }
-    function onClick(){
+    };
+    _titleOnClick = function(){
       if(awakened) return;
       if(!document.getElementById('screen-title')?.classList.contains('active')) return;
       awakened=true;
-      document.removeEventListener('keydown',onKey);
-      document.removeEventListener('click',onClick);
+      document.removeEventListener('keydown',_titleOnKey);
+      document.removeEventListener('click',_titleOnClick);
       revealMenu();
-    }
-    document.addEventListener('keydown',onKey);
-    document.addEventListener('click',onClick);
+    };
+    document.addEventListener('keydown',_titleOnKey);
+    document.addEventListener('click',_titleOnClick);
     if(!raf) raf=requestAnimationFrame(render);
   }
 

@@ -133,7 +133,7 @@ function renderEquipSlots(){
     const count=countSetPieces(setId);
     if(count>=2){
       const active3=count>=3&&setDef.bonuses[3];
-      const b=active3?setDef.bonuses[3]:setDef.bonuses[2];
+      const b=active3?setDef.bonuses[3]:(setDef.bonuses[2]||setDef.bonuses[3]);
       const isClassSet=!!setDef.forClass;
       const borderColor=isClassSet&&active3?'#cc88ff':isClassSet?'#9b54bd':'#c8a84b';
       const textColor=isClassSet&&active3?'#cc88ff':isClassSet?'#bb77dd':'#c8a84b';
@@ -233,7 +233,26 @@ function equipItem(){
   if(G.currentEnemy&&G.roundNum>0){showCombatEquipToast();closeItemModal();return;}
   const item=G.inventory[selectedItemIdx];
   if(!item||!item.slot)return;
-  if(G.equipped[item.slot]){removeItemStats(G.equipped[item.slot]);addItem({...G.equipped[item.slot]});}
+  if(G.equipped[item.slot]){
+    // Check if we can fit the old item (swap uses the slot we're about to free)
+    const oldItem={...G.equipped[item.slot]};
+    // Free the inventory slot first so addItem can use it
+    G.inventory[selectedItemIdx]=null;
+    removeItemStats(oldItem);
+    if(!addItem(oldItem)){
+      // Inventory truly full — abort swap, restore state
+      G.inventory[selectedItemIdx]=item;
+      applyItemStats(oldItem);
+      G.equipped[item.slot]=oldItem;
+      log('Inventory full — cannot swap!','e');
+      closeItemModal();renderAll();return;
+    }
+    G.equipped[item.slot]=item;
+    applyItemStats(item);
+    AUDIO.sfx.equip();
+    closeItemModal();renderAll();
+    return;
+  }
   G.equipped[item.slot]=item;
   applyItemStats(item);
   G.inventory[selectedItemIdx]=null;
@@ -326,8 +345,8 @@ function updateSetBonuses(){
         }
       }
     }
-    // Always keep _classSetBonus in sync with current state
-    for(let t=3;t>=2;t--){
+    // Always keep _classSetBonus in sync with current state (iterate 2→3 so tier 3 wins)
+    for(let t=2;t<=3;t++){
       if(now>=t&&setDef.bonuses[t]&&setDef.bonuses[t].skillBonus){
         G._classSetBonus=setDef.bonuses[t].skillBonus;
       }
@@ -377,7 +396,11 @@ function dropLoot(enemy, minRarity){
     if((rarityRank[rolledRarity]||0)<(rarityRank[minRarity]||0)) rolledRarity=minRarity;
   }
   let filtered=pool.filter(i=>i.rarity===rolledRarity);
-  if(!filtered.length)filtered=pool.filter(i=>i.rarity==='common');
+  if(!filtered.length){
+    // Fallback: try descending rarities instead of jumping to common
+    const _fallbackOrder=['epic','rare','uncommon','common'];
+    for(const r of _fallbackOrder){if(!filtered.length)filtered=pool.filter(i=>i.rarity===r);}
+  }
   if(!filtered.length)return;
   const item={...filtered[Math.floor(Math.random()*filtered.length)]};
   if(addItem(item)){G.totalItems++;AUDIO.sfx.loot();log('🎁 Found: '+item.name+' ['+item.rarity.toUpperCase()+']','l');}

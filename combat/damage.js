@@ -30,7 +30,6 @@ function calcPlayerDmg(){
   if(G.classId==='ranger'&&G._favoredTerrainActive)base=Math.ceil(base*1.15);
   // Ranger capstone — One With the Hunt: +DEX bonus to all attacks
   if(G.classId==='ranger'&&G.capstoneUnlocked)base+=Math.max(0,md(G.stats.dex));
-  // Deadeye: guaranteed crit when enemy is Marked (ATK already applied from apply())
   // Deadeye: first attack this turn is a crit while Hunter's Mark is active
   if(G.classId==='ranger'&&G._deadeye&&G.hunterMarked&&!G._deadeyeUsed){/* crit forced below, consume below */}
   if(G.classId==='paladin'&&G.subclassId==='devotion')base+=md(G.stats.cha); // Sacred Weapon: +CHA to attacks (Devotion only)
@@ -80,6 +79,10 @@ function calcPlayerDmg(){
     const missingPct=Math.max(0,1-(G.hp/G.maxHp));
     if(missingPct>0)base=Math.ceil(base*(1+missingPct));
   }
+  // ── Relic: ATK bonuses (read here only, never mutate G.atk) ──
+  if((G._relicKillAtkBonus||0)>0) base+=G._relicKillAtkBonus;
+  if((G._relicPaincrestStacks||0)>0) base+=G._relicPaincrestStacks*3;
+  if(G.raging&&(G._relicBloodrageStacks||0)>0) base+=G._relicBloodrageStacks*2;
   const def=G.currentEnemy?(G.currentEnemy.ignoresArmor?0:(G.currentEnemy.def||0)+(G.currentEnemy._defBoost||0)-(G.currentEnemy._defDebuff||0)):0;
   const _wd={fighter:10,barbarian:12,paladin:8,cleric:8,druid:6,rogue:6,ranger:8,wizard:6}[G.classId]||6;
   let dmg=Math.max(1,base-Math.floor(def/2)+roll(_wd)-Math.floor(_wd/2));
@@ -97,10 +100,6 @@ function calcPlayerDmg(){
   const critBonus=(G.critBonus||0)+(G.classId==='ranger'&&G.talents.includes('Eagle Eye')?2:0)+(G._surgeCritBonus||0);
   // Phase B: Volatile — crit range +1 for player
   const modCritBonus=(G._activeModifier && G._activeModifier.effects.critRangeBonus)||0;
-  // ── Relic: ATK bonuses (read here only, never mutate G.atk) ──
-  if((G._relicKillAtkBonus||0)>0) base+=G._relicKillAtkBonus;
-  if((G._relicPaincrestStacks||0)>0) base+=G._relicPaincrestStacks*3;
-  if(G.raging&&(G._relicBloodrageStacks||0)>0) base+=G._relicBloodrageStacks*2;
   // ── Relic: Dusty Sigil — +1 crit range; Shadow Fang — +3 crit range (consumed) ──
   let relicCritBonus = (typeof hasRelic==='function'&&(hasRelic('dusty_sigil')||hasRelic('spellthread_sash'))) ? 1 : 0;
   if((G._relicShadowFangCrit||0)>0){ relicCritBonus+=G._relicShadowFangCrit; G._relicShadowFangCrit=0; }
@@ -235,6 +234,7 @@ function dealToEnemy(dmg,crit,source){
     G.currentEnemy.hp=Math.max(0,G.currentEnemy.hp-evPoisonDmg);
     spawnFloater(evPoisonDmg,'dmg',false);
     log('☠ Envenom: '+evPoisonDmg+' poison (1d6+DEX) + Poisoned(3)!','s');
+    updateEnemyBar();
   }
   // Assassin's Tools: apply Poisoned(2) to next target after a kill
   if(G._assassinToolsPoison&&G.currentEnemy&&!G.currentEnemy.dead&&G.currentEnemy.hp>0){

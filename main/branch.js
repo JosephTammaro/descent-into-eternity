@@ -19,8 +19,14 @@ function travelToBranch(branchId){
     skillCooldowns: JSON.parse(JSON.stringify(G.skillCooldowns||{})),
     skillCharges: JSON.parse(JSON.stringify(G.skillCharges||{})),
     raging: G.raging,
+    rageTurns: G.rageTurns,
     hunterMarked: G.hunterMarked,
     concentrating: G.concentrating,
+    wildShapeHp: G.wildShapeHp,
+    wildShapeActive: G.wildShapeActive,
+    mirrorImages: G.mirrorImages,
+    spiritualWeaponActive: G.spiritualWeaponActive,
+    spiritualWeaponTurns: G.spiritualWeaponTurns,
   };
   // Branch runs in isolated state — doesn't touch main zone progress
   G.dungeonGoal = 999; // disable campfire unlock during branch
@@ -40,7 +46,9 @@ function travelToBranch(branchId){
 
 function showBranchIntro(branch){
   document.getElementById('storyZoneTag').textContent = `SIDE BRANCH — ${branch.name.toUpperCase()}`;
-  document.getElementById('storyTitle').textContent = branch.story.title;
+  const _stEl=document.getElementById('storyTitle');
+  _stEl.textContent = branch.story.title;
+  _stEl.style.display = ''; // ensure visible (may have been hidden by zone intro)
   const healBadge = document.getElementById('storyHealBadge');
   if(healBadge) healBadge.style.display = 'none';
   const bodyEl = document.getElementById('storyBody');
@@ -101,6 +109,8 @@ function spawnBranchEnemy(){
     conditions: [],
     isBranchEnemy: true,
   };
+  G.currentEnemies = [G.currentEnemy];
+  G.targetIdx = 0;
   // Apply mechanic: fungal warren — enemies start poisoned (can spread)
   if(branch.mechanic==='poison_spreading'&&!isBoss){
     G.currentEnemy.conditions = [{name:'Poisoned',turns:3}];
@@ -165,8 +175,14 @@ function onBranchEnemyDefeated(){
         if(saved.skillCooldowns) G.skillCooldowns = saved.skillCooldowns;
         if(saved.skillCharges) G.skillCharges = saved.skillCharges;
         if(saved.raging !== undefined) G.raging = saved.raging;
+        if(saved.rageTurns !== undefined) G.rageTurns = saved.rageTurns;
         if(saved.hunterMarked !== undefined) G.hunterMarked = saved.hunterMarked;
         if(saved.concentrating !== undefined) G.concentrating = saved.concentrating;
+        if(saved.wildShapeHp !== undefined) G.wildShapeHp = saved.wildShapeHp;
+        if(saved.wildShapeActive !== undefined) G.wildShapeActive = saved.wildShapeActive;
+        if(saved.mirrorImages !== undefined) G.mirrorImages = saved.mirrorImages;
+        if(saved.spiritualWeaponActive !== undefined) G.spiritualWeaponActive = saved.spiritualWeaponActive;
+        if(saved.spiritualWeaponTurns !== undefined) G.spiritualWeaponTurns = saved.spiritualWeaponTurns;
         G._savedZoneState = null;
         _currentBranch = null;
         // 33% chance of grace drop from side quest bosses

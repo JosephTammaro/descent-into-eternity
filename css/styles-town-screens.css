@@ -143,8 +143,9 @@
   padding:40px 36px;
 }
 .farewell-box.fade-in{
-  animation: introFadeIn 0.8s ease both;
+  animation: farewellFadeIn 0.8s ease both;
 }
+@keyframes farewellFadeIn{ from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .farewell-speaker{
   font-family:'Press Start 2P',monospace;
   font-size:10px; letter-spacing:3px;

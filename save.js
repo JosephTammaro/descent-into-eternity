@@ -313,10 +313,17 @@ function serializeState(g){
     // Relic per-turn flags — always reset at start of player turn; safe to clear on load
     '_relicVoidMirrorUsedThisTurn',
     '_relicEvasionActive',
-    '_relicSoulbrandActive','_relicSoulbrandTurns',
+    '_relicSoulbrandActive','_relicSoulbrandTurns','_relicDmgMult',
     '_relicBattleScarabDef','_relicBattleScarabTurns',
     '_relicShadowFangCrit',
     '_relicIgnoreDefNext',
+    '_relicThirstingReady','_relicThirstingUsed',
+    '_relicStormcallerBonus',
+    '_relicBoneFluteReady',
+    '_relicAshenCrownReady','_relicAshenCrownUsed',
+    '_relicArcaneLensBonus',
+    '_relicWarlordAtkNext',
+    '_relicVoidpiercerCount',
   ]);
   const copy = {};
   for(const [k,v] of Object.entries(g)){
@@ -1270,7 +1277,7 @@ function generateGrace(forcedRarity, forClassId){
   let pool = GRACES.filter(g => g.rarity === rarity);
   if(!pool.length) pool = GRACES.filter(g => g.rarity === 'uncommon');
 
-  // 60% chance to bias toward current class if provided
+  // 50% chance to bias toward current class if provided
   const classId = forClassId || (G && G.classId);
   if(classId && Math.random() < 0.5){
     const classPool = pool.filter(g => g.classes.includes(classId));

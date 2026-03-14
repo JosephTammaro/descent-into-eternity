@@ -20,7 +20,7 @@ const RANDOM_EVENTS = [
    zones:null,
    text:'"Half-buried in rubble stands an ancient shrine. Offerings left here long ago have rotted to dust — but the idol\'s eyes still glow faintly. Pray, take, or move on?"',
    choices:[
-     {text:'Pray at the shrine (gain +2 to all saves)',outcome:(g)=>{g.def+=3;g.critBonus=(g.critBonus||0)+1;return '✓ A quiet strength fills you. DEF +3, Crit +1.'}},
+     {text:'Pray at the shrine (DEF +3, Crit +1)',outcome:(g)=>{g.def+=3;g.critBonus=(g.critBonus||0)+1;return '✓ A quiet strength fills you. DEF +3, Crit +1.'}},
      {text:'Take the offering gold (20g, risk a curse)',outcome:(g)=>{g.gold+=20;if(Math.random()<.4){g.hp=Math.max(1,g.hp-15);return '✓ You took 20g — then felt a sudden cold. Lost 15 HP.'}return '✓ You pocketed 20g. No curse. Lucky.'}},
      {text:'Leave an offering (spend 10g, gain XP)',outcome:(g)=>{if(g.gold>=10){g.gold-=10;g.xp+=Math.floor(g.xpNeeded*.08);return '✓ You spent 10g in tribute. A small blessing of insight fills you.'}return '✗ You have no gold to offer.'}},
    ]},
@@ -81,7 +81,7 @@ const RANDOM_EVENTS = [
    text:'"A pool of faintly glowing liquid fills a stone basin. It smells of death — but also of power. Cultists have been using this. You could too."',
    choices:[
      {text:'Drink from the pool (gain +20 max HP, take 15 dmg)',outcome:(g)=>{g.maxHp+=20;g.hp=Math.max(1,g.hp-15);return '✓ Vile — but invigorating. Max HP +20. Lost 15 HP to the ritual.'}},
-     {text:'Splash it on your weapon (+5 ATK for this zone)',outcome:(g)=>{addOffensiveStat(g,5);return '✓ The necrotic fluid clings to the blade. +5 '+getOffensiveStatLabel(g)+' until next zone.'}},
+     {text:'Splash it on your weapon (+5 ATK permanently)',outcome:(g)=>{addOffensiveStat(g,5);return '✓ The necrotic fluid clings to the blade. +5 '+getOffensiveStatLabel(g)+'!'}},
      {text:'Collapse the basin — deny the cultists',outcome:(g)=>{g.xp+=Math.floor(g.xpNeeded*.1);return '✓ You shatter the basin. Power wasted — but it\'s the right call. Small XP bonus.'}},
    ]},
 

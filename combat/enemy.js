@@ -125,10 +125,11 @@ function doEnemyTurn(){
     // Cyclone: 1d6 per turn while Restrained
     const enemyRestrained=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
     if(enemyRestrained&&e._cycloneDmg){const cd=roll(6);e.hp-=cd;updateEnemyBar();log('🌀 Cyclone: '+cd+' nature damage while Restrained!','c');if(e.hp<=0){onEnemyDied();return;}}
-    const restrained=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
+    const restrainedBefore=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
     e.conditions=e.conditions.filter(c=>{c.turns--;if(c.turns<=0){log(c.name+' on '+e.name+' expires.','c');}return c.turns>0;});
+    const restrainedAfter=e.conditions.find(c=>c.name==='Restrained'&&c.turns>0);
     // Overgrowth: after Restrained expires, enemy must save or get re-rooted (DC escalates each re-application)
-    if(!restrained&&e._overgrowthDC&&(!e.conditions||!e.conditions.find(c=>c.name==='Restrained'&&c.turns>0))){
+    if(restrainedBefore&&!restrainedAfter&&e._overgrowthDC){
       const escapeSave=roll(20)+Math.floor((G.zoneIdx||0)*1.5);
       e._overgrowthDC+=1; // DC rises each round
       const dcAttempted=e._overgrowthDC;
@@ -140,7 +141,6 @@ function doEnemyTurn(){
         log('🌿 Overgrowth: '+e.name+' breaks free! (DC'+dcAttempted+', rolled '+escapeSave+')','s');
       }
     }
-    if(restrained){log(e.name+' is Restrained and loses their action!','c');setPlayerTurn(true);return;}
   }
 
   // Tick _defDebuffTurns (from Rend, Crippling Shot): persistent DEF reduction
@@ -148,6 +148,9 @@ function doEnemyTurn(){
 
   // Consecrate (Paladin): radiant damage each enemy turn — outside conditions block so it always fires
   if(e._consecrateTurns>0){e.hp-=e._consecrateHit;e._consecrateTurns--;updateEnemyBar();log('✝️ Consecrate: '+e._consecrateHit+' radiant on '+e.name+'! ('+e._consecrateTurns+'t left)','s');if(e.hp<=0){onEnemyDied();return;}}
+
+  // Restrained: skip enemy action (after custom flag ticks so defDebuff/consecrate still fire)
+  if(e.conditions&&e.conditions.find(c=>c.name==='Restrained'&&c.turns>0)){log(e.name+' is Restrained and loses their action!','c');setPlayerTurn(true);return;}
 
   // Tick persistent buffs
   if(G.raging){
@@ -680,7 +683,7 @@ function doEnemyAttack(e){
     if(G.sx.beastRetaliate){
       delete G.sx.beastRetaliate;
       const retDmg=roll(6)+Math.max(0,md(G.stats.dex));
-      if(G.currentEnemy){G.currentEnemy.hp-=retDmg;updateEnemyBar();log('🐺 Companion retaliates: '+retDmg+' (1d6+DEX)!','p');}
+      if(G.currentEnemy){dealToEnemy(retDmg,false,'Companion Retaliation 🐺');}
       if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
     }
     afterEnemyActs();
@@ -721,10 +724,11 @@ function doEnemyAttack(e){
       G.mirrorImages--;
       AUDIO.sfx.mirrorImage();
       log('🪞 Mirror Image intercepts the attack! ('+G.mirrorImages+' copies left)','s');
-      // Flash Freeze: copy destruction Slows enemy (-4 DEF)
+      // Flash Freeze: copy destruction Slows enemy (-4 DEF for 3 turns)
       if(G.classId==='wizard'&&G._flashFreeze&&G.currentEnemy){
-        G.currentEnemy.def=Math.max(0,(G.currentEnemy.def||0)-4);
-        log('🧊 Flash Freeze: enemy Slowed! -4 DEF','c');
+        G.currentEnemy._defDebuff=(G.currentEnemy._defDebuff||0)+4;
+        G.currentEnemy._defDebuffTurns=Math.max(G.currentEnemy._defDebuffTurns||0,3);
+        log('🧊 Flash Freeze: enemy Slowed! -4 DEF (3t)','c');
       }
       renderAll();
       afterEnemyActs();
@@ -732,10 +736,10 @@ function doEnemyAttack(e){
     }
     if(G.mirrorImages===0)log('All mirror images are gone.','s');
   }
-  // Blink — 75% chance to negate
+  // Blink — 60% chance to negate
   if(G.sx.blink){
     delete G.sx.blink;
-    if(Math.random()<0.75){
+    if(Math.random()<0.60){
       AUDIO.sfx.blink();
       log('💫 Blink! You phase out — attack misses entirely!','s');
       afterEnemyActs();
@@ -804,7 +808,7 @@ function doEnemyAttack(e){
   }
   if(G.sx.parry){
     // Upgraded parry: negate all damage
-    if(G.sx.parryFull){delete G.sx.parryFull;delete G.sx.parry;log('Parry: hit fully negated!','s');return;}
+    if(G.sx.parryFull){delete G.sx.parryFull;delete G.sx.parry;log('Parry: hit fully negated!','s');afterEnemyActs();return;}
     // Phantasm: uncanny dodge reduces by 75% instead of 50%
     const parryMult=(G.sx.phantasm)?0.25:0.5;
     delete G.sx.phantasm;
@@ -857,7 +861,7 @@ function doEnemyAttack(e){
   if(G.conditions.includes('Frightened'))dmg=Math.ceil(dmg*1.15);
   // Berserker subclass: Mindless Rage — immune to Frightened while raging
   if(G.classId==='barbarian'&&G.subclassId==='berserker'&&G.raging&&G.conditions.includes('Frightened')){
-    dmg=Math.ceil(dmg/1.15); // undo the penalty
+    dmg=Math.floor(dmg/1.15); // undo the 1.15x penalty
     log('Mindless Rage: Frightened has no effect while raging!','s');
   }
   if(G.wildShapeHp>0){
@@ -935,9 +939,8 @@ function doEnemyAttack(e){
     const radianceDmg=G.classId==='paladin'&&G.talents.includes('Radiance')?2:0;
     const reflectDmg=nimbusDmg+radianceDmg;
     if(reflectDmg>0&&G.currentEnemy){
-      G.currentEnemy.hp-=reflectDmg;
-      log('Radiant Aura: '+reflectDmg+' radiant reflected','s');
-      if(G.currentEnemy.hp<=0){onEnemyDied();return;}
+      dealToEnemy(reflectDmg,false,'Radiant Aura');
+      if(G.currentEnemy&&G.currentEnemy.hp<=0){onEnemyDied();return;}
     }
     // On-hit status effects — guaranteed when intent matches, random otherwise
     if(e.canPoison&&!G.conditions.includes('Poisoned')&&(e._intent==='poisoning'||Math.random()<0.25)){

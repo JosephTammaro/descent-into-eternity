@@ -86,7 +86,7 @@ const RELICS = [
   // ── DEX ──
   {
     id: 'shadow_fang', name: 'Shadow Fang', icon: 'knife',
-    rarity: 'common', trigger: 'on_bonus_used', effect: 'shadow_fang_crit',
+    rarity: 'common', trigger: 'on_bonus_used', effect: 'shadow_fang_crit', val: 3,
     classes: _DEX,
     desc: 'On bonus action: your next attack has +3 crit range.',
   },
@@ -254,7 +254,7 @@ const RELICS = [
   // ── Tanks ──
   {
     id: 'ironward', name: 'Ironward Talisman', icon: 'round-shield',
-    rarity: 'rare', trigger: 'on_hit_taken', effect: 'flat_dmg_reduction', val: 4,
+    rarity: 'rare', trigger: 'passive', effect: 'flat_dmg_reduction', val: 4,
     classes: _FRONTLINE,
     desc: 'Passive: reduce all incoming damage by 4 (applied before HP loss).',
   },
