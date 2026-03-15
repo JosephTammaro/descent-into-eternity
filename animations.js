@@ -363,6 +363,43 @@ function _applyClass(id, cls, duration, onDone){
 
 
 // ══════════════════════════════════════════════════════════
+//  ENEMY DEATH SHATTER (StS-style particle burst)
+// ══════════════════════════════════════════════════════════
+function _shatterSprite(spriteEl, onDone){
+  if(!spriteEl){if(onDone)onDone();return;}
+  const stage=spriteEl.closest('#battleStage')||document.getElementById('battleStage');
+  if(!stage){if(onDone)onDone();return;}
+  const rect=spriteEl.getBoundingClientRect();
+  const stageRect=stage.getBoundingClientRect();
+  const fragWrap=document.createElement('div');
+  fragWrap.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:20;overflow:visible;';
+  stage.appendChild(fragWrap);
+  const n=8+Math.floor(Math.random()*5);
+  const _clr=spriteEl.style.filter&&spriteEl.style.filter.match(/#[0-9a-f]{3,6}/i);
+  const baseColor=_clr?_clr[0]:'#888';
+  const frags=[];
+  for(let i=0;i<n;i++){
+    const f=document.createElement('div');
+    const sz=6+Math.random()*14;
+    const sx=rect.left-stageRect.left+Math.random()*rect.width;
+    const sy=rect.top-stageRect.top+Math.random()*rect.height;
+    f.style.cssText=`position:absolute;left:${sx}px;top:${sy}px;width:${sz}px;height:${sz}px;`
+      +`background:${baseColor};opacity:1;border-radius:2px;pointer-events:none;`
+      +`box-shadow:0 0 6px ${baseColor};`
+      +`transition:transform 0.7s cubic-bezier(0.1,0,0.3,1),opacity 0.5s ease-out 0.15s;`;
+    fragWrap.appendChild(f);
+    frags.push({el:f,dx:(Math.random()-0.5)*140,dy:-30-Math.random()*50});
+  }
+  requestAnimationFrame(()=>{
+    frags.forEach(f=>{
+      f.el.style.transform=`translate(${f.dx}px,${f.dy+90}px) rotate(${(Math.random()-0.5)*200}deg) scale(0.2)`;
+      f.el.style.opacity='0';
+    });
+  });
+  setTimeout(()=>{if(fragWrap.parentNode)fragWrap.parentNode.removeChild(fragWrap);if(onDone)onDone();},900);
+}
+
+// ══════════════════════════════════════════════════════════
 //  PUBLIC API — window.Anim
 // ══════════════════════════════════════════════════════════
 
@@ -470,7 +507,19 @@ const Anim = {
 
   enemyDeath(onDone){
     this.stopEnemyIdle();
-    _applyClass('enemySprite', 'anim-death', 850, onDone);
+    const el=document.getElementById('enemySprite');
+    if(el){
+      // White flash → hide sprite → shatter fragments
+      el.style.transition='filter 0.1s, opacity 0.15s ease-out 0.1s';
+      el.style.filter='brightness(8) saturate(0)';
+      el.style.opacity='0';
+      setTimeout(()=>{
+        el.style.transition='';el.style.filter='';
+        _shatterSprite(el, onDone);
+      },200);
+    } else {
+      _applyClass('enemySprite', 'anim-death', 850, onDone);
+    }
   },
 
   onCombatStart(){

@@ -201,11 +201,12 @@ function dealToEnemy(dmg,crit,source){
     log('Crown of Oblivion: execute!','s'); G.currentEnemy.hp=0;
   }
 
-  // ── HIT STOP — freeze animations for 90ms (physical impact feel) ──
-  const _stage=document.getElementById('battleStage');
-  if(_stage){
-    _stage.classList.add('hit-stop');
-    setTimeout(()=>_stage.classList.remove('hit-stop'),120);
+  // ── HIT STOP — context-sensitive freeze frames (StS-style) ──
+  if(typeof triggerHitStop==='function'){
+    const _hpBefore=(G.currentEnemy.hp+dmg)/G.currentEnemy.maxHp;
+    const _hpDrop=dmg/G.currentEnemy.maxHp;
+    const _hsInt=G.currentEnemy.hp<=0?'kill':crit?'crit':_hpDrop>0.25?'heavy':'light';
+    triggerHitStop(_hsInt);
   }
 
   // ── ENEMY HURT FLASH — flash white on hit ──
@@ -364,8 +365,19 @@ function updateEnemyBar(){
   if(!G.currentEnemy)return;
   const pct=Math.max(0,G.currentEnemy.hp/G.currentEnemy.maxHp*100);
   const fill=document.getElementById('enemyHpFill');
+  if(!fill)return;
+  const _oldW=parseFloat(fill.style.width)||100;
   fill.style.width=pct+'%';
   fill.style.background=pct<25?'var(--red2)':pct<50?'var(--orange2)':'var(--green2)';
+  // Ghost HP trail bar
+  let _eGhost=fill.parentElement.querySelector('.hp-ghost');
+  if(!_eGhost){_eGhost=document.createElement('div');_eGhost.className='hp-ghost';_eGhost.style.width='100%';fill.parentElement.appendChild(_eGhost);}
+  if(pct<_oldW){
+    _eGhost.style.transition='none';_eGhost.style.width=_oldW+'%';void _eGhost.offsetWidth;
+    _eGhost.style.transition='';_eGhost.style.width=pct+'%';
+  } else {
+    _eGhost.style.transition='none';_eGhost.style.width=pct+'%';void _eGhost.offsetWidth;_eGhost.style.transition='';
+  }
   const txt=document.getElementById('enemyHpText');
   if(txt)txt.textContent=Math.max(0,Math.ceil(G.currentEnemy.hp))+' / '+G.currentEnemy.maxHp+' HP';
   // Boss HP segment marks at 25/50/75%

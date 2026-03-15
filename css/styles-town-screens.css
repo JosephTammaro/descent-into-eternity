@@ -583,13 +583,18 @@
   100%{box-shadow:inset 0 -20px 40px rgba(0,0,0,0.4), inset 0 20px 40px rgba(0,0,0,0.2)}
 }
 
-/* Kill freeze — brief pause on killing blow */
-.battle-stage.kill-freeze{
-  animation:killFreeze 0.1s step-end;
-}
-@keyframes killFreeze{
-  0%,100%{filter:brightness(1.3) contrast(1.1);}
-}
+/* Hit stop system — context-sensitive freeze frames (StS-style) */
+.battle-stage.hit-stop-light  *{animation-play-state:paused!important;}
+.battle-stage.hit-stop-light   {filter:brightness(1.15);}
+.battle-stage.hit-stop-heavy  *{animation-play-state:paused!important;}
+.battle-stage.hit-stop-heavy   {filter:brightness(1.3) contrast(1.1);}
+.battle-stage.hit-stop-crit   *{animation-play-state:paused!important;}
+.battle-stage.hit-stop-crit    {filter:brightness(1.5) saturate(0.5);}
+.battle-stage.hit-stop-kill   *{animation-play-state:paused!important;}
+.battle-stage.hit-stop-kill    {filter:brightness(1.6) saturate(0.3);}
+/* Legacy compat */
+.battle-stage.kill-freeze{animation:killFreeze 0.1s step-end;}
+@keyframes killFreeze{0%,100%{filter:brightness(1.3) contrast(1.1);}}
 
 /* Phase 2 zoom — subtle zoom-in when boss enrages */
 .battle-stage.phase2-zoom{animation:phase2Zoom 1.2s ease-out;}

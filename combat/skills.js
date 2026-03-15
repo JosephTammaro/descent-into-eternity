@@ -106,6 +106,10 @@ function useSkill(skillId){
     }
   }
 
+  // Skill button flash (StS card-play feel)
+  const _skBtn=document.querySelector('.skill-btn[onclick*="\''+skillId+'\'"]');
+  if(_skBtn){_skBtn.classList.remove('sk-used');void _skBtn.offsetWidth;_skBtn.classList.add('sk-used');setTimeout(()=>{if(_skBtn)_skBtn.classList.remove('sk-used');},420);}
+
   // Animate player attack
   if(window.Anim) Anim.playerAttack();
 

@@ -438,6 +438,15 @@
 /* Press effect */
 .skill-btn:active:not(:disabled){transform:scale(0.93) translateY(1px)!important;}
 
+/* Skill used flash (StS card-play feel) */
+@keyframes sk-used-flash{
+  0%  {filter:brightness(1);transform:scale(1);}
+  12% {filter:brightness(3) saturate(0.3);transform:scale(1.08);}
+  35% {filter:brightness(1.6);transform:scale(1.03);}
+  100%{filter:brightness(1);transform:scale(1);}
+}
+.skill-btn.sk-used{animation:sk-used-flash 0.4s ease-out forwards!important;z-index:10;}
+
 /* Cooldown clock-wipe overlay */
 .skill-btn{position:relative;overflow:hidden;}
 .skill-btn::before{

@@ -51,6 +51,7 @@ function addCondition(cond,turns=2){
     G.conditions.push(cond);
     if(!G.conditionTurns)G.conditionTurns={};
     G.conditionTurns[cond]=turns;
+    if(typeof conditionVFX==='function') conditionVFX(cond,'player');
   }
 }
 function removeCondition(cond){
@@ -58,7 +59,7 @@ function removeCondition(cond){
   if(G.conditionTurns)delete G.conditionTurns[cond];
   if(typeof AUDIO!=='undefined'&&AUDIO.sfx.conditionExpire) AUDIO.sfx.conditionExpire();
 }
-function addConditionEnemy(name,turns){if(!G.currentEnemy)return;if(!G.currentEnemy.conditions)G.currentEnemy.conditions=[];if(G.currentEnemy.conditions.find(c=>c.name===name))return;G.currentEnemy.conditions.push({name,turns});}
+function addConditionEnemy(name,turns){if(!G.currentEnemy)return;if(!G.currentEnemy.conditions)G.currentEnemy.conditions=[];if(G.currentEnemy.conditions.find(c=>c.name===name))return;G.currentEnemy.conditions.push({name,turns});if(typeof conditionVFX==='function')conditionVFX(name,'enemy');}
 // AoE variant — applies condition to a specific enemy object
 function addConditionToEnemy(e,name,turns){if(!e)return;if(!e.conditions)e.conditions=[];if(e.conditions.find(c=>c.name===name))return;e.conditions.push({name,turns});}
 
@@ -1181,7 +1182,7 @@ function showBossReward(onDone){
   const rc = {common:'#888',uncommon:'var(--green2)',rare:'#4a9eda',epic:'#8b44ad',legendary:'var(--gold)'};
 
   const relicCardsHtml = _bossRewardRelicChoices.map((r,i)=>`
-    <div class="boss-reward-card relic-card" onclick="bossRewardPickRelic(${i})" style="border-color:${rc[r.rarity]||'#333'}40;">
+    <div class="boss-reward-card relic-card" onclick="bossRewardPickRelic(${i},this)" style="border-color:${rc[r.rarity]||'#333'}40;">
       <div class="brc-icon" style="color:${rc[r.rarity]||'#888'}">${iconHTML(r.icon)}</div>
       <div class="brc-name" style="color:${rc[r.rarity]||'#888'}">${r.name}</div>
       <div class="brc-rarity" style="color:${rc[r.rarity]||'#888'}">${r.rarity.toUpperCase()}</div>
@@ -1189,7 +1190,7 @@ function showBossReward(onDone){
     </div>`).join('');
 
   const skillCardsHtml = upgradeable.length ? upgradeable.map(sk=>`
-    <div class="boss-reward-card skill-card" onclick="bossRewardPickUpgrade('${sk.id}')">
+    <div class="boss-reward-card skill-card" onclick="bossRewardPickUpgrade('${sk.id}',this)">
       <div class="brc-icon" style="color:var(--gold)">${iconHTML(sk.icon)}</div>
       <div class="brc-name" style="color:var(--gold)">${sk.name}</div>
       <div class="brc-current">${sk.desc}</div>
@@ -1206,7 +1207,7 @@ function showBossReward(onDone){
       <div class="boss-reward-panel">
         <div class="brp-label">TAKE A GRACE</div>
         <div class="brp-cards">
-          <div class="boss-reward-card grace-card" onclick="bossRewardPickGrace()" style="border-color:${gc}40;">
+          <div class="boss-reward-card grace-card" onclick="bossRewardPickGrace(this)" style="border-color:${gc}40;">
             <div class="brc-icon" style="color:${gc}">${iconHTML(g.icon||'crown-coin')}</div>
             <div class="brc-name" style="color:${gc}">${g.name}</div>
             <div class="brc-rarity" style="color:${gc}">${(g.rarity||'').toUpperCase()}</div>
@@ -1235,39 +1236,48 @@ function showBossReward(onDone){
   if(typeof AUDIO!=='undefined'&&AUDIO.sfx&&AUDIO.sfx.loot) AUDIO.sfx.loot();
 }
 
-function bossRewardPickRelic(idx){
+function bossRewardPickRelic(idx,el){
   const chosen = _bossRewardRelicChoices && _bossRewardRelicChoices[idx];
   if(!chosen || !G) return;
   if(!G.relics) G.relics = [];
   if(G.relics.length < 6){ G.relics.push({...chosen}); log(chosen.name+' acquired!','l'); }
-  _bossRewardDone();
+  if(typeof flyToRelicHud==='function'&&el) flyToRelicHud(el);
+  _bossRewardDone(el);
 }
 
-function bossRewardPickUpgrade(skillId){
+function bossRewardPickUpgrade(skillId,el){
   if(!G) return;
   if(!G.upgradedSkills) G.upgradedSkills = {};
   G.upgradedSkills[skillId] = true;
   const sk = (CLASSES[G.classId]&&CLASSES[G.classId].skills||[]).find(s=>s.id===skillId);
   log((sk?sk.name:'Skill')+' upgraded!','l');
-  _bossRewardDone();
+  _bossRewardDone(el);
 }
 
-function bossRewardPickGrace(){
+function bossRewardPickGrace(el){
   if(!_bossRewardGrace) return;
   if(typeof addGraceToInventory==='function') addGraceToInventory(_bossRewardGrace);
   log(_bossRewardGrace.name+' grace acquired!','l');
-  _bossRewardDone();
+  _bossRewardDone(el);
 }
 
-function _bossRewardDone(){
-  document.getElementById('bossRewardOverlay').style.display = 'none';
-  _bossRewardRelicChoices = null;
-  _bossRewardGrace = null;
-  if(typeof renderRelicHud==='function') renderRelicHud();
-  if(typeof renderAll==='function') renderAll();
-  const cb = _bossRewardCallback;
-  _bossRewardCallback = null;
-  if(cb) setTimeout(cb, 300);
+function _bossRewardDone(chosenEl){
+  // Animate chosen card up, dismiss others
+  const allCards=document.querySelectorAll('.boss-reward-card');
+  if(chosenEl&&allCards.length>0){
+    allCards.forEach(c=>{c.classList.add(c===chosenEl?'brc-chosen':'brc-dismissed');});
+  }
+  const _closeDelay=chosenEl?520:0;
+  setTimeout(()=>{
+    document.getElementById('bossRewardOverlay').style.display = 'none';
+    _bossRewardRelicChoices = null;
+    _bossRewardGrace = null;
+    if(typeof renderRelicHud==='function') renderRelicHud();
+    if(typeof renderAll==='function') renderAll();
+    const cb = _bossRewardCallback;
+    _bossRewardCallback = null;
+    if(cb) setTimeout(cb, 300);
+  }, _closeDelay);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1373,7 +1383,7 @@ function showEliteRelicDrop(){
   const rc = {common:'#888',uncommon:'var(--green2)',rare:'#4a9eda',epic:'#8b44ad',legendary:'var(--gold)'};
 
   const cardsHtml = _eliteRelicChoices.map((r,i)=>`
-    <div class="elite-relic-card" onclick="eliteRelicPick(${i})" style="border-color:${rc[r.rarity]||'#333'}40;">
+    <div class="elite-relic-card" onclick="eliteRelicPick(${i},this)" style="border-color:${rc[r.rarity]||'#333'}40;">
       <div class="erc-icon" style="color:${rc[r.rarity]||'#888'}">${iconHTML(r.icon)}</div>
       <div class="erc-name" style="color:${rc[r.rarity]||'#888'}">${r.name}</div>
       <div class="erc-rarity" style="color:${rc[r.rarity]||'#888'}">${r.rarity.toUpperCase()}</div>
@@ -1389,13 +1399,14 @@ function showEliteRelicDrop(){
   if(AUDIO&&AUDIO.sfx&&AUDIO.sfx.loot) AUDIO.sfx.loot();
 }
 
-function eliteRelicPick(idx){
+function eliteRelicPick(idx,el){
   const chosen = _eliteRelicChoices && _eliteRelicChoices[idx];
   if(!chosen || !G) return;
   if(!G.relics) G.relics = [];
   if(G.relics.length < 6){
     G.relics.push({...chosen});
     log(chosen.name + ' acquired!', 'l');
+    if(typeof flyToRelicHud==='function'&&el) flyToRelicHud(el);
   } else {
     log('Relic inventory full (6/6) — ' + chosen.name + ' left behind.', 'w');
   }

@@ -29,12 +29,19 @@ function triggerBossSpecialFlash(){
   setTimeout(()=> stage.classList.remove('flash-boss-special'), 400);
 }
 
-function triggerKillFreeze(){
-  const stage = document.getElementById('battleStage');
+// ── Hit Stop System (StS-style context-sensitive freeze frames) ──
+const _HIT_STOP_CLASSES=['hit-stop-light','hit-stop-heavy','hit-stop-crit','hit-stop-kill'];
+function triggerHitStop(intensity){
+  const stage=document.getElementById('battleStage');
   if(!stage) return;
-  stage.classList.add('kill-freeze');
-  setTimeout(()=> stage.classList.remove('kill-freeze'), 100);
+  const cfg={light:{cls:'hit-stop-light',dur:90},heavy:{cls:'hit-stop-heavy',dur:150},crit:{cls:'hit-stop-crit',dur:180},kill:{cls:'hit-stop-kill',dur:220}};
+  const c=cfg[intensity]||cfg.light;
+  _HIT_STOP_CLASSES.forEach(cl=>stage.classList.remove(cl));
+  void stage.offsetWidth;
+  stage.classList.add(c.cls);
+  setTimeout(()=>stage.classList.remove(c.cls), c.dur);
 }
+function triggerKillFreeze(){triggerHitStop('kill');}
 
 function triggerPhase2Zoom(){
   const stage = document.getElementById('battleStage');
@@ -45,7 +52,7 @@ function triggerPhase2Zoom(){
   setTimeout(()=> stage.classList.remove('phase2-zoom'), 1200);
 }
 
-function showTurnBanner(text, color){
+function showTurnBanner(text, color, side){
   const stage=document.getElementById('battleStage');
   if(!stage) return;
   let banner=document.getElementById('turnBanner');
@@ -56,9 +63,10 @@ function showTurnBanner(text, color){
   }
   banner.textContent=text;
   banner.style.color=color||'#fff';
-  banner.classList.remove('active');
+  banner.classList.remove('active','active-player','active-enemy');
   void banner.offsetWidth;
-  banner.classList.add('active');
+  const cls=side==='enemy'?'active-enemy':side==='player'?'active-player':'active';
+  banner.classList.add(cls);
 }
 
 function spawnGoldBurst(sourceEl){
@@ -85,6 +93,90 @@ function spawnGoldBurst(sourceEl){
     }, delay+16);
     setTimeout(()=>{if(coin.parentNode)coin.parentNode.removeChild(coin);}, delay+800);
   }
+}
+
+// ── Condition Apply VFX ──
+function conditionVFX(condName, side){
+  const stage=document.getElementById('battleStage');
+  if(!stage) return;
+  const cfg={
+    Burning:  {color:'#e67e22',color2:'#c0392b',char:'*',dy:-1,count:8},
+    Poisoned: {color:'#27ae60',color2:'#1e8449',char:'o',dy:-0.8,count:6},
+    Bleeding: {color:'#c0392b',color2:'#7b241c',char:'.',dy:0.8,count:6},
+    Stunned:  {color:'#f1c40f',color2:'#f39c12',char:'*',dy:-0.5,count:5},
+    Frightened:{color:'#2980b9',color2:'#1a5276',char:'~',dy:-0.6,count:5},
+    Weakened: {color:'#7f8c8d',color2:'#566573',char:'-',dy:-0.4,count:4},
+    Restrained:{color:'#8e44ad',color2:'#6c3483',char:'x',dy:0,count:5},
+    Vulnerable:{color:'#e67e22',color2:'#d35400',char:'!',dy:-0.5,count:4},
+  };
+  const c=cfg[condName];
+  if(!c) return;
+  // Spawn particles around target (player sprite or enemy sprite)
+  const target=side==='enemy'?document.getElementById('enemySprite'):document.getElementById('playerSprite');
+  if(!target) return;
+  const tr=target.getBoundingClientRect();
+  const sr=stage.getBoundingClientRect();
+  const cx=tr.left-sr.left+tr.width/2;
+  const cy=tr.top-sr.top+tr.height/2;
+  for(let i=0;i<c.count;i++){
+    const p=document.createElement('div');
+    const sz=4+Math.random()*6;
+    const ox=(Math.random()-0.5)*tr.width*0.8;
+    const oy=(Math.random()-0.5)*tr.height*0.5;
+    p.style.cssText=`position:absolute;left:${cx+ox}px;top:${cy+oy}px;width:${sz}px;height:${sz}px;`
+      +`background:${Math.random()>0.5?c.color:c.color2};border-radius:50%;pointer-events:none;z-index:15;`
+      +`opacity:0.9;box-shadow:0 0 4px ${c.color};`
+      +`transition:transform 0.6s ease-out,opacity 0.4s ease-out 0.2s;`;
+    stage.appendChild(p);
+    const dx=(Math.random()-0.5)*30;
+    const dy=c.dy*30-Math.random()*25;
+    setTimeout(()=>{
+      p.style.transform=`translate(${dx}px,${dy}px) scale(0.3)`;
+      p.style.opacity='0';
+    },i*40+16);
+    setTimeout(()=>{if(p.parentNode)p.parentNode.removeChild(p);},i*40+700);
+  }
+}
+
+// ── Counter Tick-Up Animation ──
+function animateCounter(el,from,to,duration){
+  if(!el||from===to){if(el)el.textContent=to;return;}
+  const start=performance.now();
+  const diff=to-from;
+  (function tick(now){
+    const t=Math.min(1,(now-start)/duration);
+    const ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; // easeInOutQuad
+    el.textContent=Math.round(from+diff*ease);
+    if(t<1) requestAnimationFrame(tick);
+  })(start);
+}
+
+// ── Relic Pickup Fly Animation ──
+function flyToRelicHud(sourceEl){
+  const dest=document.getElementById('relicHud');
+  if(!sourceEl||!dest) return;
+  const sr=sourceEl.getBoundingClientRect();
+  const dr=dest.getBoundingClientRect();
+  const clone=document.createElement('div');
+  clone.style.cssText=`position:fixed;z-index:99999;pointer-events:none;`
+    +`left:${sr.left+sr.width/2}px;top:${sr.top+sr.height/2}px;`
+    +`width:32px;height:32px;border-radius:50%;`
+    +`background:var(--gold);box-shadow:0 0 16px var(--gold),0 0 32px rgba(200,168,75,0.5);`
+    +`transform:translate(-50%,-50%) scale(1.2);opacity:1;`
+    +`transition:all 0.55s cubic-bezier(0.22,1,0.36,1);`;
+  document.body.appendChild(clone);
+  requestAnimationFrame(()=>{
+    clone.style.left=(dr.left+dr.width/2)+'px';
+    clone.style.top=(dr.top+dr.height/2)+'px';
+    clone.style.transform='translate(-50%,-50%) scale(0.4)';
+    clone.style.opacity='0.6';
+  });
+  setTimeout(()=>{
+    if(clone.parentNode)clone.parentNode.removeChild(clone);
+    // Bounce the relic HUD
+    if(dest){dest.style.transition='transform 0.15s';dest.style.transform='scale(1.15)';
+      setTimeout(()=>{dest.style.transform='';setTimeout(()=>dest.style.transition='',150);},150);}
+  },580);
 }
 
 function triggerBossEntrance(name, title){

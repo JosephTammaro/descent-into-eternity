@@ -477,12 +477,30 @@ function renderHUD(){
 
   document.getElementById('heroLvl').textContent='LVL '+G.level;
   document.getElementById('heroSub').textContent=G.subclassId&&typeof SUBCLASSES!=='undefined'&&SUBCLASSES[G.subclassId]?SUBCLASSES[G.subclassId].name:'';
-  document.getElementById('goldVal').textContent=G.gold;
+  // Gold counter tick-up animation
+  const _goldEl=document.getElementById('goldVal');
+  const _oldGold=parseInt(_goldEl.textContent)||0;
+  if(typeof animateCounter==='function'&&G.gold>_oldGold&&G.gold-_oldGold<=500){
+    animateCounter(_goldEl,_oldGold,G.gold,400);
+  } else { _goldEl.textContent=G.gold; }
   document.getElementById('profVal').textContent='+'+G.profBonus;
 
-  // Player battle HP bar
+  // Player battle HP bar + ghost trail
   const _phf=document.getElementById('playerHpFill');
-  if(_phf){_phf.style.width=hpPct+'%';_phf.style.background=hpPct<25?'var(--red2)':hpPct<50?'var(--orange2)':'var(--green2)';}
+  if(_phf){
+    const _oldW=parseFloat(_phf.style.width)||100;
+    _phf.style.width=hpPct+'%';
+    _phf.style.background=hpPct<25?'var(--red2)':hpPct<50?'var(--orange2)':'var(--green2)';
+    // Ghost HP bar
+    let _ghost=_phf.parentElement.querySelector('.hp-ghost');
+    if(!_ghost){_ghost=document.createElement('div');_ghost.className='hp-ghost';_ghost.style.width='100%';_phf.parentElement.appendChild(_ghost);}
+    if(hpPct<_oldW){
+      _ghost.style.transition='none';_ghost.style.width=_oldW+'%';void _ghost.offsetWidth;
+      _ghost.style.transition='';_ghost.style.width=hpPct+'%';
+    } else {
+      _ghost.style.transition='none';_ghost.style.width=hpPct+'%';void _ghost.offsetWidth;_ghost.style.transition='';
+    }
+  }
 
   // Shield/barrier overlay on HP bar
   renderShieldBar();

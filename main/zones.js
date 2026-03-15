@@ -144,12 +144,12 @@ function setPlayerTurn(isPlayer){
     renderAll();
     updateEnemyIntent();
     if(typeof showTurnBanner==='function'&&G.currentEnemy&&G.currentEnemy.hp>0&&!G._pauseForTutorial)
-      showTurnBanner('YOUR TURN','#c8a850');
+      showTurnBanner('YOUR TURN','#c8a850','player');
   } else {
     ts.textContent='🔴 ENEMY TURN';
     ts.className='turn-state enemy-turn';
     if(typeof showTurnBanner==='function'&&G.currentEnemy&&G.currentEnemy.hp>0)
-      showTurnBanner('ENEMY TURN','#cc3333');
+      showTurnBanner('ENEMY TURN','#cc3333','enemy');
     // Clear intent while enemy is acting
     const _intentEl=document.getElementById('enemyIntent');
     if(_intentEl){_intentEl.innerHTML='';_intentEl.className='enemy-intent';}
@@ -716,6 +716,11 @@ function spawnEnemy(){
   // Tutorial: don't start the player's turn yet — the choice/tour overlay controls this
   if(!G._pauseForTutorial) setPlayerTurn(true);
   renderEnemyArea();
+  // Encounter transition dim (StS-style) — skip on first enemy of zone and tutorials
+  if(G.killCount>0&&!G._isTutorialFight){
+    const _bs=document.getElementById('battleStage');
+    if(_bs){_bs.classList.remove('encounter-fade');void _bs.offsetWidth;_bs.classList.add('encounter-fade');setTimeout(()=>_bs.classList.remove('encounter-fade'),650);}
+  }
   // Enemy spawn animation — scale/fade in from above
   {
     const _single=G.currentEnemies.length<=1;
@@ -857,7 +862,9 @@ function renderEnemyArea(){
     spriteEl.style.filter=`drop-shadow(0 0 3px ${e.color||'#888'})`;
     spriteCanvas.appendChild(spriteEl);
 
-    const hpBar = `<div class="enemy-card-hp-bar"><div class="enemy-card-hp-fill" style="width:${hpPct}%;background:${hpColor};"></div></div>`;
+    const _ghostPct = e._prevHpPct!==undefined ? e._prevHpPct : hpPct;
+    const hpBar = `<div class="enemy-card-hp-bar"><div class="enemy-card-hp-fill" style="width:${hpPct}%;background:${hpColor};"></div><div class="hp-ghost" style="width:${_ghostPct}%"></div></div>`;
+    e._prevHpPct = hpPct;
     const hpTxt = `<div class="enemy-card-hp-txt">${Math.ceil(e.hp)+'/'+e.maxHp}</div>`;
     const name  = `<div class="enemy-card-name">${e.name}</div><div class="enemy-card-level">Lv.${e.effectiveLvl}</div>`;
     const arrow = isTarget ? `<div class="enemy-target-arrow">▼</div>` : '';
